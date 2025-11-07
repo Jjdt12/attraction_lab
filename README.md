@@ -18,12 +18,11 @@ This project simulates a Disney-style attraction ride control system with:
 
 ### Web Interface (React + TypeScript)
 - **AttractionVisualizer**: Visual representation of the ride with car and lights
-- **ControlPanel**: Ride control interface with MitM proxy toggle
+- **ControlPanel**: Ride control interface
 - **PLCStatus**: WebSocket and PLC connection status
 - **PLCStateMonitor**: Real-time PLC state machine and system status
 - **CoilStatus**: Live Modbus coil state visualization
 - **CTFChallenges**: Real-time challenge tracking with points system
-- **AttackConsole**: Interactive Python environment for executing attacks
 - Connects to WebSocket server for real-time PLC communication
 
 ### Standalone Server (Python)
@@ -44,14 +43,9 @@ This project simulates a Disney-style attraction ride control system with:
 ### Python Scripts
 Located in `/scripts`:
 - **standalone_server.py**: Integrated web + WebSocket + Modbus server (started via start.sh)
-- **HMI.py**: Standalone HMI simulator with auditor logging
-- **light_test_sim.py**: Simplified HMI without auditor
-- **intercept.py**: MITM proxy for attack scenarios
+- **upload_st_to_openplc.py**: Automated PLC program deployment
 - **probe.py**: Diagnostic tool for Modbus testing
-- **plc_docker.sh**: OpenPLC Docker setup
-- **attack_zone_manipulation.py**: Zone control attack demo
-- **attack_safety_bypass.py**: Safety interlock bypass demo
-- **attack_state_machine.py**: State machine manipulation demo
+- **plc_modbus_map.py**: Memory map definitions for Modbus communication
 
 ### PLC Program
 - **attraction_control.st**: Enhanced Structured Text program with:
@@ -120,63 +114,62 @@ WS_PORT=8765
 
 #### Quick Start (Complete Setup)
 
-1. **Upload PLC Program to OpenPLC:**
-   - Open OpenPLC Web Interface (typically http://localhost:8080)
-   - Go to "Programs" → Upload `scripts/attraction_control.st`
-   - Start the program
+1. **Build the Web Interface:**
+```bash
+npm install
+npm run build
+```
 
-2. **Start the WebSocket Server:**
+2. **Start Everything (OpenPLC + WebSocket Server + Web Interface):**
 ```bash
 cd scripts && ./start.sh
 ```
 
-3. **Start the Web Interface:**
-```bash
-npm run dev
-```
+This automated script will:
+- Start the OpenPLC container with Docker
+- Upload and compile the attraction control program
+- Start the PLC runtime
+- Launch the integrated web server with WebSocket support
 
-4. **Open in Browser:**
-   - Navigate to http://localhost:5173
-   - Click "Connect to PLC" and enter your OpenPLC host:port
-   - Start a ride session to begin challenge tracking
+3. **Open in Browser:**
+   - Navigate to http://localhost:3000
+   - The interface will automatically connect to the PLC
+   - Start exploring the attraction control system!
 
 #### Attack Scenarios
 
-Run demonstration attack scripts:
+Attack scripts are available in `/ext_attacks` with examples for each CTF challenge. These demonstrate various attack vectors:
 
 ```bash
-# Zone manipulation attack
-python scripts/attack_zone_manipulation.py
+# Example: Zone manipulation attack
+python ext_attacks/challenge_03_zone_manipulation.py
 
-# Safety bypass attack
-python scripts/attack_safety_bypass.py
+# Example: Safety bypass attack
+python ext_attacks/challenge_04_safety_bypass.py
 
-# State machine attack
-python scripts/attack_state_machine.py
+# Example: State machine attack
+python ext_attacks/challenge_06_state_machine.py
 ```
 
-Or use the built-in Attack Console in the web interface with Pyodide for in-browser Python execution.
+See `ext_attacks/README.md` for documentation on all available attack scripts.
 
-#### Running OpenPLC Locally
+#### Accessing OpenPLC
 
-For local PLC testing:
-```bash
-bash scripts/plc_docker.sh
-```
+The OpenPLC web interface is available at http://localhost:8080
 
-Default OpenPLC credentials: `openplc` / `openplc`
+Default credentials: `openplc` / `openplc`
 
 ## Features
 
 - **Real-time PLC Simulation** - Advanced state machine with multi-zone control
 - **Live Modbus Monitoring** - Watch all coil/register reads and writes
 - **CTF Challenge System** - 10 challenges with automatic detection and scoring
-- **Interactive Attack Console** - In-browser Python environment (Pyodide)
-- **MitM Capabilities** - Built-in traffic interception and manipulation
+- **Automated Setup** - One-command deployment with Docker and Python
 - **Complete Logging** - All events stored in Supabase for analysis
 - **Beautiful UI** - Production-ready design with real-time updates
 - **Safety System Simulation** - E-stop, safety gates, and interlocks
 - **Multiple Attack Vectors** - Zone control, state manipulation, counter tampering
+- **Educational Attack Scripts** - Pre-built examples for each challenge
 
 ## Use Cases
 
