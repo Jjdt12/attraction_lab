@@ -213,7 +213,7 @@ export default function ControlPanel({
             }`}
           >
             <RotateCcw className="w-4 h-4" />
-            Reset to Zero
+            Reset Attraction
           </button>
           {!wsConnected && (
             <div className="mt-3 text-sm text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-3">
