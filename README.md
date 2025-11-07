@@ -86,12 +86,27 @@ See `ATTACK_GUIDE.md` for detailed attack vectors and methods.
 - Node.js 18+
 - Python 3.8+
 - Docker (for OpenPLC)
+  - **Windows**: Install [Docker Desktop](https://www.docker.com/products/docker-desktop)
+  - **macOS**: Install [Docker Desktop](https://www.docker.com/products/docker-desktop)
+  - **Linux**: Install Docker Engine using your package manager
 
 ### Installation & Setup
 
-Run the automated installation script:
+Run the automated installation script for your operating system:
+
+#### Linux / macOS
 ```bash
-./install.sh
+bash install.sh
+```
+
+#### Windows (Command Prompt or PowerShell)
+```cmd
+install.bat
+```
+
+#### Windows (Git Bash)
+```bash
+bash install.sh
 ```
 
 This will:
@@ -104,6 +119,8 @@ Environment variables are pre-configured in `.env` - no setup needed!
 
 ### Running the Lab
 
+#### Linux / macOS
+
 1. **Activate the Python virtual environment:**
 ```bash
 source venv/bin/activate
@@ -111,19 +128,46 @@ source venv/bin/activate
 
 2. **Start Everything (OpenPLC + WebSocket Server + Web Interface):**
 ```bash
-cd scripts && ./start.sh
+cd scripts && bash start.sh
 ```
 
-This automated script will:
+#### Windows (Command Prompt or PowerShell)
+
+1. **Activate the Python virtual environment:**
+```cmd
+venv\Scripts\activate
+```
+
+2. **Start Everything:**
+```cmd
+cd scripts
+start.bat
+```
+
+#### Windows (Git Bash)
+
+1. **Activate the Python virtual environment:**
+```bash
+source venv/Scripts/activate
+```
+
+2. **Start Everything:**
+```bash
+cd scripts && bash start.sh
+```
+
+---
+
+The startup script will:
 - Start the OpenPLC container with Docker
 - Upload and compile the attraction control program
 - Start the PLC runtime
 - Launch the integrated web server with WebSocket support
 
-3. **Open in Browser:**
-   - Navigate to http://localhost:3000
-   - Click the cog icon in the top right and click "Connect" to connect to the PLC
-   - Start exploring the attraction control system!
+**Open in Browser:**
+- Navigate to http://localhost:3000
+- Click the cog icon in the top right and click "Connect" to connect to the PLC
+- Start exploring the attraction control system!
 
 #### Attack Scenarios
 
