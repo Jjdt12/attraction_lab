@@ -6,7 +6,7 @@ A comprehensive web-based virtual lab for testing attraction control systems, Mo
 
 ## Overview
 
-This project  simulates an attraction ride control system with:
+This project simulates an attraction ride control system with:
 - Multi-zone attraction with 5 controllable zones
 - Advanced state machine (Idle, Starting, Running, Stopping, Emergency, Maintenance)
 - Real-time Modbus TCP communication with OpenPLC
