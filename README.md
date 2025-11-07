@@ -166,8 +166,11 @@ The startup script will:
 
 **Open in Browser:**
 - Navigate to http://localhost:3000
-- Click the cog icon in the top right and click "Connect" to connect to the PLC
-- Start exploring the attraction control system!
+- The lab will **automatically connect** to the PLC at localhost:502
+- The system will auto-initialize with safe baseline conditions
+- You're ready to start exploring immediately!
+
+**Note:** The settings gear icon in the control panel is still available if you need to connect to a different PLC host/port.
 
 #### Attack Scenarios
 
