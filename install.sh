@@ -80,13 +80,16 @@ case "$OS_TYPE" in
     MINGW*|MSYS*|CYGWIN*)
         echo "🪟 Detected: Windows (Git Bash/MSYS)"
         echo ""
-        echo "To start the lab, run:"
+        echo "To start the lab:"
+        echo ""
+        echo "Option 1 - Git Bash:"
         echo "  source venv/Scripts/activate"
         echo "  cd scripts && bash start.sh"
         echo ""
-        echo "Or if using Command Prompt/PowerShell:"
+        echo "Option 2 - Command Prompt/PowerShell:"
         echo "  venv\\Scripts\\activate"
-        echo "  cd scripts && bash start.sh"
+        echo "  cd scripts"
+        echo "  start.bat"
         ;;
     *)
         echo "❓ Unknown OS detected"
@@ -103,7 +106,8 @@ case "$OS_TYPE" in
         echo ""
         echo "If on Windows (Command Prompt/PowerShell):"
         echo "  venv\\Scripts\\activate"
-        echo "  cd scripts && bash start.sh"
+        echo "  cd scripts"
+        echo "  start.bat"
         ;;
 esac
 
