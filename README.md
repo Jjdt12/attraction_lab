@@ -1,5 +1,7 @@
 # Attraction Technology Virtual Lab
 
+![Attraction Technology Lab Interface](public/image.png)
+
 A comprehensive web-based virtual lab for testing attraction control systems, Modbus/PLC communication, and ICS/SCADA cybersecurity scenarios with **10 CTF challenges**.
 
 ## Overview
