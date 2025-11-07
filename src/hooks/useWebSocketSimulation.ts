@@ -152,16 +152,28 @@ export function useWebSocketSimulation() {
               const newCoilStates = [...prev.coilStates];
               newCoilStates[address] = value;
 
+              const updates: Partial<SimulationState> = {
+                coilStates: newCoilStates,
+              };
+
               if (name === 'master_enable' && value === true) {
                 console.log('🎯 [CTF FLAG] master_enable detected as TRUE from external write!');
               }
 
               // Sync rideRunning with motor_running coil (coil 26)
               if (name === 'motor_running') {
-                return { ...prev, coilStates: newCoilStates, rideRunning: value };
+                updates.rideRunning = value;
               }
 
-              return { ...prev, coilStates: newCoilStates };
+              // Sync flashLight with flash_light coil (coil 28)
+              if (name === 'flash_light') {
+                updates.flashLight = value;
+                if (value) {
+                  console.log('[Challenge Debug] Flash light activated!');
+                }
+              }
+
+              return { ...prev, ...updates };
             });
           } else if (data.type === 'register_change') {
             const { address, name, value } = data;
@@ -174,11 +186,16 @@ export function useWebSocketSimulation() {
               const updates: Partial<SimulationState> = {};
 
               switch (name) {
-                case 'speed_setpoint':
-                  updates.speedSetpoint = value;
-                  break;
                 case 'current_position':
                   updates.carPosition = value;
+                  // Proximity sensor is TRUE when vehicle is at Event 4 position (position 9)
+                  updates.proxiSensor = (value === 9);
+                  if (value === 9) {
+                    console.log('[Challenge Debug] Proximity sensor triggered at position 9');
+                  }
+                  break;
+                case 'speed_setpoint':
+                  updates.speedSetpoint = value;
                   break;
                 case 'state':
                   updates.state = value;

@@ -46,8 +46,10 @@ export function useAdvancedChallengeDetection({
   const speedControlCompleted = useRef(false);
   const safetyBypassCompleted = useRef(false);
   const stateMachineCompleted = useRef(false);
-  const runtimeManipulationCompleted = useRef(false);
-  const fullLapsSilentCompleted = useRef(false);
+  const eventDisableCompleted = useRef(false);
+  const stealthModeCompleted = useRef(false);
+  const positionTeleportCompleted = useRef(false);
+  const ghostModeCompleted = useRef(false);
 
   const lastPosition = useRef(carPosition);
   const lapCounter = useRef(0);
@@ -64,8 +66,10 @@ export function useAdvancedChallengeDetection({
       speedControlCompleted.current = false;
       safetyBypassCompleted.current = false;
       stateMachineCompleted.current = false;
-      runtimeManipulationCompleted.current = false;
-      fullLapsSilentCompleted.current = false;
+      eventDisableCompleted.current = false;
+      stealthModeCompleted.current = false;
+      positionTeleportCompleted.current = false;
+      ghostModeCompleted.current = false;
       lapCounter.current = 0;
       flashActivatedThisSession.current = false;
       proxiTriggersSeen.current = 0;
@@ -89,10 +93,10 @@ export function useAdvancedChallengeDetection({
       lapCounter.current++;
       console.log(`[Challenge] Lap completed: ${lapCounter.current}`);
 
-      if (lapCounter.current >= 3 && !flashActivatedThisSession.current && !fullLapsSilentCompleted.current) {
-        console.log('[Challenge] Full Laps Silent completed! 3 laps without flash');
-        completeChallenge('Full Laps Silent', 'silent_operation');
-        fullLapsSilentCompleted.current = true;
+      if (lapCounter.current >= 3 && !flashActivatedThisSession.current && !stealthModeCompleted.current) {
+        console.log('[Challenge] Stealth Mode completed! 3 laps without flash');
+        completeChallenge('Stealth Mode', 'silent_operation');
+        stealthModeCompleted.current = true;
       }
     }
     lastPosition.current = carPosition;
@@ -180,15 +184,49 @@ export function useAdvancedChallengeDetection({
     }
   }, [sessionId, state]);
 
+  // Event Disable: Detect when any event is disabled while ride is running
   useEffect(() => {
-    if (!sessionId || runtimeManipulationCompleted.current) return;
+    if (!sessionId || eventDisableCompleted.current || !rideRunning) return;
 
-    if (maintenanceFlag && runtimeHours < 10) {
-      console.log('[Challenge] Runtime Manipulation completed! Triggered maintenance flag');
-      completeChallenge('Runtime Manipulation', 'counter_manipulation');
-      runtimeManipulationCompleted.current = true;
+    // Check if any events (coils 8-16) are disabled
+    const eventCoils = coilStates.slice(8, 17); // Events 1-9
+    const disabledCount = eventCoils.filter(enabled => !enabled).length;
+
+    if (disabledCount > 0) {
+      console.log(`[Challenge] Event Disable completed! ${disabledCount} event(s) disabled during operation`);
+      completeChallenge('Event Disable', 'event_manipulation');
+      eventDisableCompleted.current = true;
     }
-  }, [sessionId, maintenanceFlag, runtimeHours]);
+  }, [sessionId, coilStates, rideRunning]);
+
+  // Position Teleport: Detect large position jumps
+  useEffect(() => {
+    if (!sessionId || positionTeleportCompleted.current || !rideRunning) return;
+
+    const posDiff = Math.abs(carPosition - lastPosition.current);
+
+    // Detect teleport (position jump > 5 units without wrapping)
+    if (posDiff > 5 && posDiff < 20 && lastPosition.current > 0) {
+      console.log(`[Challenge] Position Teleport completed! Position jumped ${posDiff} units`);
+      completeChallenge('Position Teleport', 'position_manipulation');
+      positionTeleportCompleted.current = true;
+    }
+  }, [sessionId, carPosition, rideRunning]);
+
+  // Ghost Mode: Detect all 9 events disabled for multiple cycles
+  useEffect(() => {
+    if (!sessionId || ghostModeCompleted.current || !rideRunning) return;
+
+    // Check if ALL 9 events are disabled
+    const eventCoils = coilStates.slice(8, 17); // Events 1-9
+    const allDisabled = eventCoils.every(enabled => !enabled);
+
+    if (allDisabled && lapCounter.current >= 3) {
+      console.log('[Challenge] Ghost Mode completed! All 9 events disabled for 3+ cycles');
+      completeChallenge('Ghost Mode', 'stealth_mastery');
+      ghostModeCompleted.current = true;
+    }
+  }, [sessionId, coilStates, lapCounter, rideRunning]);
 
   useEffect(() => {
     if (!sessionId || speedControlCompleted.current) return;
