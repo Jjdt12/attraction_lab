@@ -1,19 +1,17 @@
 #!/usr/bin/env python3
 """
-CTF Challenge 10: Ghost in the Machine
+CTF Challenge 10: Ghost Mode
 Difficulty: Expert
 Points: 500
-Flag: FLAG{UND3T3CT4BL3_0P3R4T0R}
 
-Objective: Complete a full lap with modifications but zero detection
+Objective: Complete 3 full cycles with all 9 events disabled simultaneously
 
 Requirements:
-- Change speed, disable an event, modify a zone (3+ actions)
-- alarm_register must stay 0
-- stealth_counter must stay 0
-- cycle_counter must increment by 1
+- Disable all 9 events while the ride is running
+- Maintain ride operation for 3 complete cycles
+- The web interface will detect this achievement and award the flag
 
-Solution: Perfect timing and smooth transitions
+Solution: Requires disabling every event while maintaining ride operation
 """
 
 import sys
@@ -119,7 +117,7 @@ def main():
                 if current_alarm == 0 and current_stealth == 0:
                     print("\n[+] PERFECT STEALTH ACHIEVED!")
                     print("[+] All modifications made without detection!")
-                    print("[+] Flag: FLAG{UND3T3CT4BL3_0P3R4T0R}")
+                    print("[*] Check the web interface for flag capture notification")
                 else:
                     print("\n[!] Detection occurred")
                     print(f"[!] Alarm delta: {current_alarm - initial_alarm}")

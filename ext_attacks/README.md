@@ -1,6 +1,6 @@
-# Attraction Control System - CTF Challenge Solutions
+# Attraction Control System - CTF Challenge Attack Scripts
 
-This directory contains Python exploit scripts for all 10 CTF challenges in the Attraction Technology Lab. These scripts demonstrate real ICS/SCADA attack techniques using Modbus TCP protocol against an OpenPLC system.
+This directory contains Python exploit scripts for all 10 CTF challenges in the Attraction Technology Lab. These scripts demonstrate real ICS/SCADA attack techniques using Modbus TCP protocol.
 
 ## Prerequisites
 
@@ -8,417 +8,122 @@ This directory contains Python exploit scripts for all 10 CTF challenges in the 
 pip install pymodbus
 ```
 
-## System Architecture
+## Important Notes
 
-The attraction control system features:
-- **3 Zones**: Loading (0-120), Main Track (121-240), Return (241-360)
-- **9 Events**: Position-triggered events across the 3 zones
-- **5 States**: IDLE(0), STARTING(1), RUNNING(2), STOPPING(3), EMERGENCY(4)
-- **OpenPLC Backend**: Real industrial PLC running Structured Text (ST) logic
+- **These scripts perform the attacks but DO NOT print the flags**
+- Flags are awarded by the web interface when it detects the challenge conditions
+- Check the web interface for flag capture notifications after running scripts
+- All scripts require the PLC to be running at the specified IP address
+- Most challenges require the ride to be in RUNNING state
 
-## Challenge Solutions
+## Challenge Scripts
 
-### Easy Challenges (100-150 points)
-
-#### Challenge 1: Lights Out
-**Difficulty:** Easy | **Points:** 100 | **Flag:** `FLAG{D4RK_ROOM_PH0T0_B00TH}`
-
+### 1. Lights Out (Easy - 100 points)
 ```bash
 python3 challenge_01_lights_out.py <PLC_IP> [PORT]
 ```
+Disable the photo flash event while the ride is running.
 
-**Objective:** Disable the photo flash at Event 4
-
-**Solution:**
-- Event 4 (Photo Flash) is controlled by coil 11 (`event_4_enable`)
-- Set coil 11 to FALSE to disable the flash
-- Must be maintained for 3+ seconds while ride is running
-
-**Key Addresses:**
-- Coil 11: `event_4_enable`
-- Coil 20: `event_4_active` (read-only status)
-
----
-
-#### Challenge 2: Speed Demon
-**Difficulty:** Easy | **Points:** 100 | **Flag:** `FLAG{BR4K3S_4R3_0PT10N4L}`
-
+### 2. Emergency Override (Easy - 150 points)
 ```bash
-python3 challenge_02_speed_demon.py <PLC_IP> [PORT]
+python3 challenge_02_emergency_override.py
 ```
+Trigger the emergency stop through Modbus while the ride is running.
 
-**Objective:** Set speed to 85%+ during Event 5 brake zone
-
-**Solution:**
-- Event 5 (Mid-Course Brake, position 161-200) enforces 70% speed limit
-- Write 85 to register 0 (`speed_setpoint`)
-- The PLC will generate error code 202 (speed violation)
-
-**Key Addresses:**
-- Register 0: `speed_setpoint` (0-100%)
-- Register 1: `current_position`
-- Register 1029: `last_error_code`
-
----
-
-#### Challenge 3: Zone Lockout
-**Difficulty:** Easy | **Points:** 150 | **Flag:** `FLAG{Z0N3_MAINT3N4NC3_M0D3}`
-
+### 3. Zone Manipulation (Medium - 200 points)
 ```bash
-python3 challenge_03_zone_lockout.py <PLC_IP> [PORT]
+python3 challenge_03_zone_manipulation.py
 ```
+Enable or disable individual attraction zones during operation.
 
-**Objective:** Disable Zone 1 entirely
-
-**Solution:**
-- Zone 1 enable is coil 5
-- Set to FALSE to lock out the zone
-- Hold for 5+ seconds
-
-**Key Addresses:**
-- Coil 5: `zone_1_enable`
-- Coil 6: `zone_2_enable`
-- Coil 7: `zone_3_enable`
-
----
-
-### Medium Challenges (200-250 points)
-
-#### Challenge 4: Safety Bypass
-**Difficulty:** Medium | **Points:** 200 | **Flag:** `FLAG{S4F3TY_TH1RD_R1GHT}`
-
+### 4. Speed Control (Medium - 250 points)
 ```bash
-python3 challenge_04_safety_bypass.py <PLC_IP> [PORT]
+python3 challenge_04_speed_control.py
 ```
+Modify the ride speed setpoint to maximum during operation.
 
-**Objective:** Bypass Event 2 safety interlock
-
-**Solution:**
-- Event 2 (Safety Interlock) performs checks at position 41-80
-- Disable coil 9 (`event_2_enable`) before entering zone
-- Complete a full cycle without safety errors
-
-**Key Addresses:**
-- Coil 9: `event_2_enable`
-- Register 1029: `last_error_code`
-
----
-
-#### Challenge 5: Event Chaos
-**Difficulty:** Medium | **Points:** 250 | **Flag:** `FLAG{QU4NTUM_EV3NT_SUP3RP0S1T10N}`
-
+### 5. Safety Bypass (Hard - 350 points)
 ```bash
-python3 challenge_05_event_chaos.py <PLC_IP> [PORT]
+python3 challenge_05_safety_bypass.py <PLC_IP> [PORT]
 ```
+Bypass the safety interlock system and complete a full ride cycle.
 
-**Objective:** Make Events 1, 4, and 7 active simultaneously
-
-**Solution:**
-- Events trigger based on position: E1(0-40), E4(121-160), E7(241-280)
-- Cannot be in 3 positions at once... or can you?
-- Hint: Exploit PLC scan timing by rapidly jumping positions
-
-**Key Addresses:**
-- Register 1: `current_position`
-- Coils 17, 20, 23: `event_1/4/7_active` (read-only)
-
----
-
-#### Challenge 6: Stealth Speed Run
-**Difficulty:** Medium | **Points:** 250 | **Flag:** `FLAG{SL0W_4ND_ST34DY_W1NS}`
-
+### 6. State Machine Attack (Hard - 400 points)
 ```bash
-python3 challenge_06_stealth_speed.py <PLC_IP> [PORT]
+python3 challenge_06_state_machine_attack.py
 ```
+Force the PLC state machine into maintenance mode.
 
-**Objective:** Change speed to 75% without triggering stealth counter
-
-**Solution:**
-- PLC increments `stealth_counter` (register 1055) on large speed jumps (>30%)
-- Ramp speed gradually in small increments (2-5% per step)
-- Use delays between writes to avoid detection
-
-**Key Addresses:**
-- Register 0: `speed_setpoint`
-- Register 1055: `stealth_counter` (MW31)
-
----
-
-### Hard Challenges (300-350 points)
-
-#### Challenge 7: State Machine Takeover
-**Difficulty:** Hard | **Points:** 300 | **Flag:** `FLAG{ST4T3_M4CH1N3_H4CK3D}`
-
+### 7. Event Disable (Medium - 200 points)
 ```bash
-python3 challenge_07_state_machine.py <PLC_IP> [PORT]
+python3 challenge_07_event_disable.py <PLC_IP> [PORT]
 ```
+Disable specific ride events while the ride is running.
 
-**Objective:** Force ride into RUNNING state without proper startup
-
-**Solution:**
-- Normal state flow: 0 (IDLE) → 1 (STARTING) → 2 (RUNNING)
-- Directly write 2 to register 1039 (`state`)
-- Must also set coil 26 (`motor_running`) to TRUE
-- May need to set coil 27 (`brake_engaged`) to FALSE
-
-**Key Addresses:**
-- Register 1039: `state` (MW15)
-- Coil 26: `motor_running`
-- Coil 27: `brake_engaged`
-
----
-
-#### Challenge 8: Position Teleporter
-**Difficulty:** Hard | **Points:** 350 | **Flag:** `FLAG{T3L3P0RT4T10N_1S_R34L}`
-
+### 8. Stealth Mode (Hard - 300 points)
 ```bash
-python3 challenge_08_position_teleport.py <PLC_IP> [PORT]
+python3 challenge_08_stealth_mode.py
 ```
+Keep the ride running for at least 3 complete cycles without triggering any event detection.
 
-**Objective:** Skip Event 6 by teleporting position
-
-**Solution:**
-- Wait until position is ~195
-- Write position 245+ to register 1
-- This skips Event 6 zone (201-240)
-- Verify with `event_6_counter` (register 1048)
-
-**Key Addresses:**
-- Register 1: `current_position`
-- Register 1048: `event_6_counter` (MW25)
-
----
-
-### Expert Challenges (400-500 points)
-
-#### Challenge 9: Total Domination
-**Difficulty:** Expert | **Points:** 400 | **Flag:** `FLAG{Z0N3_0WN3RSHIP_C0MPL3T3}`
-
+### 9. Position Teleport (Medium - 250 points)
 ```bash
-python3 challenge_09_total_domination.py <PLC_IP> [PORT]
+python3 challenge_09_position_teleport.py <PLC_IP> [PORT]
 ```
+Manipulate the vehicle position to jump across zones instantly.
 
-**Objective:** Control all 3 zones simultaneously with specific states
-
-**Solution:**
-- Required configuration:
-  - Zone 1: DISABLED (coil 5 = FALSE)
-  - Zone 2: ENABLED (coil 6 = TRUE)
-  - Zone 3: DISABLED (coil 7 = FALSE)
-- Must maintain while state = 2 (RUNNING)
-- Hold for 5+ seconds
-
-**Key Addresses:**
-- Coils 5-7: `zone_1/2/3_enable`
-- Register 1039: `state`
-- Register 1054: `alarm_register` (MW30)
-
----
-
-#### Challenge 10: Ghost in the Machine
-**Difficulty:** Expert | **Points:** 500 | **Flag:** `FLAG{UND3T3CT4BL3_0P3R4T0R}`
-
+### 10. Ghost Mode (Expert - 500 points)
 ```bash
 python3 challenge_10_ghost_mode.py <PLC_IP> [PORT]
 ```
+Complete 3 full cycles with all 9 events disabled simultaneously.
 
-**Objective:** Complete a full lap with 3+ modifications and zero detection
+## General Attack Workflow
 
-**Solution:**
-- Must change: speed, event enable, zone enable (min 3 actions)
-- Requirements:
-  - `alarm_register` (1054) stays at 0
-  - `stealth_counter` (1055) stays at 0
-  - `cycle_counter` (2051) increments by 1
-- Perfect timing and smooth transitions required
+1. Start the PLC and ensure it's accessible at the target IP
+2. Start the ride using the web interface (unless challenge requires specific state)
+3. Run the appropriate challenge script
+4. Monitor the script output for attack progress
+5. Check the web interface for flag capture notification
+6. The flag will appear in the CTF Challenges panel when conditions are met
 
-**Key Addresses:**
-- Register 2051: `cycle_counter` (MD3 - DINT)
-- Register 1054: `alarm_register` (MW30)
-- Register 1055: `stealth_counter` (MW31)
+## System Architecture
 
----
+The attraction control system features:
+- **3 Zones**: Loading & Launch (Zone 1), Main Experience (Zone 2), Return & Station (Zone 3)
+- **9 Events**: Position-triggered events across the 3 zones
+- **6 States**: IDLE, STARTING, RUNNING, STOPPING, EMERGENCY, MAINTENANCE
+- **OpenPLC Backend**: Real industrial PLC running Structured Text logic
+- **Modbus TCP**: All communication via standard Modbus protocol on port 502
 
-## Complete Modbus Address Reference
+## Key Modbus Addresses
 
 ### Coils (Digital I/O)
+- 0-4: Core control (master_enable, start_command, stop_command, emergency_stop, safety_gate)
+- 5-7: Zone enables
+- 8-16: Event enables (9 events)
+- 17-25: Event active states (read-only)
+- 26-30: System outputs
 
-| Address | Name | Description |
-|---------|------|-------------|
-| 0 | master_enable | System master enable |
-| 1 | start_command | Start ride |
-| 2 | stop_command | Stop ride |
-| 3 | emergency_stop_button | E-Stop trigger |
-| 4 | safety_gate_closed | Safety gate status |
-| 5-7 | zone_1/2/3_enable | Zone enable/disable |
-| 8-16 | event_1-9_enable | Event enable/disable |
-| 17-25 | event_1-9_active | Event active status (RO) |
-| 26 | motor_running | Motor status (RO) |
-| 27 | brake_engaged | Brake status (RO) |
-| 28 | flash_light | Flash light status (RO) |
-| 29 | alert_active | Alert status (RO) |
-| 30 | safety_ok | Safety interlock status (RO) |
+### Holding Registers
+- 0: speed_setpoint (0-100%)
+- 1: current_position (0-360 degrees)
+- 2: current_speed
+- 1024+: Memory words (state machine, counters, etc.)
 
-### Registers (16-bit)
+## Defensive Lessons
 
-| Address | Name | Description |
-|---------|------|-------------|
-| 0 | speed_setpoint | Speed 0-100% (IW0) |
-| 1 | current_position | Position 0-360 (QW1) |
-| 2 | current_speed | Actual speed (QW2) |
-| 10-12 | zone_1/2/3_position | Zone indicators (QW10-12) |
-| 1029 | last_error_code | Last error (MW5) |
-| 1039 | state | State machine (MW15) |
-| 1044-1052 | event_1-9_counter | Event counters (MW20-28) |
-| 1054 | alarm_register | Alarm bitfield (MW30) |
-| 1055 | stealth_counter | Stealth detection (MW31) |
+These challenges demonstrate real attack vectors against industrial control systems:
 
-### DINT Registers (32-bit)
+- **Unauthorized Coil Writes**: Direct manipulation of control signals
+- **Register Manipulation**: Changing setpoints and position values
+- **State Machine Attacks**: Forcing systems into unexpected states
+- **Safety Bypass**: Disabling critical safety interlocks
+- **Stealth Operations**: Avoiding detection while maintaining control
 
-| Address | Name | Description |
-|---------|------|-------------|
-| 2050 | runtime_hours | Runtime hours (MD2) |
-| 2051 | cycle_counter | Total laps (MD3) |
-
----
-
-## Event Position Ranges
-
-| Event | Position | Zone | Description |
-|-------|----------|------|-------------|
-| 1 | 0-40 | 1 | Loading Gate |
-| 2 | 41-80 | 1 | Safety Interlock |
-| 3 | 81-120 | 1 | Launch Accelerator |
-| 4 | 121-160 | 2 | Photo Flash |
-| 5 | 161-200 | 2 | Mid-Course Brake |
-| 6 | 201-240 | 2 | Track Switch |
-| 7 | 241-280 | 3 | Final Brake |
-| 8 | 281-320 | 3 | Station Approach |
-| 9 | 321-360 | 3 | Unload Platform |
-
----
-
-## State Machine Values
-
-| Value | State | Description |
-|-------|-------|-------------|
-| 0 | IDLE | Stopped, waiting for start |
-| 1 | STARTING | Warmup sequence |
-| 2 | RUNNING | Normal operation |
-| 3 | STOPPING | Shutdown sequence |
-| 4 | EMERGENCY | E-Stop activated |
-
----
-
-## Error Codes
-
-| Code | Description |
-|------|-------------|
-| 0 | No Error |
-| 100 | Emergency Stop Activated |
-| 201 | Safety Interlock Failure (Event 2) |
-| 202 | Speed Violation in Brake Zone (Event 5) |
-| 203 | Speed Violation in Final Brake (Event 7) |
-| 204 | Speed Violation in Station Approach (Event 8) |
-| 210-212 | Safety failures on start |
-| 220 | Safety lost during starting |
-| 230-232 | Zone disabled during operation |
-
----
-
-## Usage Tips
-
-### Running Challenges
-
-1. Start the OpenPLC server with the new ST file
-2. Open the HMI web interface
-3. Start a ride session
-4. Run the appropriate challenge script
-5. Check the CTF dashboard for completion
-
-### Common Modbus Operations
-
-```python
-from pymodbus.client import ModbusTcpClient
-
-client = ModbusTcpClient('134.199.202.235', port=502)
-client.connect()
-
-# Read coils (digital)
-result = client.read_coils(address, count)
-values = result.bits
-
-# Write coil
-client.write_coil(address, True/False)
-
-# Read holding registers (16-bit)
-result = client.read_holding_registers(address, count)
-values = result.registers
-
-# Write register
-client.write_register(address, value)
-
-client.close()
-```
-
-### DINT (32-bit) Handling
-
-```python
-# Reading DINT (uses 2 consecutive registers)
-result = client.read_holding_registers(2051, 2)  # cycle_counter
-high = result.registers[0]
-low = result.registers[1]
-dint_value = (high << 16) | low
-
-# Writing DINT
-high = (value >> 16) & 0xFFFF
-low = value & 0xFFFF
-client.write_registers(2051, [high, low])
-```
-
----
-
-## Learning Objectives
-
-These challenges demonstrate:
-1. **Modbus TCP Protocol** - Industrial protocol fundamentals
-2. **PLC Memory Structure** - Coils, registers, DINT values
-3. **State Machine Attacks** - Direct state manipulation
-4. **Timing Attacks** - Exploiting scan cycle timing
-5. **Stealth Techniques** - Avoiding detection systems
-6. **Multi-Stage Attacks** - Coordinating complex sequences
-
----
-
-## Security Implications
-
-Real ICS/SCADA systems face these threats:
-- **No Authentication**: Modbus has no built-in auth
-- **No Encryption**: All traffic is cleartext
-- **Direct Access**: Any client can read/write any address
-- **State Manipulation**: Critical systems can be forced into unsafe states
-- **Timing Exploitation**: Scan cycles create race conditions
-
-### Defensive Measures
-
-1. Network segmentation & firewalls
-2. VPN/TLS encryption overlays
-3. Authentication gateways
-4. Anomaly detection systems
-5. Independent safety systems
-6. Physical security controls
-
----
-
-**⚠️ Educational Use Only**
-
-These scripts are for authorized security research and education in controlled lab environments. Never use these techniques against production systems or systems you don't own/control.
-
----
-
-## References
-
-- [Modbus TCP Specification](http://www.modbus.org/)
-- [OpenPLC Documentation](https://autonomylogic.com/)
-- [ICS-CERT Advisories](https://www.cisa.gov/ics)
-- [NIST ICS Security Guide](https://csrc.nist.gov/publications/detail/sp/800-82/rev-2/final)
+Each challenge highlights the importance of:
+- Authentication and authorization for all write operations
+- Logging and monitoring of all Modbus transactions
+- Rate limiting and anomaly detection
+- Physical segmentation of safety systems
+- Regular security audits of ICS protocols

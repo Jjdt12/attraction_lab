@@ -3,14 +3,14 @@
 CTF Challenge 1: Lights Out
 Difficulty: Easy
 Points: 100
-Flag: FLAG{D4RK_ROOM_PH0T0_B00TH}
 
-Objective: Disable the photo flash at Event 4 by setting event_4_enable to FALSE
+Objective: Disable the photo flash event while the ride is running
 
 Solution:
-- Event 4 enable is coil 11
+- Event 4 (Photo Flash) enable is coil 11
 - Set it to FALSE (0) to disable the flash
-- Hold for 3+ seconds while ride is running
+- Hold for 3+ seconds while ride is in RUNNING state
+- The web interface will detect this and award the flag
 """
 
 import sys
@@ -80,8 +80,9 @@ def main():
             status = "DISABLED" if not verify.bits[0] else "ENABLED"
             print(f"[*] Event 4 status: {status}")
 
-    print("\n[+] Challenge complete!")
-    print("[+] Flag: FLAG{D4RK_ROOM_PH0T0_B00TH}")
+    print("\n[+] Challenge condition met!")
+    print("[*] Event 4 disabled while ride is running")
+    print("[*] Check the web interface for flag capture notification")
 
     client.close()
 

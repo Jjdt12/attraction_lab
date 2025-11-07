@@ -1,11 +1,15 @@
 #!/usr/bin/env python3
 """
-CTF Challenge 8: Position Teleporter
-Difficulty: Hard
-Points: 350
-Flag: FLAG{T3L3P0RT4T10N_1S_R34L}
+CTF Challenge 9: Position Teleporter
+Difficulty: Medium
+Points: 250
 
-Objective: Skip Event 6 by teleporting position from 195 to 245
+Objective: Manipulate the vehicle position to jump across zones instantly
+
+Solution:
+- The position value can be directly controlled if you know where to look
+- Jump the position forward to skip events and zones
+- The web interface will detect position manipulation and award the flag
 """
 
 import sys
@@ -58,8 +62,8 @@ def main():
 
             if evt6_after == evt6_before:
                 print("\n[+] Event 6 skipped successfully!")
-                print("[+] Teleportation complete!")
-                print("[+] Flag: FLAG{T3L3P0RT4T10N_1S_R34L}")
+                print("[+] Position teleportation complete!")
+                print("[*] Check the web interface for flag capture notification")
             else:
                 print("\n[!] Event 6 was triggered")
 
