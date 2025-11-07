@@ -124,7 +124,7 @@ This automated script will:
 
 3. **Open in Browser:**
    - Navigate to http://localhost:3000
-   - The interface will automatically connect to the PLC
+   - Click the cog icon in the top right and click "Connect" to connect to the PLC
    - Start exploring the attraction control system!
 
 #### Attack Scenarios
