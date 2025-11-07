@@ -1,0 +1,621 @@
+"""
+Standalone HMI Server - Serves Web Interface + WebSocket + Modbus
+All-in-one solution for the Attraction Technology Lab
+
+Run: python standalone_server.py
+Access: http://localhost:8080
+"""
+
+import asyncio
+import json
+import os
+import mimetypes
+import logging
+from datetime import datetime
+from pathlib import Path
+from typing import Optional
+
+import websockets
+from aiohttp import web
+from pymodbus.client import ModbusTcpClient
+from dotenv import load_dotenv
+
+from plc_modbus_map import (
+    COILS, INPUT_REGISTERS, HOLDING_REGISTERS, HOLDING_REGISTERS_DINT,
+    COIL_RANGE, HOLDING_REGISTER_RANGES
+)
+
+# Enable pymodbus logging at WARNING level (only errors)
+logging.basicConfig(level=logging.WARNING)
+pymodbus_logger = logging.getLogger("pymodbus")
+pymodbus_logger.setLevel(logging.WARNING)
+
+# Load environment variables
+load_dotenv()
+
+# Configuration
+HTTP_PORT = int(os.getenv("HTTP_PORT", "8080"))
+WS_PORT = int(os.getenv("WS_PORT", "8765"))
+HOST = os.getenv("HOST", "0.0.0.0")
+
+SUPABASE_URL = os.getenv("VITE_SUPABASE_URL")
+SUPABASE_KEY = os.getenv("VITE_SUPABASE_ANON_KEY")
+
+TRACK_LENGTH = 27
+EVENT_POS = 10  # Position where Event 4 (Photo Flash) occurs
+
+# Global state
+modbus_client: Optional[ModbusTcpClient] = None
+current_plc_host: Optional[str] = None
+current_plc_port: Optional[int] = None
+modbus_client.connected if modbus_client else False: bool = False
+connected_clients = set()
+previous_coil_states = {}
+previous_register_states = {}
+polling_task = None
+
+# Get project paths
+SCRIPT_DIR = Path(__file__).parent
+PROJECT_DIR = SCRIPT_DIR.parent
+DIST_DIR = PROJECT_DIR / "dist"
+
+
+def init_modbus(host: str, port: int):
+    """Initialize and connect to Modbus PLC"""
+    global modbus_client, current_plc_host, current_plc_port, modbus_client.connected if modbus_client else False
+
+    # Close existing connection if any
+    if modbus_client:
+        try:
+            modbus_client.close()
+        except:
+            pass
+        modbus_client.connected if modbus_client else False = False
+
+    try:
+        # Sanitize host input - strip whitespace and remove invalid characters
+        host = host.strip()
+        # Remove trailing dots that can cause IDNA encoding errors
+        host = host.rstrip('.')
+
+        print(f"Attempting to connect to PLC at {host}:{port}")
+
+        # Create client with persistent connection settings for pymodbus 3.x
+        modbus_client = ModbusTcpClient(
+            host=host,
+            port=port,
+            timeout=10,  # Longer timeout to keep connection alive
+            retries=3,
+            retry_on_empty=True,
+            close_comm_on_error=False,  # Keep connection open on errors
+            strict=False,
+            reconnect_delay=0,  # No delay on reconnect attempts
+            reconnect_delay_max=0
+        )
+
+        if modbus_client.connect():
+            current_plc_host = host
+            current_plc_port = port
+            modbus_client.connected if modbus_client else False = True
+            print(f"✓ Connected to PLC at {host}:{port}")
+            return True
+        else:
+            print(f"✗ Failed to connect to PLC at {host}:{port}")
+            current_plc_host = None
+            current_plc_port = None
+            modbus_client.connected if modbus_client else False = False
+            return False
+    except Exception as e:
+        print(f"✗ Error connecting to PLC: {e}")
+        import traceback
+        traceback.print_exc()
+        current_plc_host = None
+        current_plc_port = None
+        modbus_client.connected if modbus_client else False = False
+        return False
+
+
+def write_coil(address: int, value: bool) -> dict:
+    """Write to Modbus coil"""
+    if not modbus_client:
+        return {"success": False, "error": "PLC not connected"}
+
+    try:
+        result = modbus_client.write_coil(address=address, value=value)
+        if result and not result.isError():
+            return {"success": True, "address": address, "value": value}
+        else:
+            error_msg = str(result) if result else "Write failed"
+            return {"success": False, "error": error_msg}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
+def read_coil(address: int) -> dict:
+    """Read from Modbus coil"""
+    if not modbus_client:
+        return {"success": False, "error": "PLC not connected", "value": False}
+
+    try:
+        result = modbus_client.read_coils(address=address, count=1)
+        if result and not result.isError():
+            return {"success": True, "address": address, "value": result.bits[0]}
+        else:
+            error_msg = str(result) if result else "Read failed"
+            return {"success": False, "error": error_msg, "value": False}
+    except Exception as e:
+        return {"success": False, "error": str(e), "value": False}
+
+
+def write_register(address: int, value: int) -> dict:
+    """Write to Modbus holding register"""
+    if not modbus_client:
+        return {"success": False, "error": "PLC not connected"}
+
+    try:
+
+        result = modbus_client.write_register(address=address, value=value)
+        if result and not result.isError():
+            return {"success": True, "address": address, "value": value}
+        else:
+            error_msg = str(result) if result else "Write failed"
+            return {"success": False, "error": error_msg}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
+def read_register(address: int, count: int = 1) -> dict:
+    """Read from Modbus holding register(s)"""
+    if not modbus_client:
+        return {"success": False, "error": "PLC not connected", "value": 0, "values": []}
+
+    try:
+
+        result = modbus_client.read_holding_registers(address=address, count=count)
+        if result and not result.isError():
+            if count == 1:
+                return {"success": True, "address": address, "value": result.registers[0]}
+            else:
+                return {"success": True, "address": address, "values": result.registers[:count]}
+        else:
+            return {"success": False, "error": "Read failed", "value": 0, "values": []}
+    except Exception as e:
+        return {"success": False, "error": str(e), "value": 0, "values": []}
+
+
+def write_multiple_registers(address: int, values: list) -> dict:
+    """Write to multiple Modbus holding registers"""
+    if not modbus_client:
+        return {"success": False, "error": "PLC not connected"}
+
+    try:
+
+        result = modbus_client.write_registers(address=address, values=values)
+        if result and not result.isError():
+            return {"success": True, "address": address, "count": len(values)}
+        else:
+            return {"success": False, "error": "Write failed"}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
+async def broadcast(message: dict):
+    """Broadcast message to all connected WebSocket clients"""
+    if connected_clients:
+        message_str = json.dumps(message)
+        await asyncio.gather(
+            *[client.send(message_str) for client in connected_clients],
+            return_exceptions=True
+        )
+
+
+async def poll_plc_coils():
+    """Continuously poll PLC coils and holding registers using correct OpenPLC address mapping"""
+    global previous_coil_states, previous_register_states, modbus_client.connected if modbus_client else False
+
+    print("🔄 Started PLC polling task with corrected address mapping")
+
+    while True:
+        try:
+            if modbus_client and modbus_client.connected if modbus_client else False:
+                # Read all coils (0-16)
+                try:
+                    start_addr, count = COIL_RANGE
+                    result = modbus_client.read_coils(address=start_addr, count=count)
+                    if result and not result.isError():
+                        for coil_name, address in COILS.items():
+                            if address < len(result.bits):
+                                current_value = result.bits[address]
+                                previous_value = previous_coil_states.get(address)
+
+                                if previous_value is None:
+                                    previous_coil_states[address] = current_value
+                                elif previous_value != current_value:
+                                    print(f"🔔 [PLC Coil] {coil_name} (coil {address}): {previous_value} -> {current_value}")
+                                    previous_coil_states[address] = current_value
+
+                                    await broadcast({
+                                        "type": "coil_change",
+                                        "address": address,
+                                        "name": coil_name,
+                                        "value": current_value,
+                                    })
+
+                                    if coil_name == 'master_enable' and current_value:
+                                        print("🎯 [CTF Flag] master_enable set to TRUE - External write detected!")
+                except Exception as e:
+                    print(f"❌ Error reading coils: {e}")
+                    modbus_client.connected if modbus_client else False = False
+
+                # Read all holding register ranges
+                for start_addr, count in HOLDING_REGISTER_RANGES:
+                    try:
+                        result = modbus_client.read_holding_registers(address=start_addr, count=count)
+                        if result and not result.isError():
+                            # Check if this range contains our important registers
+                            for reg_name, reg_addr in HOLDING_REGISTERS.items():
+                                if start_addr <= reg_addr < start_addr + count:
+                                    idx = reg_addr - start_addr
+                                    current_value = result.registers[idx]
+                                    previous_value = previous_register_states.get(reg_addr)
+
+                                    if previous_value is None:
+                                        previous_register_states[reg_addr] = current_value
+                                    elif previous_value != current_value:
+                                        print(f"🔔 [PLC Register] {reg_name} (reg {reg_addr}): {previous_value} -> {current_value}")
+                                        previous_register_states[reg_addr] = current_value
+
+                                        await broadcast({
+                                            "type": "register_change",
+                                            "address": reg_addr,
+                                            "name": reg_name,
+                                            "value": current_value,
+                                        })
+
+                                        if reg_name == 'state':
+                                            print(f"📊 [STATE MACHINE] State changed to: {current_value}")
+
+                            # Check DINT registers in this range
+                            for reg_name, reg_addr in HOLDING_REGISTERS_DINT.items():
+                                if start_addr <= reg_addr < start_addr + count - 1:
+                                    idx = reg_addr - start_addr
+                                    high_word = result.registers[idx]
+                                    low_word = result.registers[idx + 1]
+                                    dint_value = (high_word << 16) | low_word
+
+                                    previous_value = previous_register_states.get(f"dint_{reg_addr}")
+
+                                    if previous_value is None:
+                                        previous_register_states[f"dint_{reg_addr}"] = dint_value
+                                    elif previous_value != dint_value:
+                                        print(f"🔔 [PLC DINT] {reg_name} (reg {reg_addr}): {previous_value} -> {dint_value}")
+                                        previous_register_states[f"dint_{reg_addr}"] = dint_value
+
+                                        await broadcast({
+                                            "type": "dint_change",
+                                            "address": reg_addr,
+                                            "name": reg_name,
+                                            "value": dint_value,
+                                        })
+                    except Exception as e:
+                        print(f"❌ Error reading registers {start_addr}+{count}: {e}")
+                        modbus_client.connected if modbus_client else False = False
+
+            await asyncio.sleep(0.1)  # 100ms = 10 polls/second for smooth monitoring
+        except Exception as e:
+            print(f"❌ Error in polling task: {e}")
+            await asyncio.sleep(1)
+
+
+async def handle_websocket(websocket):
+    """Handle WebSocket client connection"""
+    connected_clients.add(websocket)
+    print(f"WebSocket client connected. Total: {len(connected_clients)}")
+
+    try:
+        # Send initial connection status
+        await websocket.send(json.dumps({
+            "type": "connection_status",
+            "connected": modbus_client.connected if modbus_client else False,
+            "plc_host": current_plc_host,
+            "plc_port": current_plc_port,
+        }))
+
+        # Send current coil states if connected to PLC
+        if modbus_client and modbus_client.connected if modbus_client else False:
+            # Send all coil states
+            for coil_name, address in COILS.items():
+                result = read_coil(address)
+                if result["success"]:
+                    await websocket.send(json.dumps({
+                        "type": "coil_change",
+                        "address": address,
+                        "name": coil_name,
+                        "value": result["value"],
+                    }))
+
+            # Send all holding register states
+            for reg_name, address in HOLDING_REGISTERS.items():
+                result = read_register(address)
+                if result["success"]:
+                    await websocket.send(json.dumps({
+                        "type": "register_change",
+                        "address": address,
+                        "name": reg_name,
+                        "value": result["value"],
+                    }))
+
+            # Send all DINT register states
+            for reg_name, address in HOLDING_REGISTERS_DINT.items():
+                try:
+                    result = modbus_client.read_holding_registers(address=address, count=2)
+                    if result and not result.isError():
+                        high_word = result.registers[0]
+                        low_word = result.registers[1]
+                        dint_value = (high_word << 16) | low_word
+                        await websocket.send(json.dumps({
+                            "type": "dint_change",
+                            "address": address,
+                            "name": reg_name,
+                            "value": dint_value,
+                        }))
+                except Exception:
+                    pass
+
+        async for message in websocket:
+            data = json.loads(message)
+            action = data.get("action")
+
+            if action == "connect_plc":
+                host = data.get("host")
+                port = data.get("port", 502)
+                success = init_modbus(host, port)
+                await websocket.send(json.dumps({
+                    "type": "connect_result",
+                    "success": success,
+                    "connected": modbus_client.connected if modbus_client else False,
+                    "plc_host": current_plc_host,
+                    "plc_port": current_plc_port,
+                }))
+                await broadcast({
+                    "type": "connection_status",
+                    "connected": modbus_client.connected if modbus_client else False,
+                    "plc_host": current_plc_host,
+                    "plc_port": current_plc_port,
+                })
+
+                # Send initial coil and register states to all clients after successful connection
+                if success and modbus_client and modbus_client.connected if modbus_client else False:
+                    for address in range(16):
+                        result = read_coil(address)
+                        if result["success"]:
+                            await broadcast({
+                                "type": "coil_change",
+                                "address": address,
+                                "value": result["value"],
+                            })
+
+                    for address in range(10):
+                        result = read_register(address)
+                        if result["success"]:
+                            await broadcast({
+                                "type": "register_change",
+                                "address": address,
+                                "value": result["value"],
+                            })
+
+            elif action == "write_coil":
+                address = data.get("address")
+                value = data.get("value")
+                print(f"📝 WebSocket write_coil request: address={address}, value={value}")
+                result = write_coil(address, value)
+                print(f"📝 write_coil result: {result}")
+
+                # If this is start_command (coil 4), dump all safety-related coils
+                if address == 4 and modbus_client and modbus_client.connected if modbus_client else False:
+                    try:
+                        coils_result = modbus_client.read_coils(address=0, count=31)
+                        if coils_result and not coils_result.isError():
+                            print(f"🔍 [DEBUG] All coils after start command:")
+                            print(f"    Coil 0 (master_enable): {coils_result.bits[COILS['master_enable']]}")
+                            print(f"    Coil 1 (start_command): {coils_result.bits[COILS['start_command']]}")
+                            print(f"    Coil 2 (stop_command): {coils_result.bits[COILS['stop_command']]}")
+                            print(f"    Coil 3 (emergency_stop_button): {coils_result.bits[COILS['emergency_stop_button']]}")
+                            print(f"    Coil 4 (safety_gate_closed): {coils_result.bits[COILS['safety_gate_closed']]}")
+                            print(f"    Coil 5 (zone_1_enable): {coils_result.bits[COILS['zone_1_enable']]}")
+                            print(f"    Coil 6 (zone_2_enable): {coils_result.bits[COILS['zone_2_enable']]}")
+                            print(f"    Coil 7 (zone_3_enable): {coils_result.bits[COILS['zone_3_enable']]}")
+                            print(f"    Coil 26 (motor_running): {coils_result.bits[COILS['motor_running']]}")
+                            print(f"    Coil 27 (brake_engaged): {coils_result.bits[COILS['brake_engaged']]}")
+                            print(f"    Coil 30 (safety_ok): {coils_result.bits[COILS['safety_ok']]}")
+
+                        # Read critical registers
+                        error_reg = modbus_client.read_holding_registers(address=HOLDING_REGISTERS['last_error_code'], count=1)
+                        state_reg = modbus_client.read_holding_registers(address=HOLDING_REGISTERS['state'], count=1)
+                        if error_reg and not error_reg.isError() and state_reg and not state_reg.isError():
+                            print(f"    Register 1029 (last_error_code): {error_reg.registers[0]}")
+                            print(f"    Register 1039 (state): {state_reg.registers[0]}")
+                    except Exception as e:
+                        print(f"    ❌ Error reading debug info: {e}")
+
+                await websocket.send(json.dumps({
+                    "type": "write_result",
+                    "result": result
+                }))
+
+            elif action == "read_coil":
+                address = data.get("address")
+                result = read_coil(address)
+                await websocket.send(json.dumps({
+                    "type": "read_result",
+                    "result": result
+                }))
+
+            elif action == "write_register":
+                address = data.get("address")
+                value = data.get("value")
+                result = write_register(address, value)
+                await websocket.send(json.dumps({
+                    "type": "write_result",
+                    "result": result
+                }))
+
+            elif action == "read_register":
+                address = data.get("address")
+                count = data.get("count", 1)
+                result = read_register(address, count)
+                await websocket.send(json.dumps({
+                    "type": "read_result",
+                    "result": result
+                }))
+
+            elif action == "write_multiple_registers":
+                address = data.get("address")
+                values = data.get("values", [])
+                result = write_multiple_registers(address, values)
+                await websocket.send(json.dumps({
+                    "type": "write_result",
+                    "result": result
+                }))
+
+            elif action == "get_status":
+                await websocket.send(json.dumps({
+                    "type": "status",
+                    "connected": modbus_client.connected if modbus_client else False,
+                    "plc_host": current_plc_host,
+                    "plc_port": current_plc_port,
+                }))
+
+    except websockets.exceptions.ConnectionClosed:
+        pass
+    except Exception as e:
+        print(f"WebSocket error: {e}")
+    finally:
+        connected_clients.remove(websocket)
+        print(f"WebSocket client disconnected. Total: {len(connected_clients)}")
+
+
+async def start_websocket_server():
+    """Start WebSocket server"""
+    print(f"Starting WebSocket server on {HOST}:{WS_PORT}")
+    async with websockets.serve(handle_websocket, HOST, WS_PORT):
+        await asyncio.Future()  # Run forever
+
+
+# HTTP Server for static files
+async def test_modbus(request):
+    """Test Modbus connection endpoint - reads all 16 coils"""
+    if not modbus_client or not current_plc_host:
+        return web.json_response({"error": "PLC not configured"}, status=400)
+
+    try:
+        # Try to reconnect if needed
+        if not modbus_client.connected if modbus_client else False and modbus_client:
+            if modbus_client.connect():
+                modbus_client.connected if modbus_client else False = True
+
+        # Read all 16 coils
+        coil_states = {}
+        for address in range(16):
+            result = read_coil(address)
+            coil_states[f"coil_{address}"] = {
+                "address": address,
+                "value": result.get("value", False),
+                "success": result.get("success", False)
+            }
+
+        return web.json_response({
+            "connected": modbus_client.connected if modbus_client else False,
+            "host": current_plc_host,
+            "port": current_plc_port,
+            "coils": coil_states
+        })
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+
+async def serve_static(request):
+    """Serve static files from dist directory"""
+    path = request.match_info.get('path', 'index.html')
+
+    # Security: prevent directory traversal
+    if '..' in path or path.startswith('/'):
+        raise web.HTTPNotFound()
+
+    # Default to index.html for root
+    if path == '' or path == '/':
+        path = 'index.html'
+
+    file_path = DIST_DIR / path
+
+    # If file doesn't exist, serve index.html (for SPA routing)
+    if not file_path.exists() or not file_path.is_file():
+        file_path = DIST_DIR / 'index.html'
+
+    # Determine content type
+    content_type, _ = mimetypes.guess_type(str(file_path))
+    if content_type is None:
+        content_type = 'application/octet-stream'
+
+    # Read and serve file
+    try:
+        with open(file_path, 'rb') as f:
+            content = f.read()
+        return web.Response(body=content, content_type=content_type)
+    except Exception as e:
+        print(f"Error serving {file_path}: {e}")
+        raise web.HTTPNotFound()
+
+
+async def start_http_server():
+    """Start HTTP server for static files"""
+    app = web.Application()
+    app.router.add_get('/api/test-modbus', test_modbus)
+    app.router.add_get('/', serve_static)
+    app.router.add_get('/{path:.*}', serve_static)
+
+    runner = web.AppRunner(app)
+    await runner.setup()
+    site = web.TCPSite(runner, HOST, HTTP_PORT)
+    await site.start()
+    print(f"HTTP server running on http://{HOST}:{HTTP_PORT}")
+
+
+async def main():
+    """Main entry point - run both servers"""
+    global polling_task
+
+    print("=" * 60)
+    print("   Attraction Technology Lab - Standalone Server")
+    print("=" * 60)
+    print(f"\n📁 Serving from: {DIST_DIR}")
+    print(f"🌐 Web Interface: http://localhost:{HTTP_PORT}")
+    print(f"🔌 WebSocket: ws://localhost:{WS_PORT}")
+    print(f"\n📡 Ready for PLC connection")
+    print("Press Ctrl+C to stop\n")
+
+    # Check if dist directory exists
+    if not DIST_DIR.exists():
+        print(f"❌ ERROR: Build directory not found at {DIST_DIR}")
+        print("Please run 'npm run build' first!")
+        return
+
+    try:
+        # Start polling task
+        polling_task = asyncio.create_task(poll_plc_coils())
+
+        # Start both servers concurrently
+        await asyncio.gather(
+            start_http_server(),
+            start_websocket_server()
+        )
+    except KeyboardInterrupt:
+        print("\n\nShutting down...")
+    finally:
+        if modbus_client:
+            modbus_client.close()
+            print("✓ PLC connection closed")
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
