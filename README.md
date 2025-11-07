@@ -11,7 +11,6 @@ This project simulates an attraction ride control system with:
 - Advanced state machine (Idle, Starting, Running, Stopping, Emergency, Maintenance)
 - Real-time Modbus TCP communication with OpenPLC
 - Safety interlock system (E-stop, safety gate, master enable)
-- MITM attack capabilities and traffic interception
 - 10 CTF challenges ranging from easy to hard
 - Runtime and cycle counters with maintenance triggers
 - Speed control and position tracking
@@ -100,17 +99,7 @@ npm install
 pip install -r scripts/requirements.txt
 ```
 
-3. Configure environment variables in `.env`:
-```bash
-VITE_SUPABASE_URL=your_supabase_url
-VITE_SUPABASE_ANON_KEY=your_supabase_key
-VITE_WS_URL=ws://localhost:8765
-
-PLC_HOST=testing.com
-PLC_PORT=502
-WS_HOST=0.0.0.0
-WS_PORT=8765
-```
+3. Environment variables are pre-configured in `.env` - no setup needed!
 
 ### Running the Lab
 
