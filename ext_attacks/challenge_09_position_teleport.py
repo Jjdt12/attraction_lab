@@ -39,17 +39,17 @@ def main():
         position = pos.registers[0]
         print(f"\r[*] Position: {position:3d}", end="", flush=True)
 
-        # When near Event 6 zone (201-240)
-        if 190 <= position <= 200:
+        # When near Event 6 zone (position 15)
+        if 13 <= position <= 14:
             print(f"\n[*] At position {position}, preparing to teleport!")
-            
+
             # Read Event 6 counter before
             evt6_before = client.read_holding_registers(1048, 1).registers[0]  # event_6_counter
             print(f"[*] Event 6 counter before: {evt6_before}")
 
-            # TELEPORT: Jump past Event 6 zone
-            print("[*] TELEPORTING to position 245...")
-            client.write_register(1, 245)
+            # TELEPORT: Jump past Event 6 zone to position 16
+            print("[*] TELEPORTING to position 16 (skipping Event 6 at position 15)...")
+            client.write_register(1, 16)
             time.sleep(0.5)
 
             # Verify

