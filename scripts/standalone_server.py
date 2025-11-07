@@ -3,7 +3,7 @@ Standalone HMI Server - Serves Web Interface + WebSocket + Modbus
 All-in-one solution for the Attraction Technology Lab
 
 Run: python standalone_server.py
-Access: http://localhost:8080
+Access: http://localhost:3000
 """
 
 import asyncio
@@ -24,13 +24,17 @@ from plc_modbus_map import (
     COIL_RANGE, HOLDING_REGISTER_RANGES
 )
 
-# Load environment variables
-load_dotenv()
+# Get project paths
+SCRIPT_DIR = Path(__file__).parent
+PROJECT_DIR = SCRIPT_DIR.parent
+
+# Load environment variables from project root
+load_dotenv(PROJECT_DIR / '.env')
 
 # Configuration
-HTTP_PORT = int(os.getenv("HTTP_PORT", "8080"))
+HTTP_PORT = int(os.getenv("HTTP_PORT", "3000"))
 WS_PORT = int(os.getenv("WS_PORT", "8765"))
-HOST = os.getenv("HOST", "0.0.0.0")
+HOST = os.getenv("WS_HOST", "0.0.0.0")
 
 SUPABASE_URL = os.getenv("VITE_SUPABASE_URL")
 SUPABASE_KEY = os.getenv("VITE_SUPABASE_ANON_KEY")
@@ -48,9 +52,7 @@ previous_coil_states = {}
 previous_register_states = {}
 polling_task = None
 
-# Get project paths
-SCRIPT_DIR = Path(__file__).parent
-PROJECT_DIR = SCRIPT_DIR.parent
+# Dist directory path
 DIST_DIR = PROJECT_DIR / "dist"
 
 # Create reverse lookup dictionaries for names
