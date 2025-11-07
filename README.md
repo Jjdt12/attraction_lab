@@ -87,28 +87,26 @@ See `ATTACK_GUIDE.md` for detailed attack vectors and methods.
 - Python 3.8+
 - Docker (for OpenPLC)
 
-### Installation
+### Installation & Setup
 
-1. Install Node.js dependencies:
+Run the automated installation script:
 ```bash
-npm install
+./install.sh
 ```
 
-2. Install Python dependencies:
-```bash
-pip install -r scripts/requirements.txt
-```
+This will:
+- Install Node.js dependencies
+- Build the web interface
+- Create a Python virtual environment
+- Install Python dependencies
 
-3. Environment variables are pre-configured in `.env` - no setup needed!
+Environment variables are pre-configured in `.env` - no setup needed!
 
 ### Running the Lab
 
-#### Quick Start (Complete Setup)
-
-1. **Build the Web Interface:**
+1. **Activate the Python virtual environment:**
 ```bash
-npm install
-npm run build
+source venv/bin/activate
 ```
 
 2. **Start Everything (OpenPLC + WebSocket Server + Web Interface):**
