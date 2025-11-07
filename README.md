@@ -168,9 +168,7 @@ The startup script will:
 - Navigate to http://localhost:3000
 - The lab will **automatically connect** to the PLC at localhost:502
 - The system will auto-initialize with safe baseline conditions
-- Click the **Help** button to read the attraction documentation and get started!
-
-![Help Button](./public/image.png)
+- Click the **Help** button in the header to read the attraction documentation and get started!
 
 **Note:** The settings gear icon in the control panel is still available if you need to connect to a different PLC host/port.
 
