@@ -170,6 +170,8 @@ The startup script will:
 - The system will auto-initialize with safe baseline conditions
 - Click the **Help** button in the header to read the attraction documentation and get started!
 
+  ![Help Button](public/image%20copy%20copy.png)
+
 **Note:** The settings gear icon in the control panel is still available if you need to connect to a different PLC host/port.
 
 #### Attack Scenarios
