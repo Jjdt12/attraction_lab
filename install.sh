@@ -68,14 +68,14 @@ case "$OS_TYPE" in
         echo ""
         echo "To start the lab, run:"
         echo "  source venv/bin/activate"
-        echo "  cd scripts && ./start.sh"
+        echo "  cd scripts && bash start.sh"
         ;;
     Darwin*)
         echo "🍎 Detected: macOS"
         echo ""
         echo "To start the lab, run:"
         echo "  source venv/bin/activate"
-        echo "  cd scripts && ./start.sh"
+        echo "  cd scripts && bash start.sh"
         ;;
     MINGW*|MSYS*|CYGWIN*)
         echo "🪟 Detected: Windows (Git Bash/MSYS)"
@@ -98,7 +98,7 @@ case "$OS_TYPE" in
         echo ""
         echo "If on Linux/Mac:"
         echo "  source venv/bin/activate"
-        echo "  cd scripts && ./start.sh"
+        echo "  cd scripts && bash start.sh"
         echo ""
         echo "If on Windows (Git Bash):"
         echo "  source venv/Scripts/activate"
