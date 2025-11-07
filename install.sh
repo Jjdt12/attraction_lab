@@ -58,7 +58,53 @@ echo "=================================="
 echo "Installation Complete!"
 echo "=================================="
 echo ""
-echo "To start the lab, run:"
-echo "  source venv/bin/activate"
-echo "  cd scripts && ./start.sh"
+
+# Detect OS and provide appropriate instructions
+OS_TYPE=$(uname -s)
+
+case "$OS_TYPE" in
+    Linux*)
+        echo "🐧 Detected: Linux"
+        echo ""
+        echo "To start the lab, run:"
+        echo "  source venv/bin/activate"
+        echo "  cd scripts && ./start.sh"
+        ;;
+    Darwin*)
+        echo "🍎 Detected: macOS"
+        echo ""
+        echo "To start the lab, run:"
+        echo "  source venv/bin/activate"
+        echo "  cd scripts && ./start.sh"
+        ;;
+    MINGW*|MSYS*|CYGWIN*)
+        echo "🪟 Detected: Windows (Git Bash/MSYS)"
+        echo ""
+        echo "To start the lab, run:"
+        echo "  source venv/Scripts/activate"
+        echo "  cd scripts && bash start.sh"
+        echo ""
+        echo "Or if using Command Prompt/PowerShell:"
+        echo "  venv\\Scripts\\activate"
+        echo "  cd scripts && bash start.sh"
+        ;;
+    *)
+        echo "❓ Unknown OS detected"
+        echo ""
+        echo "To start the lab:"
+        echo ""
+        echo "If on Linux/Mac:"
+        echo "  source venv/bin/activate"
+        echo "  cd scripts && ./start.sh"
+        echo ""
+        echo "If on Windows (Git Bash):"
+        echo "  source venv/Scripts/activate"
+        echo "  cd scripts && bash start.sh"
+        echo ""
+        echo "If on Windows (Command Prompt/PowerShell):"
+        echo "  venv\\Scripts\\activate"
+        echo "  cd scripts && bash start.sh"
+        ;;
+esac
+
 echo ""
