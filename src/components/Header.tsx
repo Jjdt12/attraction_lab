@@ -62,7 +62,7 @@ export default function Header({ wsConnected, plcConnected, plcHost, plcPort, se
               className="flex items-center gap-2 px-4 py-2 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors"
             >
               <Terminal className="w-5 h-5 text-red-600 dark:text-red-400" />
-              <span className="text-sm font-semibold text-red-900 dark:text-red-300">Exploit Help</span>
+              <span className="text-sm font-semibold text-red-900 dark:text-red-300">Help</span>
             </a>
 
             <button
