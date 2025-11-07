@@ -27,13 +27,33 @@ export default function CTFChallenges({ sessionId }: CTFChallengesProps) {
   useEffect(() => {
     if (!sessionId) return;
 
+    // Poll for updates every 2 seconds
     const interval = setInterval(() => {
       console.log('[CTF] Polling for challenge updates...');
       loadChallenges();
     }, 2000);
 
+    // Subscribe to realtime changes for immediate updates
+    const channel = supabase
+      .channel('challenge_completions_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'challenge_completions',
+          filter: `session_id=eq.${sessionId}`,
+        },
+        (payload) => {
+          console.log('[CTF] Realtime: Challenge completed!', payload);
+          loadChallenges();
+        }
+      )
+      .subscribe();
+
     return () => {
       clearInterval(interval);
+      channel.unsubscribe();
     };
   }, [sessionId]);
 

@@ -61,7 +61,6 @@ function App() {
     coilStates,
     emergencyStop: coilStates[3] || false,      // Coil 3 = emergency_stop_button (QX0.3)
     safetyGateClosed: coilStates[4] || false,   // Coil 4 = safety_gate_closed (QX0.4)
-    masterEnable: coilStates[0] || false,        // Coil 0 = master_enable (QX0.0)
     state: plcState,
     runtimeHours,
     maintenanceFlag,
@@ -72,8 +71,10 @@ function App() {
       zone3: coilStates[7] || true,   // Coil 7 = zone_3_enable (QX0.7)
     },
     onFlagCapture: (title: string, points: number) => {
+      console.log('[App] Flag captured:', title, points);
       setFlagCapture({ title, points });
-      setTimeout(() => setFlagCapture(null), 100);
+      // Don't clear immediately - let the notification manager handle it
+      setTimeout(() => setFlagCapture(null), 500);
     },
   });
 

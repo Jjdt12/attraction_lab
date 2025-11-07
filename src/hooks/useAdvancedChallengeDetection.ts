@@ -228,12 +228,20 @@ export function useAdvancedChallengeDetection({
       });
 
     if (error) {
-      console.error('[Challenge] Error inserting completion:', error);
+      // Check if it's a duplicate (already completed)
+      if (error.code === '23505') {
+        console.log(`[Challenge] Challenge "${title}" was already completed in this session`);
+      } else {
+        console.error('[Challenge] Error inserting completion:', error);
+      }
     } else {
       console.log(`[Challenge] ✓ "${title}" completed successfully!`);
+      console.log(`[Challenge] Triggering flag capture notification for ${challenge.points} points`);
 
       if (onFlagCapture) {
         onFlagCapture(title, challenge.points);
+      } else {
+        console.warn('[Challenge] onFlagCapture callback is not defined!');
       }
     }
   };
