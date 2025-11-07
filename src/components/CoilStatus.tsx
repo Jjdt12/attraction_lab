@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Activity, ChevronDown, ChevronUp } from 'lucide-react';
 
 interface CoilStatusProps {
-  proxiSensor: boolean;
   flashLight: boolean;
   coilStates: boolean[];
 }
@@ -54,7 +53,7 @@ function CoilItem({ address, label, description, value, color = 'slate' }: CoilI
   );
 }
 
-export default function CoilStatus({ proxiSensor, flashLight, coilStates }: CoilStatusProps) {
+export default function CoilStatus({ flashLight, coilStates }: CoilStatusProps) {
   const [isExpanded, setIsExpanded] = useState(true);
 
   return (

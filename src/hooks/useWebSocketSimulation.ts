@@ -9,7 +9,6 @@ interface SimulationState {
   carPosition: number;
   rideRunning: boolean;
   flashLight: boolean;
-  proxiSensor: boolean;
   sessionId: string | null;
   wsConnected: boolean;
   plcConnected: boolean;
@@ -30,7 +29,6 @@ export function useWebSocketSimulation() {
     carPosition: 0,
     rideRunning: false,
     flashLight: false,
-    proxiSensor: false,
     sessionId: null,
     wsConnected: false,
     plcConnected: false,
@@ -188,11 +186,6 @@ export function useWebSocketSimulation() {
               switch (name) {
                 case 'current_position':
                   updates.carPosition = value;
-                  // Proximity sensor is TRUE when vehicle is at Event 4 position (position 9)
-                  updates.proxiSensor = (value === 9);
-                  if (value === 9) {
-                    console.log('[Challenge Debug] Proximity sensor triggered at position 9');
-                  }
                   break;
                 case 'speed_setpoint':
                   updates.speedSetpoint = value;
@@ -487,7 +480,6 @@ export function useWebSocketSimulation() {
         carPosition: 0,
         rideRunning: false,
         flashLight: false,
-        proxiSensor: false,
         sessionId: null,
         speedSetpoint: 50,
         state: 0,

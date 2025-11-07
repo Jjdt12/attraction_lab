@@ -4,7 +4,6 @@ import { supabase } from '../lib/supabase';
 interface AdvancedChallengeDetectionProps {
   sessionId: string | null;
   carPosition: number;
-  proxiSensor: boolean;
   flashLight: boolean;
   rideRunning: boolean;
   attackActive: boolean;
@@ -26,7 +25,6 @@ interface AdvancedChallengeDetectionProps {
 export function useAdvancedChallengeDetection({
   sessionId,
   carPosition,
-  proxiSensor,
   flashLight,
   rideRunning,
   attackActive,
@@ -54,8 +52,6 @@ export function useAdvancedChallengeDetection({
   const lastPosition = useRef(carPosition);
   const lapCounter = useRef(0);
   const flashActivatedThisSession = useRef(false);
-  const proxiTriggersSeen = useRef(0);
-  const proxiWithoutFlash = useRef(0);
   const initialSafetyState = useRef<boolean | null>(null);
 
   useEffect(() => {
@@ -72,8 +68,6 @@ export function useAdvancedChallengeDetection({
       ghostModeCompleted.current = false;
       lapCounter.current = 0;
       flashActivatedThisSession.current = false;
-      proxiTriggersSeen.current = 0;
-      proxiWithoutFlash.current = 0;
       initialSafetyState.current = null;
     } else if (rideRunning && initialSafetyState.current === null) {
       // Capture initial safety state when ride first starts
@@ -101,24 +95,27 @@ export function useAdvancedChallengeDetection({
     }
     lastPosition.current = carPosition;
 
-    // Lights Out: Detect when proximity sensor is TRUE but flash light is FALSE
-    // In normal operation, the flash light ALWAYS turns on when proximity sensor is TRUE
-    // If the light stays off while the sensor is on, it's being blocked by an attack
-    if (proxiSensor && !flashLight && rideRunning && state === 2 && !lightsOutCompleted.current) {
-      proxiWithoutFlash.current++;
-      console.log(`[Challenge] Proximity sensor TRUE but flash light FALSE: ${proxiWithoutFlash.current} times`);
+    // Lights Out: Detect when vehicle is in Event 4 zone (positions 9-11) but flash is disabled
+    // Normal operation: flash_light turns ON when vehicle is at positions 9-11 and event_4_enable is TRUE
+    // Attack: event_4_enable is FALSE, so flash_light stays OFF when vehicle passes through
+    const inEvent4Zone = carPosition >= 9 && carPosition <= 11;
+    const event4Enabled = coilStates[11] || false; // event_4_enable
 
-      // If we've seen this condition persist, it's an attack
-      if (proxiWithoutFlash.current >= 2) {
-        console.log('[Challenge] Lights Out completed! Flash light blocked while proximity sensor active');
+    if (inEvent4Zone && rideRunning && state === 2 && !lightsOutCompleted.current) {
+      if (!event4Enabled && !flashLight) {
+        // Event 4 is disabled and flash is off - this is the attack!
+        console.log('[Challenge] Vehicle at Event 4 zone but event disabled and flash off');
         completeChallenge('Lights Out', 'signal_suppression');
         lightsOutCompleted.current = true;
+      } else if (event4Enabled && flashLight) {
+        // Normal operation - event enabled and flash working
+        console.log('[Challenge Debug] Event 4 zone: Normal operation (enabled + flash on)');
+      } else if (!event4Enabled) {
+        // Event disabled but we're in the zone - log for debugging
+        console.log(`[Challenge Debug] Event 4 disabled in zone, flashLight=${flashLight}`);
       }
-    } else if (proxiSensor && flashLight) {
-      // Reset counter when light is working normally
-      proxiWithoutFlash.current = 0;
     }
-  }, [sessionId, carPosition, proxiSensor, flashLight, rideRunning]);
+  }, [sessionId, carPosition, flashLight, rideRunning, state, coilStates]);
 
   useEffect(() => {
     if (!sessionId || zoneManipulationCompleted.current) return;

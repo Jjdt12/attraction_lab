@@ -16,7 +16,6 @@ function App() {
     carPosition,
     rideRunning,
     flashLight,
-    proxiSensor,
     sessionId,
     wsConnected,
     plcConnected,
@@ -54,7 +53,6 @@ function App() {
   useAdvancedChallengeDetection({
     sessionId,
     carPosition,
-    proxiSensor,
     flashLight,
     rideRunning,
     attackActive,
@@ -100,7 +98,6 @@ function App() {
             />
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <CoilStatus
-                proxiSensor={proxiSensor}
                 flashLight={flashLight}
                 coilStates={coilStates}
               />
