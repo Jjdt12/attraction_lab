@@ -282,14 +282,14 @@ async def poll_plc_coils():
                     first_poll = False
 
                 # Read all critical values
-                start_cmd = read_coil(1)
-                master_en = read_coil(0)
-                safety_ready = read_coil(31)
-                effects_ready = read_coil(32)
-                motor_run = read_coil(26)
-                brake = read_coil(27)
-                state_reg = read_register(4096, 1)
-                error_reg = read_register(1029, 1)
+                start_cmd = read_coil(COILS['start_command'])
+                master_en = read_coil(COILS['master_enable'])
+                safety_ready = read_coil(COILS['safety_plc_ready'])
+                effects_ready = read_coil(COILS['effects_plc_ready'])
+                motor_run = read_coil(COILS['motor_running'])
+                brake = read_coil(COILS['brake_engaged'])
+                state_reg = read_register(REGISTERS['state'], 1)
+                error_reg = read_register(REGISTERS['last_error_code'], 1)
 
                 # Print state machine status every cycle
                 print(f"📊 [STATE] state={state_reg.get('value', '?')} | "
