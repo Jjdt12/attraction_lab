@@ -30,13 +30,13 @@ VAR_EXTERNAL
 
     safety_plc_ready_reg : INT;
     effects_plc_ready_reg : INT;
-    safety_plc_ready : BOOL;
-    effects_plc_ready : BOOL;
 END_VAR
 
 VAR
     scan_counter : DINT;
     position_accumulator : INT;
+    safety_plc_ready : BOOL;
+    effects_plc_ready : BOOL;
     runtime_accumulator : DINT;
 
     target_speed : INT;

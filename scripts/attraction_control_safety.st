@@ -54,6 +54,7 @@ VAR
     safety_bypass_detected : BOOL;
     watchdog_counter : INT;
     safety_ok : BOOL;
+    alert_active : BOOL;
 END_VAR
 
 IF scan_counter = 0 THEN
