@@ -241,25 +241,25 @@ CONFIGURATION Config0
             safety_gate_closed AT %IX0.4 : BOOL;
             safety_ok_reg AT %MW100 : INT;
 
-            event_1_enable AT %QX0.8 : BOOL;
-            event_2_enable AT %QX0.9 : BOOL;
-            event_3_enable AT %QX0.10 : BOOL;
-            event_4_enable AT %QX0.11 : BOOL;
-            event_5_enable AT %QX0.12 : BOOL;
-            event_6_enable AT %QX0.13 : BOOL;
-            event_7_enable AT %QX0.14 : BOOL;
-            event_8_enable AT %QX0.15 : BOOL;
-            event_9_enable AT %QX0.16 : BOOL;
+            event_1_enable AT %QX1.0 : BOOL;  (* bit 8 = byte 1, bit 0 *)
+            event_2_enable AT %QX1.1 : BOOL;  (* bit 9 = byte 1, bit 1 *)
+            event_3_enable AT %QX1.2 : BOOL;  (* bit 10 = byte 1, bit 2 *)
+            event_4_enable AT %QX1.3 : BOOL;  (* bit 11 = byte 1, bit 3 *)
+            event_5_enable AT %QX1.4 : BOOL;  (* bit 12 = byte 1, bit 4 *)
+            event_6_enable AT %QX1.5 : BOOL;  (* bit 13 = byte 1, bit 5 *)
+            event_7_enable AT %QX1.6 : BOOL;  (* bit 14 = byte 1, bit 6 *)
+            event_8_enable AT %QX1.7 : BOOL;  (* bit 15 = byte 1, bit 7 *)
+            event_9_enable AT %QX2.0 : BOOL;  (* bit 16 = byte 2, bit 0 *)
 
-            event_1_active AT %QX0.17 : BOOL;
-            event_2_active AT %QX0.18 : BOOL;
-            event_3_active AT %QX0.19 : BOOL;
-            event_4_active AT %QX0.20 : BOOL;
-            event_5_active AT %QX0.21 : BOOL;
-            event_6_active AT %QX0.22 : BOOL;
-            event_7_active AT %QX0.23 : BOOL;
-            event_8_active AT %QX0.24 : BOOL;
-            event_9_active AT %QX0.25 : BOOL;
+            event_1_active AT %QX2.1 : BOOL;  (* bit 17 = byte 2, bit 1 *)
+            event_2_active AT %QX2.2 : BOOL;  (* bit 18 = byte 2, bit 2 *)
+            event_3_active AT %QX2.3 : BOOL;  (* bit 19 = byte 2, bit 3 *)
+            event_4_active AT %QX2.4 : BOOL;  (* bit 20 = byte 2, bit 4 *)
+            event_5_active AT %QX2.5 : BOOL;  (* bit 21 = byte 2, bit 5 *)
+            event_6_active AT %QX2.6 : BOOL;  (* bit 22 = byte 2, bit 6 *)
+            event_7_active AT %QX2.7 : BOOL;  (* bit 23 = byte 2, bit 7 *)
+            event_8_active AT %QX3.0 : BOOL;  (* bit 24 = byte 3, bit 0 *)
+            event_9_active AT %QX3.1 : BOOL;  (* bit 25 = byte 3, bit 1 *)
 
             event_1_counter AT %MW20 : INT;
             event_2_counter AT %MW21 : INT;
@@ -273,7 +273,7 @@ CONFIGURATION Config0
 
             current_position_from_main AT %IW10 : INT;
             current_speed_from_main AT %IW11 : INT;
-            motor_running_from_main AT %IX0.50 : BOOL;
+            motor_running_from_main AT %IX6.2 : BOOL;  (* bit 50 = byte 6, bit 2 *)
 
             safety_violation_count AT %MW50 : INT;
             alarm_register AT %MW30 : INT;
