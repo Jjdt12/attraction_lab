@@ -3,11 +3,6 @@ VAR_EXTERNAL
     safety_ok : BOOL;
     alert_active : BOOL;
 
-    (* HMI Command Coils - Written by SCADA *)
-    hmi_master_enable AT %QX0.0 : BOOL;
-    hmi_estop_cmd AT %QX0.3 : BOOL;
-    hmi_gate_cmd AT %QX0.4 : BOOL;
-
     event_1_enable : BOOL;
     event_2_enable : BOOL;
     event_3_enable : BOOL;
@@ -49,6 +44,11 @@ VAR_EXTERNAL
 END_VAR
 
 VAR
+    (* HMI Command Coils - Written by SCADA *)
+    hmi_master_enable AT %QX0.0 : BOOL;
+    hmi_estop_cmd AT %QX0.3 : BOOL;
+    hmi_gate_cmd AT %QX0.4 : BOOL;
+
     scan_counter : DINT;
     last_event_1 : BOOL;
     last_event_4 : BOOL;
