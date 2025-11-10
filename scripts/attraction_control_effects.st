@@ -236,3 +236,10 @@ END_IF;
 last_position := current_position_from_main;
 
 END_PROGRAM
+
+CONFIGURATION Config0
+    RESOURCE Res0 ON PLC
+        TASK task0(INTERVAL := T#20ms, PRIORITY := 0);
+        PROGRAM instance0 WITH task0 : attraction_control_effects;
+    END_RESOURCE
+END_CONFIGURATION
