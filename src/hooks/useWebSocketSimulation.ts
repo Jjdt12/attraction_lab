@@ -512,9 +512,9 @@ export function useWebSocketSimulation() {
         carPosition: 0,
       }));
 
-      // Write to coil 1 (start_command) - pulse it for 200ms
+      // Write to coil 1 (start_command) - pulse it for 500ms to ensure PLC catches it
       await writeCoil(1, true);
-      await new Promise(resolve => setTimeout(resolve, 200));
+      await new Promise(resolve => setTimeout(resolve, 500));
       await writeCoil(1, false);
 
       // Don't manually set rideRunning - let motor_running coil sync handle it

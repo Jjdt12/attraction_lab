@@ -273,6 +273,10 @@ async def poll_plc_coils():
             # One-time diagnostic on first poll
             if first_poll and modbus_client and is_plc_connected:
                 print("🔍 [DEBUG] Reading critical coils and registers:")
+                # Check start_command (coil 1)
+                result1 = read_coil(1)
+                if result1["success"]:
+                    print(f"  - Coil 1 (start_command): {result1['value']}")
                 # Check safety_plc_ready (coil 31)
                 result31 = read_coil(31)
                 if result31["success"]:
@@ -285,6 +289,10 @@ async def poll_plc_coils():
                 state_result = read_register(4096, 1)
                 if state_result["success"]:
                     print(f"  - Register 4096 (state): {state_result['value']}")
+                # Check last_error_code (register 1029)
+                error_result = read_register(1029, 1)
+                if error_result["success"]:
+                    print(f"  - Register 1029 (last_error_code): {error_result['value']}")
                 first_poll = False
 
             # Poll Main PLC (backward compatibility)
