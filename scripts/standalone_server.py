@@ -434,15 +434,15 @@ async def poll_plc_coils():
                         speed = read_register_from_plc('MAIN', 2, 1)  # current_speed at %QW2
                         motor = read_coil_from_plc('MAIN', 26)  # motor_running at %QX3.2 (bit 26)
 
-                        # Write to SAFETY PLC holding registers (bridge uses holding regs)
+                        # Write to SAFETY PLC %MW10 and %MW11 (Modbus addresses 1034, 1035)
                         if position['success']:
-                            result = modbus_clients['SAFETY'].write_register(10, position['value'])  # %MW10
+                            result = modbus_clients['SAFETY'].write_register(1034, position['value'])  # %MW10
                             # Log position changes
                             if position['value'] != previous_register_states.get('bridge_position'):
                                 print(f"🔗 [BRIDGE] position {position['value']} -> SAFETY MW10")
                                 previous_register_states['bridge_position'] = position['value']
                         if speed['success']:
-                            modbus_clients['SAFETY'].write_register(11, speed['value'])  # %MW11
+                            modbus_clients['SAFETY'].write_register(1035, speed['value'])  # %MW11
                         if motor['success']:
                             modbus_clients['SAFETY'].write_coil(50, motor['value'])  # %MX50 (memory bit)
                     except Exception as e:
@@ -454,9 +454,9 @@ async def poll_plc_coils():
                         # Read from MAIN PLC
                         position = read_register_from_plc('MAIN', 1, 1)  # current_position
 
-                        # Write to EFFECTS PLC holding register
+                        # Write to EFFECTS PLC %MW10 (Modbus address 1034)
                         if position['success']:
-                            result = modbus_clients['EFFECTS'].write_register(10, position['value'])  # %MW10
+                            result = modbus_clients['EFFECTS'].write_register(1034, position['value'])  # %MW10
 
                             # Verify write by reading back
                             readback = read_register_from_plc('EFFECTS', 10, 1)
@@ -498,10 +498,11 @@ async def poll_plc_coils():
                             coil_addr = 7 + i  # event_1_enable = coil 8, etc.
                             enable = read_coil_from_plc('MAIN', coil_addr)
                             if enable['success']:
-                                # Write to EFFECTS PLC holding registers 100-108 (%MW100-%MW108)
-                                reg_addr = 99 + i  # event_1 = MW100, event_9 = MW108
+                                # Write to EFFECTS PLC %MW100-%MW108 (Modbus addresses 1124-1132)
+                                mw_addr = 99 + i  # event_1 = MW100, event_9 = MW108
+                                modbus_addr = 1024 + mw_addr  # MW registers start at Modbus address 1024
                                 val = 1 if enable['value'] else 0
-                                modbus_clients['EFFECTS'].write_register(reg_addr, val)
+                                modbus_clients['EFFECTS'].write_register(modbus_addr, val)
                     except Exception as e:
                         print(f"⚠️ [BRIDGE] Error in Bridge 8: {e}")
 
@@ -679,15 +680,16 @@ async def poll_plc_coils():
                     else:
                         pos_value = 'ERR'
 
-                    # Read event_enable registers from holding registers 100-108 (%MW100-%MW108)
+                    # Read event_enable registers from %MW100-%MW108 (Modbus addresses 1124-1132)
                     enable_states = []
                     enable_reg_values = []
                     for i in range(1, 10):
-                        reg_addr = 99 + i  # event_1 = MW100, event_9 = MW108
-                        enable_reg = read_register_from_plc('EFFECTS', reg_addr)
+                        mw_addr = 99 + i  # event_1 = MW100, event_9 = MW108
+                        modbus_addr = 1024 + mw_addr  # MW registers start at Modbus address 1024
+                        enable_reg = read_register_from_plc('EFFECTS', modbus_addr)
                         if enable_reg and enable_reg.get('success'):
                             enable_states.append(f"EN{i}={'T' if enable_reg['value'] != 0 else 'F'}")
-                            enable_reg_values.append(f"MW{reg_addr}={enable_reg['value']}")
+                            enable_reg_values.append(f"MW{mw_addr}={enable_reg['value']}")
 
                     print(f"📊 [EFFECTS DEBUG] Events: {' '.join(event_states)} | MW10={pos_value} | Enables: {' '.join(enable_states)}")
                     if enable_reg_values:
