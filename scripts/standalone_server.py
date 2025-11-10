@@ -492,7 +492,6 @@ async def poll_plc_coils():
                 if 'EFFECTS' in modbus_clients and plc_connected_status.get('EFFECTS'):
                     try:
                         # Read event_enable from MAIN PLC (coils 8-16)
-                        enables_str = ""
                         for i in range(1, 10):  # Events 1-9
                             coil_addr = 7 + i  # event_1_enable = coil 8, etc.
                             enable = read_coil_from_plc('MAIN', coil_addr)
@@ -501,9 +500,6 @@ async def poll_plc_coils():
                                 # %QX4.0 = coil 32, %QX4.1 = coil 33, ... %QX5.0 = coil 40
                                 effects_coil_addr = 31 + i  # event_1 = coil 32, event_9 = coil 40
                                 modbus_clients['EFFECTS'].write_coil(effects_coil_addr, enable['value'])
-                                enables_str += f"EN{i}={'T' if enable['value'] else 'F'} "
-                        if enables_str and poll_count % 10 == 0:  # Log every 10th poll
-                            print(f"🔗 [BRIDGE 8] Event enables -> EFFECTS: {enables_str.strip()}")
                     except Exception as e:
                         print(f"⚠️ [BRIDGE] Error in Bridge 8: {e}")
 
