@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Nexus - Internal Wiki</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f4f5f7;
+            color: #172b4d;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #0052cc 0%, #2684ff 100%);
+            color: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .header .subtitle {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin-top: 0.25rem;
+        }
+
+        .container {
+            display: flex;
+            min-height: calc(100vh - 80px);
+        }
+
+        .sidebar {
+            width: 280px;
+            background: white;
+            border-right: 1px solid #dfe1e6;
+            padding: 1.5rem 1rem;
+            overflow-y: auto;
+        }
+
+        .sidebar h3 {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: #5e6c84;
+            font-weight: 700;
+            margin: 1.5rem 0 0.75rem;
+            letter-spacing: 0.5px;
+        }
+
+        .sidebar h3:first-child {
+            margin-top: 0;
+        }
+
+        .nav-item {
+            display: block;
+            padding: 0.5rem 0.75rem;
+            color: #172b4d;
+            text-decoration: none;
+            border-radius: 4px;
+            margin-bottom: 2px;
+            font-size: 0.9rem;
+            transition: background 0.2s;
+        }
+
+        .nav-item:hover {
+            background: #f4f5f7;
+        }
+
+        .nav-item.active {
+            background: #deebff;
+            color: #0052cc;
+            font-weight: 500;
+        }
+
+        .content {
+            flex: 1;
+            padding: 2rem 3rem;
+            max-width: 1200px;
+        }
+
+        .breadcrumb {
+            font-size: 0.85rem;
+            color: #5e6c84;
+            margin-bottom: 1rem;
+        }
+
+        .breadcrumb a {
+            color: #0052cc;
+            text-decoration: none;
+        }
+
+        .page-title {
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #172b4d;
+        }
+
+        .page-meta {
+            font-size: 0.85rem;
+            color: #5e6c84;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #dfe1e6;
+        }
+
+        .info-box {
+            background: #deebff;
+            border-left: 4px solid #0052cc;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 4px;
+        }
+
+        .warning-box {
+            background: #fffae6;
+            border-left: 4px solid #ff991f;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 4px;
+        }
+
+        .content h2 {
+            font-size: 1.5rem;
+            margin: 2rem 0 1rem;
+            color: #172b4d;
+        }
+
+        .content h3 {
+            font-size: 1.25rem;
+            margin: 1.5rem 0 0.75rem;
+            color: #172b4d;
+        }
+
+        .content p {
+            line-height: 1.6;
+            margin-bottom: 1rem;
+            color: #172b4d;
+        }
+
+        .content ul, .content ol {
+            margin: 1rem 0 1rem 2rem;
+            line-height: 1.8;
+        }
+
+        .content table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+        }
+
+        .content table th,
+        .content table td {
+            padding: 0.75rem;
+            text-align: left;
+            border: 1px solid #dfe1e6;
+        }
+
+        .content table th {
+            background: #f4f5f7;
+            font-weight: 600;
+        }
+
+        .content table tr:hover {
+            background: #f4f5f7;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            border-radius: 3px;
+            margin-right: 0.5rem;
+        }
+
+        .badge-blue { background: #deebff; color: #0052cc; }
+        .badge-green { background: #e3fcef; color: #006644; }
+        .badge-orange { background: #fffae6; color: #ff991f; }
+        .badge-red { background: #ffebe6; color: #de350b; }
+
+        code {
+            background: #f4f5f7;
+            padding: 0.2rem 0.4rem;
+            border-radius: 3px;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+
+        .attachment-list {
+            background: white;
+            border: 1px solid #dfe1e6;
+            border-radius: 4px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+
+        .attachment-item {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem;
+            border-bottom: 1px solid #f4f5f7;
+        }
+
+        .attachment-item:last-child {
+            border-bottom: none;
+        }
+
+        .attachment-icon {
+            width: 40px;
+            height: 40px;
+            background: #0052cc;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            margin-right: 1rem;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎢 Project Nexus - Internal Wiki</h1>
+        <div class="subtitle">Attraction Control System Documentation & Knowledge Base</div>
+    </div>
+
+    <div class="container">
+        <div class="sidebar">
+            <h3>📚 Overview</h3>
+            <a href="index.html" class="nav-item active">Project Home</a>
+            <a href="project-overview.html" class="nav-item">Project Overview</a>
+            <a href="team-directory.html" class="nav-item">Team Directory</a>
+
+            <h3>🔧 Engineering</h3>
+            <a href="system-architecture.html" class="nav-item">System Architecture</a>
+            <a href="plc-programming.html" class="nav-item">PLC Programming</a>
+            <a href="network-topology.html" class="nav-item">Network Topology</a>
+            <a href="control-logic.html" class="nav-item">Control Logic</a>
+
+            <h3>⚙️ Operations</h3>
+            <a href="operator-manual.html" class="nav-item">Operator Manual</a>
+            <a href="startup-shutdown.html" class="nav-item">Startup/Shutdown</a>
+            <a href="troubleshooting.html" class="nav-item">Troubleshooting Guide</a>
+
+            <h3>🛡️ Safety</h3>
+            <a href="safety-systems.html" class="nav-item">Safety Systems</a>
+            <a href="emergency-procedures.html" class="nav-item">Emergency Procedures</a>
+            <a href="safety-audits.html" class="nav-item">Safety Audits</a>
+
+            <h3>🔨 Maintenance</h3>
+            <a href="maintenance-schedule.html" class="nav-item">Maintenance Schedule</a>
+            <a href="parts-inventory.html" class="nav-item">Parts Inventory</a>
+            <a href="maintenance-logs.html" class="nav-item">Maintenance Logs</a>
+
+            <h3>📋 Project Management</h3>
+            <a href="project-timeline.html" class="nav-item">Project Timeline</a>
+            <a href="meeting-notes.html" class="nav-item">Meeting Notes</a>
+            <a href="change-requests.html" class="nav-item">Change Requests</a>
+        </div>
+
+        <div class="content">
+            <div class="breadcrumb">
+                <a href="index.html">Home</a> / Project Nexus
+            </div>
+
+            <h1 class="page-title">Welcome to Project Nexus Wiki</h1>
+            <div class="page-meta">
+                Last updated: November 10, 2025 | Owner: Project Management Office
+            </div>
+
+            <div class="info-box">
+                <strong>🎯 Quick Start:</strong> This wiki contains all technical documentation, operational procedures, and project history for the Nexus dark ride attraction control system. Use the sidebar to navigate between sections.
+            </div>
+
+            <h2>📖 About Project Nexus</h2>
+            <p>
+                Project Nexus is a next-generation dark ride attraction featuring advanced automation,
+                multi-zone show control, and sophisticated safety systems. The attraction uses a three-PLC
+                architecture with distributed control across Main Control, Safety Systems, and Show Effects.
+            </p>
+
+            <h2>🎯 Project Status</h2>
+            <table>
+                <tr>
+                    <th>Phase</th>
+                    <th>Status</th>
+                    <th>Completion</th>
+                    <th>Notes</th>
+                </tr>
+                <tr>
+                    <td>Design & Planning</td>
+                    <td><span class="badge badge-green">Complete</span></td>
+                    <td>100%</td>
+                    <td>Approved June 2024</td>
+                </tr>
+                <tr>
+                    <td>Hardware Installation</td>
+                    <td><span class="badge badge-green">Complete</span></td>
+                    <td>100%</td>
+                    <td>Installed August 2024</td>
+                </tr>
+                <tr>
+                    <td>PLC Programming</td>
+                    <td><span class="badge badge-green">Complete</span></td>
+                    <td>100%</td>
+                    <td>Commissioned September 2024</td>
+                </tr>
+                <tr>
+                    <td>System Integration</td>
+                    <td><span class="badge badge-blue">In Progress</span></td>
+                    <td>85%</td>
+                    <td>Testing phase</td>
+                </tr>
+                <tr>
+                    <td>Safety Certification</td>
+                    <td><span class="badge badge-orange">Pending</span></td>
+                    <td>60%</td>
+                    <td>Q1 2026 target</td>
+                </tr>
+            </table>
+
+            <h2>👥 Key Teams</h2>
+            <ul>
+                <li><strong>Control Systems Engineering:</strong> PLC programming, network infrastructure, HMI development</li>
+                <li><strong>Safety Engineering:</strong> Safety system design, risk assessment, certification</li>
+                <li><strong>Show Technical:</strong> Effects control, lighting, audio/video integration</li>
+                <li><strong>Operations:</strong> Operator training, procedures development, daily operations</li>
+                <li><strong>Maintenance:</strong> Preventive maintenance, troubleshooting, parts management</li>
+            </ul>
+
+            <h2>📂 Popular Pages</h2>
+            <div class="attachment-list">
+                <div class="attachment-item">
+                    <div class="attachment-icon">📄</div>
+                    <div>
+                        <a href="system-architecture.html"><strong>System Architecture</strong></a><br>
+                        <small>Complete overview of the three-PLC control architecture</small>
+                    </div>
+                </div>
+                <div class="attachment-item">
+                    <div class="attachment-icon">🔧</div>
+                    <div>
+                        <a href="operator-manual.html"><strong>Operator Manual</strong></a><br>
+                        <small>Daily operation procedures and control panel guide</small>
+                    </div>
+                </div>
+                <div class="attachment-item">
+                    <div class="attachment-icon">🛡️</div>
+                    <div>
+                        <a href="safety-systems.html"><strong>Safety Systems</strong></a><br>
+                        <small>Safety interlock design and emergency stop procedures</small>
+                    </div>
+                </div>
+                <div class="attachment-item">
+                    <div class="attachment-icon">⚠️</div>
+                    <div>
+                        <a href="troubleshooting.html"><strong>Troubleshooting Guide</strong></a><br>
+                        <small>Common issues and resolution procedures</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="warning-box">
+                <strong>⚠️ Note:</strong> This documentation is for internal use only. All procedures must comply with safety regulations and operational guidelines. Contact the Safety Team before making any modifications to control systems.
+            </div>
+
+            <h2>📊 Recent Updates</h2>
+            <ul>
+                <li><strong>Nov 10, 2025:</strong> Updated PLC programming guide with multi-PLC examples</li>
+                <li><strong>Nov 8, 2025:</strong> Added new troubleshooting section for network communications</li>
+                <li><strong>Nov 5, 2025:</strong> Safety audit findings and corrective actions documented</li>
+                <li><strong>Oct 28, 2025:</strong> Maintenance schedule updated for Q4 2025</li>
+                <li><strong>Oct 15, 2025:</strong> New operator training materials uploaded</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

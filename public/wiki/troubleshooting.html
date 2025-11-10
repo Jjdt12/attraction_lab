@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Troubleshooting Guide - Project Nexus Wiki</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f4f5f7; color: #172b4d; }
+        .header { background: linear-gradient(135deg, #0052cc 0%, #2684ff 100%); color: white; padding: 1rem 2rem; }
+        .header h1 { font-size: 1.5rem; font-weight: 600; }
+        .container { display: flex; min-height: calc(100vh - 80px); }
+        .sidebar { width: 280px; background: white; border-right: 1px solid #dfe1e6; padding: 1.5rem 1rem; }
+        .sidebar h3 { font-size: 0.75rem; text-transform: uppercase; color: #5e6c84; font-weight: 700; margin: 1.5rem 0 0.75rem; }
+        .nav-item { display: block; padding: 0.5rem 0.75rem; color: #172b4d; text-decoration: none; border-radius: 4px; margin-bottom: 2px; font-size: 0.9rem; }
+        .nav-item:hover { background: #f4f5f7; }
+        .nav-item.active { background: #deebff; color: #0052cc; font-weight: 500; }
+        .content { flex: 1; padding: 2rem 3rem; max-width: 1200px; }
+        .breadcrumb { font-size: 0.85rem; color: #5e6c84; margin-bottom: 1rem; }
+        .breadcrumb a { color: #0052cc; text-decoration: none; }
+        .page-title { font-size: 2rem; font-weight: 600; margin-bottom: 0.5rem; }
+        .page-meta { font-size: 0.85rem; color: #5e6c84; margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 2px solid #dfe1e6; }
+        .content h2 { font-size: 1.5rem; margin: 2rem 0 1rem; }
+        .content h3 { font-size: 1.25rem; margin: 1.5rem 0 0.75rem; }
+        .content p { line-height: 1.6; margin-bottom: 1rem; }
+        .content ul, .content ol { margin: 1rem 0 1rem 2rem; line-height: 1.8; }
+        .issue-box { background: white; border: 2px solid #dfe1e6; border-radius: 8px; padding: 1.5rem; margin: 1.5rem 0; }
+        .issue-box h3 { margin-top: 0; color: #0052cc; }
+        .symptoms { background: #fffae6; padding: 0.75rem; border-left: 4px solid #ff991f; margin: 0.5rem 0; }
+        .solution { background: #e3fcef; padding: 0.75rem; border-left: 4px solid #006644; margin: 0.5rem 0; }
+        .warning-box { background: #ffebe6; border-left: 4px solid #de350b; padding: 1rem; margin: 1.5rem 0; border-radius: 4px; }
+        code { background: #f4f5f7; padding: 0.2rem 0.4rem; border-radius: 3px; font-family: monospace; font-size: 0.9em; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎢 Project Nexus - Troubleshooting Guide</h1>
+    </div>
+
+    <div class="container">
+        <div class="sidebar">
+            <h3>📚 Overview</h3>
+            <a href="index.html" class="nav-item">Project Home</a>
+            <h3>⚙️ Operations</h3>
+            <a href="operator-manual.html" class="nav-item">Operator Manual</a>
+            <a href="troubleshooting.html" class="nav-item active">Troubleshooting Guide</a>
+        </div>
+
+        <div class="content">
+            <div class="breadcrumb">
+                <a href="index.html">Home</a> / <a href="#">Operations</a> / Troubleshooting Guide
+            </div>
+
+            <h1 class="page-title">Troubleshooting Guide</h1>
+            <div class="page-meta">
+                Last updated: November 8, 2025 | Owner: Maintenance Team | Version: 1.8
+            </div>
+
+            <div class="warning-box">
+                <strong>⚠️ Safety Notice:</strong> Always tag out and lock out power before performing any physical maintenance. If in doubt, contact a certified technician. Never bypass safety interlocks.
+            </div>
+
+            <h2>Quick Diagnostics</h2>
+            <p>Use this flowchart for initial diagnosis:</p>
+            <ol>
+                <li><strong>Does HMI show connection?</strong> → No: Check network cables and PLC power</li>
+                <li><strong>Are all PLCs green?</strong> → No: Identify which PLC(s) are offline, check specific section below</li>
+                <li><strong>Does Master Enable turn on?</strong> → No: Check E-Stop and safety gate</li>
+                <li><strong>Does START RIDE work?</strong> → No: Check ride state and prerequisites</li>
+                <li><strong>Does vehicle move smoothly?</strong> → No: Check motor current and brake release</li>
+            </ol>
+
+            <h2>Common Issues & Solutions</h2>
+
+            <div class="issue-box">
+                <h3>Issue 1: HMI Shows "WebSocket Disconnected"</h3>
+                <div class="symptoms">
+                    <strong>Symptoms:</strong>
+                    <ul>
+                        <li>HMI displays red disconnection indicator</li>
+                        <li>No real-time updates on screen</li>
+                        <li>Controls non-responsive</li>
+                    </ul>
+                </div>
+                <div class="solution">
+                    <strong>Solution Steps:</strong>
+                    <ol>
+                        <li>Check that WebSocket server is running on control PC (should be at <code>localhost:8765</code>)</li>
+                        <li>Open command prompt on control PC and run: <code>python standalone_server.py</code></li>
+                        <li>Verify firewall is not blocking port 8765</li>
+                        <li>Check Ethernet cable from HMI terminal to control PC</li>
+                        <li>If problem persists, restart control PC and wait 30 seconds for boot</li>
+                    </ol>
+                </div>
+                <p><strong>Prevention:</strong> Set WebSocket server to auto-start on boot using Windows Task Scheduler</p>
+            </div>
+
+            <div class="issue-box">
+                <h3>Issue 2: Main PLC Shows Red/Disconnected</h3>
+                <div class="symptoms">
+                    <strong>Symptoms:</strong>
+                    <ul>
+                        <li>Main PLC indicator shows red on Multi-PLC Status panel</li>
+                        <li>Cannot start ride</li>
+                        <li>System shows "PLC Connection Failed"</li>
+                    </ul>
+                </div>
+                <div class="solution">
+                    <strong>Solution Steps:</strong>
+                    <ol>
+                        <li>Check that Main PLC is powered (green LED on PLC should be lit)</li>
+                        <li>Verify Ethernet cable connected to port 502</li>
+                        <li>Ping PLC: Open command prompt, type <code>ping 127.0.0.1</code> (or actual PLC IP)</li>
+                        <li>Check OpenPLC Runtime is running (go to http://localhost:8080)</li>
+                        <li>Restart OpenPLC service if needed</li>
+                        <li>Review OpenPLC logs for errors at <code>C:\OpenPLC\logs\</code></li>
+                    </ol>
+                </div>
+                <p><strong>Common Cause:</strong> PLC watchdog timeout if program contains infinite loop or scan time exceeds limit</p>
+            </div>
+
+            <div class="issue-box">
+                <h3>Issue 3: Ride Won't Start (Button Greyed Out)</h3>
+                <div class="symptoms">
+                    <strong>Symptoms:</strong>
+                    <ul>
+                        <li>START RIDE button is disabled/greyed out</li>
+                        <li>System shows "Prerequisites Not Met"</li>
+                        <li>Ride state stuck in IDLE</li>
+                    </ul>
+                </div>
+                <div class="solution">
+                    <strong>Check These Prerequisites in Order:</strong>
+                    <ol>
+                        <li><strong>Master Enable:</strong> Must be ON (green indicator)</li>
+                        <li><strong>Safety Gate:</strong> Must be closed (Coil 4 = TRUE)</li>
+                        <li><strong>E-Stop:</strong> Must be reset (Coil 3 = FALSE)</li>
+                        <li><strong>Safety PLC Ready:</strong> Coil 31 must be TRUE (check Safety PLC connection)</li>
+                        <li><strong>Effects PLC Ready:</strong> Coil 32 must be TRUE (check Effects PLC connection)</li>
+                        <li><strong>Previous Ride Complete:</strong> Vehicle must be at position 0</li>
+                        <li><strong>No Active Alarms:</strong> Check Alarm Panel for any unacknowledged alarms</li>
+                    </ol>
+                </div>
+                <p><strong>Tip:</strong> Use the "Modbus Coil States" panel to verify each prerequisite coil state</p>
+            </div>
+
+            <div class="issue-box">
+                <h3>Issue 4: Vehicle Not Moving After Start</h3>
+                <div class="symptoms">
+                    <strong>Symptoms:</strong>
+                    <ul>
+                        <li>START RIDE clicked but vehicle remains stationary</li>
+                        <li>Motor Running indicator does not light</li>
+                        <li>Motor current shows 0 amps</li>
+                    </ul>
+                </div>
+                <div class="solution">
+                    <strong>Solution Steps:</strong>
+                    <ol>
+                        <li>Check that <strong>Brake Engaged</strong> coil (27) is FALSE - brake must release</li>
+                        <li>Verify motor contactor clicked (you should hear audible "click" in electrical cabinet)</li>
+                        <li>Check motor power circuit breaker - should be ON</li>
+                        <li>Inspect VFD (Variable Frequency Drive) for fault codes</li>
+                        <li>Check motor encoder cable - loose connection prevents motion</li>
+                        <li>Verify PLC output coil 26 (motor_running) is TRUE</li>
+                    </ol>
+                </div>
+                <p><strong>Warning:</strong> If motor hums but doesn't move, stop immediately - possible mechanical jam</p>
+            </div>
+
+            <div class="issue-box">
+                <h3>Issue 5: Ride Events Not Triggering</h3>
+                <div class="symptoms">
+                    <strong>Symptoms:</strong>
+                    <ul>
+                        <li>Vehicle moves but show effects don't activate</li>
+                        <li>Event Active indicators (Coils 17-25) stay off</li>
+                        <li>Silent ride with no lights/sounds</li>
+                    </ul>
+                </div>
+                <div class="solution">
+                    <strong>Solution Steps:</strong>
+                    <ol>
+                        <li>Check that all <strong>Event Enable</strong> coils (8-16) are TRUE</li>
+                        <li>Verify Safety PLC is connected (port 503)</li>
+                        <li>Verify Effects PLC is connected (port 504)</li>
+                        <li>Check position sensor - events trigger based on vehicle location</li>
+                        <li>Review Safety PLC logs for event processing errors</li>
+                        <li>Test individual effects manually using Attack Console (if available)</li>
+                    </ol>
+                </div>
+                <p><strong>Note:</strong> Events require both Safety PLC (triggers) and Effects PLC (execution) to work</p>
+            </div>
+
+            <div class="issue-box">
+                <h3>Issue 6: High Motor Temperature Warning</h3>
+                <div class="symptoms">
+                    <strong>Symptoms:</strong>
+                    <ul>
+                        <li>Bearing Temperature shows >85°C</li>
+                        <li>Alarm "WARN-TEMP-HIGH" appears</li>
+                        <li>Unusual smell from motor area</li>
+                    </ul>
+                </div>
+                <div class="solution">
+                    <strong>Solution Steps:</strong>
+                    <ol>
+                        <li><strong>Immediate:</strong> Stop ride and let motor cool for 30 minutes</li>
+                        <li>Check that cooling fans are operating (listen for fan noise)</li>
+                        <li>Inspect motor vents for dust/debris blocking airflow</li>
+                        <li>Verify ambient temperature in control room (should be below 25°C)</li>
+                        <li>Check motor bearings for unusual noise or vibration</li>
+                        <li>If temperature exceeds 90°C, tag out and call maintenance</li>
+                    </ol>
+                </div>
+                <p><strong>Prevention:</strong> Clean motor vents monthly, check bearing lubrication quarterly</p>
+            </div>
+
+            <div class="issue-box">
+                <h3>Issue 7: Position "Jumping" or Incorrect</h3>
+                <div class="symptoms">
+                    <strong>Symptoms:</strong>
+                    <ul>
+                        <li>Vehicle position display shows erratic values</li>
+                        <li>Position jumps forward/backward unexpectedly</li>
+                        <li>Events trigger at wrong locations</li>
+                    </ul>
+                </div>
+                <div class="solution">
+                    <strong>Solution Steps:</strong>
+                    <ol>
+                        <li>Check encoder cable connection to PLC (loose connection is common cause)</li>
+                        <li>Inspect encoder for physical damage or dirt on disk</li>
+                        <li>Verify encoder power supply (should be 24VDC)</li>
+                        <li>Use oscilloscope to check encoder signal quality if available</li>
+                        <li>Recalibrate position by clicking <strong>RESET RIDE</strong> with vehicle at station (position 0)</li>
+                        <li>If problem persists, encoder may need replacement</li>
+                    </ol>
+                </div>
+                <p><strong>Temporary Workaround:</strong> Reset ride to recalibrate position to 0 at station</p>
+            </div>
+
+            <h2>Network Communication Issues</h2>
+
+            <div class="issue-box">
+                <h3>Intermittent PLC Disconnections</h3>
+                <p><strong>Possible Causes:</strong></p>
+                <ul>
+                    <li><strong>Bad Ethernet Cable:</strong> Replace with known-good cable, use CAT6 or better</li>
+                    <li><strong>Switch Port Failure:</strong> Try different port on network switch</li>
+                    <li><strong>EMI Interference:</strong> Ensure network cables are away from motor power cables</li>
+                    <li><strong>Network Storm:</strong> Check for broadcast storms or network loops</li>
+                    <li><strong>PLC Overload:</strong> Reduce Modbus polling rate if scan time >50ms</li>
+                </ul>
+                <p><strong>Diagnostic Tool:</strong> Use <code>ping -t [PLC_IP]</code> to monitor connection stability</p>
+            </div>
+
+            <h2>Advanced Diagnostics</h2>
+
+            <h3>Using Event Log</h3>
+            <p>The Event Log tab provides detailed system history. Look for:</p>
+            <ul>
+                <li><strong>CRITICAL events:</strong> Emergency stops, safety faults</li>
+                <li><strong>WARNING events:</strong> Parameter out of range, communication delays</li>
+                <li><strong>INFO events:</strong> Normal operations, state changes</li>
+            </ul>
+
+            <h3>Modbus Debugging</h3>
+            <p>For advanced users - use Python scripts in <code>/scripts/</code> folder:</p>
+            <ul>
+                <li><code>probe.py</code> - Test Modbus connectivity to any PLC</li>
+                <li><code>test_modbus_addresses.py</code> - Verify address mappings</li>
+                <li><code>intercept.py</code> - Monitor Modbus traffic in real-time</li>
+            </ul>
+
+            <h2>When to Call for Help</h2>
+
+            <div class="warning-box">
+                <strong>⚠️ Contact Maintenance Immediately If:</strong>
+                <ul>
+                    <li>Smoke, burning smell, or sparks from any equipment</li>
+                    <li>Unusual grinding, scraping, or banging noises</li>
+                    <li>Vehicle fails to stop when commanded</li>
+                    <li>Safety interlocks not functioning</li>
+                    <li>Guest injury or potential injury situation</li>
+                    <li>You're unsure about any repair procedure</li>
+                </ul>
+            </div>
+
+            <h2>Emergency Contacts</h2>
+            <table style="width: 100%; border-collapse: collapse; margin: 1.5rem 0;">
+                <tr>
+                    <th style="padding: 0.75rem; text-align: left; border: 1px solid #dfe1e6; background: #f4f5f7;">Contact</th>
+                    <th style="padding: 0.75rem; text-align: left; border: 1px solid #dfe1e6; background: #f4f5f7;">Extension</th>
+                    <th style="padding: 0.75rem; text-align: left; border: 1px solid #dfe1e6; background: #f4f5f7;">Mobile</th>
+                </tr>
+                <tr>
+                    <td style="padding: 0.75rem; border: 1px solid #dfe1e6;">Maintenance Emergency</td>
+                    <td style="padding: 0.75rem; border: 1px solid #dfe1e6;">911</td>
+                    <td style="padding: 0.75rem; border: 1px solid #dfe1e6;">Radio Ch. 2</td>
+                </tr>
+                <tr>
+                    <td style="padding: 0.75rem; border: 1px solid #dfe1e6;">Lead Technician (Alex Rivera)</td>
+                    <td style="padding: 0.75rem; border: 1px solid #dfe1e6;">4525</td>
+                    <td style="padding: 0.75rem; border: 1px solid #dfe1e6;">(555) 0142</td>
+                </tr>
+                <tr>
+                    <td style="padding: 0.75rem; border: 1px solid #dfe1e6;">Control Systems (Sarah Chen)</td>
+                    <td style="padding: 0.75rem; border: 1px solid #dfe1e6;">4521</td>
+                    <td style="padding: 0.75rem; border: 1px solid #dfe1e6;">(555) 0198</td>
+                </tr>
+                <tr>
+                    <td style="padding: 0.75rem; border: 1px solid #dfe1e6;">Safety Officer (Marcus Johnson)</td>
+                    <td style="padding: 0.75rem; border: 1px solid #dfe1e6;">4502</td>
+                    <td style="padding: 0.75rem; border: 1px solid #dfe1e6;">(555) 0176</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

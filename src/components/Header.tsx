@@ -1,4 +1,4 @@
-import { FlaskConical, Circle, Activity, Trophy, ChevronDown, ChevronUp, FileText, Terminal, Sun, Moon } from 'lucide-react';
+import { FlaskConical, Circle, Activity, Trophy, ChevronDown, ChevronUp, FileText, Terminal, Sun, Moon, BookOpen } from 'lucide-react';
 import { useState } from 'react';
 import CTFChallenges from './CTFChallenges';
 import { useTheme } from '../contexts/ThemeContext';
@@ -45,6 +45,15 @@ export default function Header({ wsConnected, plcConnected, plcHost, plcPort, se
                 <Sun className="w-5 h-5 text-slate-700 dark:text-slate-300" />
               )}
             </button>
+            <a
+              href="/wiki/index.html"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 hover:bg-purple-100 dark:hover:bg-purple-900/30 transition-colors"
+            >
+              <BookOpen className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+              <span className="text-sm font-semibold text-purple-900 dark:text-purple-300">Project Wiki</span>
+            </a>
             <a
               href="/ATTRACTION_DOCS.html"
               target="_blank"

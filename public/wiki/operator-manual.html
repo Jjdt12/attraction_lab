@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Operator Manual - Project Nexus Wiki</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f4f5f7; color: #172b4d; }
+        .header { background: linear-gradient(135deg, #0052cc 0%, #2684ff 100%); color: white; padding: 1rem 2rem; }
+        .header h1 { font-size: 1.5rem; font-weight: 600; }
+        .container { display: flex; min-height: calc(100vh - 80px); }
+        .sidebar { width: 280px; background: white; border-right: 1px solid #dfe1e6; padding: 1.5rem 1rem; }
+        .sidebar h3 { font-size: 0.75rem; text-transform: uppercase; color: #5e6c84; font-weight: 700; margin: 1.5rem 0 0.75rem; }
+        .nav-item { display: block; padding: 0.5rem 0.75rem; color: #172b4d; text-decoration: none; border-radius: 4px; margin-bottom: 2px; font-size: 0.9rem; }
+        .nav-item:hover { background: #f4f5f7; }
+        .nav-item.active { background: #deebff; color: #0052cc; font-weight: 500; }
+        .content { flex: 1; padding: 2rem 3rem; max-width: 1200px; }
+        .breadcrumb { font-size: 0.85rem; color: #5e6c84; margin-bottom: 1rem; }
+        .breadcrumb a { color: #0052cc; text-decoration: none; }
+        .page-title { font-size: 2rem; font-weight: 600; margin-bottom: 0.5rem; }
+        .page-meta { font-size: 0.85rem; color: #5e6c84; margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 2px solid #dfe1e6; }
+        .warning-box { background: #ffebe6; border-left: 4px solid #de350b; padding: 1rem; margin: 1.5rem 0; border-radius: 4px; }
+        .info-box { background: #deebff; border-left: 4px solid #0052cc; padding: 1rem; margin: 1.5rem 0; border-radius: 4px; }
+        .content h2 { font-size: 1.5rem; margin: 2rem 0 1rem; }
+        .content h3 { font-size: 1.25rem; margin: 1.5rem 0 0.75rem; }
+        .content p { line-height: 1.6; margin-bottom: 1rem; }
+        .content ul, .content ol { margin: 1rem 0 1rem 2rem; line-height: 1.8; }
+        .content table { width: 100%; border-collapse: collapse; margin: 1.5rem 0; }
+        .content table th, .content table td { padding: 0.75rem; text-align: left; border: 1px solid #dfe1e6; }
+        .content table th { background: #f4f5f7; font-weight: 600; }
+        .step-box { background: #e3fcef; border-left: 4px solid #006644; padding: 1rem; margin: 1rem 0; border-radius: 4px; }
+        code { background: #f4f5f7; padding: 0.2rem 0.4rem; border-radius: 3px; font-family: monospace; font-size: 0.9em; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎢 Project Nexus - Operator Manual</h1>
+    </div>
+
+    <div class="container">
+        <div class="sidebar">
+            <h3>📚 Overview</h3>
+            <a href="index.html" class="nav-item">Project Home</a>
+            <h3>⚙️ Operations</h3>
+            <a href="operator-manual.html" class="nav-item active">Operator Manual</a>
+            <a href="startup-shutdown.html" class="nav-item">Startup/Shutdown</a>
+            <a href="troubleshooting.html" class="nav-item">Troubleshooting Guide</a>
+        </div>
+
+        <div class="content">
+            <div class="breadcrumb">
+                <a href="index.html">Home</a> / <a href="#">Operations</a> / Operator Manual
+            </div>
+
+            <h1 class="page-title">Operator Manual</h1>
+            <div class="page-meta">
+                Last updated: November 8, 2025 | Owner: Operations Team | Version: 2.1
+            </div>
+
+            <div class="warning-box">
+                <strong>⚠️ SAFETY FIRST:</strong> Never override safety systems. All operators must complete certified training before operating this attraction. In case of emergency, press the red EMERGENCY STOP button immediately.
+            </div>
+
+            <h2>Pre-Operation Checklist</h2>
+            <p>Complete this checklist before starting daily operations:</p>
+
+            <div class="step-box">
+                <strong>Step 1: Visual Inspection</strong>
+                <ul>
+                    <li>Walk the entire track - check for debris, damage, or obstructions</li>
+                    <li>Inspect vehicle for damage, loose parts, or wear</li>
+                    <li>Verify all emergency exits are clear and unlocked</li>
+                    <li>Check that safety gates operate smoothly</li>
+                    <li>Ensure all warning signs and safety markings are visible</li>
+                </ul>
+            </div>
+
+            <div class="step-box">
+                <strong>Step 2: System Power-Up</strong>
+                <ol>
+                    <li>Turn on main circuit breakers in electrical room</li>
+                    <li>Power on control cabinet - wait for all three PLC ready indicators (green lights)</li>
+                    <li>Verify HMI screen displays "SYSTEM READY"</li>
+                    <li>Check that all status indicators show green on Multi-PLC Status panel</li>
+                </ol>
+            </div>
+
+            <div class="step-box">
+                <strong>Step 3: Safety System Test</strong>
+                <ol>
+                    <li>Press EMERGENCY STOP button - verify immediate system shutdown</li>
+                    <li>Reset E-Stop and confirm system returns to ready state</li>
+                    <li>Test safety gate interlocks - system should not allow start with gate open</li>
+                    <li>Verify all nine ride events are enabled (Events 1-9 indicators should be green)</li>
+                </ol>
+            </div>
+
+            <div class="step-box">
+                <strong>Step 4: Test Cycle</strong>
+                <ol>
+                    <li>Run empty vehicle test cycle</li>
+                    <li>Observe smooth acceleration, zone transitions, and final braking</li>
+                    <li>Listen for unusual noises (grinding, squealing, rattling)</li>
+                    <li>Verify all show effects trigger at correct positions</li>
+                    <li>Check that vehicle returns to station and brake engages</li>
+                </ol>
+            </div>
+
+            <h2>Starting a Ride Cycle</h2>
+
+            <div class="info-box">
+                <strong>Prerequisites:</strong> System must show "READY" state, safety gate closed, no alarms active, Master Enable ON
+            </div>
+
+            <ol>
+                <li>Ensure guests are properly seated with restraints secured</li>
+                <li>Perform visual confirmation that all guests are ready</li>
+                <li>Make announcement: "Please keep hands and arms inside the vehicle"</li>
+                <li>Close and lock safety gate</li>
+                <li>Click <strong>START RIDE</strong> button on HMI</li>
+                <li>Confirm green "MOTOR RUNNING" indicator appears</li>
+                <li>Monitor vehicle progress through zones on visualization panel</li>
+            </ol>
+
+            <h2>Normal Ride Stop</h2>
+            <ol>
+                <li>Click <strong>STOP RIDE</strong> button (vehicle will complete cycle and return to station)</li>
+                <li>Wait for vehicle to come to complete stop</li>
+                <li>Verify "BRAKE ENGAGED" indicator is illuminated</li>
+                <li>Open safety gate to allow guest exit</li>
+            </ol>
+
+            <h2>Emergency Stop Procedure</h2>
+
+            <div class="warning-box">
+                <strong>Use Emergency Stop for:</strong>
+                <ul>
+                    <li>Guest attempting to exit moving vehicle</li>
+                    <li>Loose article on track</li>
+                    <li>Unusual sounds or visible mechanical issues</li>
+                    <li>Guest medical emergency requiring immediate access</li>
+                    <li>Any situation where continuing operation poses risk</li>
+                </ul>
+            </div>
+
+            <ol>
+                <li>Press large red <strong>EMERGENCY STOP</strong> button immediately</li>
+                <li>System will halt all motion within 2 seconds</li>
+                <li>Make PA announcement: "Please remain seated, we are experiencing a temporary stop"</li>
+                <li>Assess situation and determine if evacuation is needed</li>
+                <li>Contact maintenance if mechanical issue suspected</li>
+                <li>To reset: Twist E-Stop button clockwise, then click <strong>RESET RIDE</strong> on HMI</li>
+            </ol>
+
+            <h2>HMI Control Panel Guide</h2>
+
+            <table>
+                <tr>
+                    <th>Control</th>
+                    <th>Purpose</th>
+                    <th>Notes</th>
+                </tr>
+                <tr>
+                    <td><strong>START RIDE</strong></td>
+                    <td>Begin ride cycle</td>
+                    <td>Only available when system in READY state</td>
+                </tr>
+                <tr>
+                    <td><strong>STOP RIDE</strong></td>
+                    <td>Controlled stop (completes cycle)</td>
+                    <td>Vehicle returns to station safely</td>
+                </tr>
+                <tr>
+                    <td><strong>EMERGENCY STOP</strong></td>
+                    <td>Immediate system halt</td>
+                    <td>Use only in emergency situations</td>
+                </tr>
+                <tr>
+                    <td><strong>RESET RIDE</strong></td>
+                    <td>Clear faults and return to ready</td>
+                    <td>Only use after resolving issue</td>
+                </tr>
+                <tr>
+                    <td><strong>Master Enable</strong></td>
+                    <td>System power enable</td>
+                    <td>Must be ON for operation</td>
+                </tr>
+            </table>
+
+            <h2>Understanding Status Indicators</h2>
+
+            <h3>Multi-PLC Status Panel</h3>
+            <ul>
+                <li><strong>Green:</strong> PLC connected and operating normally</li>
+                <li><strong>Yellow:</strong> PLC connected but reporting warning</li>
+                <li><strong>Red:</strong> PLC disconnected or critical fault</li>
+            </ul>
+
+            <h3>Ride State Machine</h3>
+            <ul>
+                <li><strong>IDLE:</strong> System powered but not active</li>
+                <li><strong>STARTING:</strong> Pre-start checks in progress</li>
+                <li><strong>RUNNING:</strong> Normal operation, vehicle in motion</li>
+                <li><strong>STOPPING:</strong> Controlled stop sequence</li>
+                <li><strong>STOPPED:</strong> Vehicle at rest in station</li>
+                <li><strong>ERROR:</strong> Fault detected, requires attention</li>
+            </ul>
+
+            <h2>Monitoring During Operation</h2>
+            <p>Continuously monitor these indicators during ride operation:</p>
+
+            <table>
+                <tr>
+                    <th>Indicator</th>
+                    <th>Normal State</th>
+                    <th>Action if Abnormal</th>
+                </tr>
+                <tr>
+                    <td>Motor Current</td>
+                    <td>50-150 amps</td>
+                    <td>If exceeds 180A, initiate controlled stop</td>
+                </tr>
+                <tr>
+                    <td>Speed</td>
+                    <td>0-100 units/sec</td>
+                    <td>Monitor for unexpected speed changes</td>
+                </tr>
+                <tr>
+                    <td>Bearing Temperature</td>
+                    <td>25-85°C</td>
+                    <td>If exceeds 90°C, stop and call maintenance</td>
+                </tr>
+                <tr>
+                    <td>Brake Pressure</td>
+                    <td>1150-1250 PSI</td>
+                    <td>If below 1100 PSI, do not operate</td>
+                </tr>
+                <tr>
+                    <td>Active Events</td>
+                    <td>Cycle through 1-9</td>
+                    <td>If events stop triggering, investigate</td>
+                </tr>
+            </table>
+
+            <h2>Common Alarms</h2>
+
+            <table>
+                <tr>
+                    <th>Alarm Code</th>
+                    <th>Description</th>
+                    <th>Response</th>
+                </tr>
+                <tr>
+                    <td>ALM-001</td>
+                    <td>Safety Gate Open</td>
+                    <td>Close gate, alarm will clear automatically</td>
+                </tr>
+                <tr>
+                    <td>ALM-002</td>
+                    <td>Emergency Stop Active</td>
+                    <td>Reset E-Stop button, then reset system</td>
+                </tr>
+                <tr>
+                    <td>ALM-003</td>
+                    <td>Motor Overcurrent</td>
+                    <td>Stop operation, contact maintenance</td>
+                </tr>
+                <tr>
+                    <td>ALM-004</td>
+                    <td>Safety PLC Not Ready</td>
+                    <td>Check Safety PLC status, may need restart</td>
+                </tr>
+                <tr>
+                    <td>ALM-005</td>
+                    <td>Position Sensor Fault</td>
+                    <td>Do not operate, contact maintenance immediately</td>
+                </tr>
+            </table>
+
+            <h2>End of Day Shutdown</h2>
+            <ol>
+                <li>Complete all rides in progress</li>
+                <li>Click <strong>RESET RIDE</strong> to return to IDLE state</li>
+                <li>Turn Master Enable to OFF</li>
+                <li>Document any issues or maintenance needs in operations log</li>
+                <li>Lock control cabinet</li>
+                <li>Turn off main circuit breakers</li>
+                <li>Complete end-of-day checklist and submit to operations manager</li>
+            </ol>
+
+            <div class="info-box">
+                <strong>📋 Required Training:</strong> All operators must complete "Nexus Operator Certification" (Course OPS-201) and pass practical exam before solo operation. Recertification required annually.
+            </div>
+
+            <div class="warning-box">
+                <strong>🚨 Important Numbers:</strong><br>
+                • Maintenance Emergency: ext. 911 or radio channel 2<br>
+                • Control Room: ext. 4500<br>
+                • Safety Officer: ext. 4502<br>
+                • Park Operations: ext. 4000
+            </div>
+        </div>
+    </div>
+</body>
+</html>

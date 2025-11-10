@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Architecture - Project Nexus Wiki</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f4f5f7; color: #172b4d; }
+        .header { background: linear-gradient(135deg, #0052cc 0%, #2684ff 100%); color: white; padding: 1rem 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .header h1 { font-size: 1.5rem; font-weight: 600; }
+        .header .subtitle { font-size: 0.9rem; opacity: 0.9; margin-top: 0.25rem; }
+        .container { display: flex; min-height: calc(100vh - 80px); }
+        .sidebar { width: 280px; background: white; border-right: 1px solid #dfe1e6; padding: 1.5rem 1rem; overflow-y: auto; }
+        .sidebar h3 { font-size: 0.75rem; text-transform: uppercase; color: #5e6c84; font-weight: 700; margin: 1.5rem 0 0.75rem; letter-spacing: 0.5px; }
+        .sidebar h3:first-child { margin-top: 0; }
+        .nav-item { display: block; padding: 0.5rem 0.75rem; color: #172b4d; text-decoration: none; border-radius: 4px; margin-bottom: 2px; font-size: 0.9rem; transition: background 0.2s; }
+        .nav-item:hover { background: #f4f5f7; }
+        .nav-item.active { background: #deebff; color: #0052cc; font-weight: 500; }
+        .content { flex: 1; padding: 2rem 3rem; max-width: 1200px; }
+        .breadcrumb { font-size: 0.85rem; color: #5e6c84; margin-bottom: 1rem; }
+        .breadcrumb a { color: #0052cc; text-decoration: none; }
+        .page-title { font-size: 2rem; font-weight: 600; margin-bottom: 0.5rem; color: #172b4d; }
+        .page-meta { font-size: 0.85rem; color: #5e6c84; margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 2px solid #dfe1e6; }
+        .info-box { background: #deebff; border-left: 4px solid #0052cc; padding: 1rem; margin: 1.5rem 0; border-radius: 4px; }
+        .warning-box { background: #fffae6; border-left: 4px solid #ff991f; padding: 1rem; margin: 1.5rem 0; border-radius: 4px; }
+        .content h2 { font-size: 1.5rem; margin: 2rem 0 1rem; color: #172b4d; }
+        .content h3 { font-size: 1.25rem; margin: 1.5rem 0 0.75rem; color: #172b4d; }
+        .content p { line-height: 1.6; margin-bottom: 1rem; color: #172b4d; }
+        .content ul, .content ol { margin: 1rem 0 1rem 2rem; line-height: 1.8; }
+        .content table { width: 100%; border-collapse: collapse; margin: 1.5rem 0; }
+        .content table th, .content table td { padding: 0.75rem; text-align: left; border: 1px solid #dfe1e6; }
+        .content table th { background: #f4f5f7; font-weight: 600; }
+        .content table tr:hover { background: #f4f5f7; }
+        .badge { display: inline-block; padding: 0.25rem 0.5rem; font-size: 0.75rem; font-weight: 600; border-radius: 3px; margin-right: 0.5rem; }
+        .badge-green { background: #e3fcef; color: #006644; }
+        .badge-orange { background: #fffae6; color: #ff991f; }
+        code { background: #f4f5f7; padding: 0.2rem 0.4rem; border-radius: 3px; font-family: 'Monaco', 'Courier New', monospace; font-size: 0.9em; }
+        .diagram-box { background: white; border: 2px solid #dfe1e6; border-radius: 8px; padding: 2rem; margin: 2rem 0; text-align: center; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎢 Project Nexus - Internal Wiki</h1>
+        <div class="subtitle">Attraction Control System Documentation & Knowledge Base</div>
+    </div>
+
+    <div class="container">
+        <div class="sidebar">
+            <h3>📚 Overview</h3>
+            <a href="index.html" class="nav-item">Project Home</a>
+            <h3>🔧 Engineering</h3>
+            <a href="system-architecture.html" class="nav-item active">System Architecture</a>
+            <a href="plc-programming.html" class="nav-item">PLC Programming</a>
+            <a href="network-topology.html" class="nav-item">Network Topology</a>
+        </div>
+
+        <div class="content">
+            <div class="breadcrumb">
+                <a href="index.html">Home</a> / <a href="#">Engineering</a> / System Architecture
+            </div>
+
+            <h1 class="page-title">System Architecture</h1>
+            <div class="page-meta">
+                Last updated: November 10, 2025 | Owner: Sarah Chen, Lead Control Systems Engineer | Version: 3.2
+            </div>
+
+            <div class="info-box">
+                <strong>📋 Document Purpose:</strong> This document describes the complete control system architecture for Project Nexus, including PLC configuration, communication protocols, and system integration.
+            </div>
+
+            <h2>Overview</h2>
+            <p>
+                Project Nexus utilizes a distributed three-PLC architecture designed for high reliability, modularity, and safety compliance. The system separates critical safety functions from operational control and show effects, allowing independent operation and maintenance of each subsystem.
+            </p>
+
+            <h2>Architecture Philosophy</h2>
+            <p>
+                The design follows industry best practices for theme park attractions:
+            </p>
+            <ul>
+                <li><strong>Separation of Concerns:</strong> Safety, control, and effects are isolated into separate PLCs</li>
+                <li><strong>Defense in Depth:</strong> Multiple layers of safety interlocks and redundancy</li>
+                <li><strong>Fail-Safe Design:</strong> System defaults to safe state on any failure</li>
+                <li><strong>Modularity:</strong> Each PLC can be serviced independently without full shutdown</li>
+                <li><strong>Scalability:</strong> Architecture supports future expansion and upgrades</li>
+            </ul>
+
+            <h2>Three-PLC Architecture</h2>
+
+            <div class="diagram-box">
+                <pre style="font-family: monospace; text-align: left; font-size: 0.85rem; line-height: 1.4;">
+┌─────────────────────────────────────────────────────────────────────┐
+│                         HMI / SCADA Layer                            │
+│                    (WebSocket Server on Port 8765)                   │
+└────────────┬────────────────────────┬────────────────────┬──────────┘
+             │                        │                    │
+     ┌───────▼────────┐      ┌───────▼────────┐   ┌──────▼─────────┐
+     │  MAIN PLC      │      │  SAFETY PLC    │   │ EFFECTS PLC    │
+     │  Port 502      │      │  Port 503      │   │ Port 504       │
+     │ ┌────────────┐ │      │ ┌────────────┐ │   │ ┌────────────┐ │
+     │ │ Ride Logic │ │◄────►│ │ Interlocks │ │   │ │ Show Ctrl  │ │
+     │ │ State Mach │ │      │ │ E-Stop Mon │ │   │ │ DMX/Artnet │ │
+     │ │ Position   │ │      │ │ Zone Track │ │   │ │ Effects    │ │
+     │ └────────────┘ │      │ └────────────┘ │   │ └────────────┘ │
+     └────────┬───────┘      └────────┬───────┘   └────────┬───────┘
+              │                       │                     │
+      ┌───────▼───────────────────────▼─────────────────────▼────────┐
+      │              Field I/O & Actuators                            │
+      │  Motors | Brakes | Sensors | Lighting | Audio | Effects      │
+      └───────────────────────────────────────────────────────────────┘
+                </pre>
+            </div>
+
+            <h2>PLC Specifications</h2>
+
+            <h3>Main Control PLC (Port 502)</h3>
+            <table>
+                <tr>
+                    <th>Parameter</th>
+                    <th>Specification</th>
+                </tr>
+                <tr>
+                    <td>Model</td>
+                    <td>OpenPLC Runtime on Industrial PC</td>
+                </tr>
+                <tr>
+                    <td>Purpose</td>
+                    <td>Primary ride control and coordination</td>
+                </tr>
+                <tr>
+                    <td>Functions</td>
+                    <td>
+                        • State machine control<br>
+                        • Vehicle position tracking<br>
+                        • Speed management<br>
+                        • Zone control logic<br>
+                        • Show sequence timing
+                    </td>
+                </tr>
+                <tr>
+                    <td>I/O Count</td>
+                    <td>33 Coils (Digital Outputs), 10 Registers (Analog I/O)</td>
+                </tr>
+                <tr>
+                    <td>Scan Time</td>
+                    <td>~10ms typical</td>
+                </tr>
+                <tr>
+                    <td>Communication</td>
+                    <td>Modbus TCP (Primary), Handshake with Safety & Effects</td>
+                </tr>
+            </table>
+
+            <h3>Safety PLC (Port 503)</h3>
+            <table>
+                <tr>
+                    <th>Parameter</th>
+                    <th>Specification</th>
+                </tr>
+                <tr>
+                    <td>Model</td>
+                    <td>OpenPLC Runtime (Safety-rated configuration)</td>
+                </tr>
+                <tr>
+                    <td>Purpose</td>
+                    <td>Safety-critical monitoring and interlocks</td>
+                </tr>
+                <tr>
+                    <td>Functions</td>
+                    <td>
+                        • Emergency stop monitoring<br>
+                        • Safety gate interlocks<br>
+                        • Zone occupancy detection<br>
+                        • Ride event validation<br>
+                        • Fault detection
+                    </td>
+                </tr>
+                <tr>
+                    <td>I/O Count</td>
+                    <td>16 Safety Inputs/Outputs</td>
+                </tr>
+                <tr>
+                    <td>Scan Time</td>
+                    <td>~5ms (prioritized for safety response)</td>
+                </tr>
+                <tr>
+                    <td>Certification</td>
+                    <td><span class="badge badge-orange">SIL 2 Target</span></td>
+                </tr>
+            </table>
+
+            <h3>Effects PLC (Port 504)</h3>
+            <table>
+                <tr>
+                    <th>Parameter</th>
+                    <th>Specification</th>
+                </tr>
+                <tr>
+                    <td>Model</td>
+                    <td>OpenPLC Runtime with Show Control Extensions</td>
+                </tr>
+                <tr>
+                    <td>Purpose</td>
+                    <td>Show effects and entertainment systems</td>
+                </tr>
+                <tr>
+                    <td>Functions</td>
+                    <td>
+                        • Lighting control (DMX512)<br>
+                        • Audio triggering<br>
+                        • Special effects (smoke, water, wind)<br>
+                        • Projection mapping sync<br>
+                        • Pyrotechnics (when approved)
+                    </td>
+                </tr>
+                <tr>
+                    <td>I/O Count</td>
+                    <td>16 Effect Channels</td>
+                </tr>
+                <tr>
+                    <td>External Systems</td>
+                    <td>DMX Network, Audio DSP, Media Servers</td>
+                </tr>
+            </table>
+
+            <h2>Communication Architecture</h2>
+
+            <h3>Modbus TCP Protocol</h3>
+            <p>
+                All three PLCs communicate via Modbus TCP over Ethernet. The protocol provides:
+            </p>
+            <ul>
+                <li>Standard industrial protocol with wide tooling support</li>
+                <li>Deterministic timing for real-time control</li>
+                <li>Simple troubleshooting with standard Modbus tools</li>
+                <li>Low latency (typically &lt;10ms round-trip)</li>
+            </ul>
+
+            <h3>Address Mapping</h3>
+            <table>
+                <tr>
+                    <th>Address Range</th>
+                    <th>Type</th>
+                    <th>Purpose</th>
+                </tr>
+                <tr>
+                    <td>0-32</td>
+                    <td>Coils (R/W)</td>
+                    <td>Digital control signals (enable, commands, status)</td>
+                </tr>
+                <tr>
+                    <td>0-9</td>
+                    <td>Holding Registers (R/W)</td>
+                    <td>Analog values (position, speed, counters)</td>
+                </tr>
+                <tr>
+                    <td>0-9</td>
+                    <td>Input Registers (RO)</td>
+                    <td>Read-only system data (sensors, diagnostics)</td>
+                </tr>
+            </table>
+
+            <h2>Inter-PLC Communication</h2>
+            <p>
+                The three PLCs exchange status and coordination signals via dedicated Modbus coils:
+            </p>
+            <ul>
+                <li><strong>Coil 31:</strong> Safety PLC Ready - Heartbeat from Safety to Main</li>
+                <li><strong>Coil 32:</strong> Effects PLC Ready - Heartbeat from Effects to Main</li>
+                <li><strong>Coils 8-16:</strong> Event Enable signals from Main to Safety</li>
+                <li><strong>Coils 17-25:</strong> Event Active feedback from Safety to Main</li>
+            </ul>
+
+            <div class="warning-box">
+                <strong>⚠️ Critical Design Rule:</strong> The Main PLC will not start the ride unless both Safety PLC Ready (Coil 31) and Effects PLC Ready (Coil 32) are TRUE. This ensures all systems are online before operation.
+            </div>
+
+            <h2>Network Topology</h2>
+            <p>
+                All PLCs connect to a dedicated industrial Ethernet switch with the following requirements:
+            </p>
+            <ul>
+                <li>Managed switch with VLAN support</li>
+                <li>Quality of Service (QoS) configured for PLC traffic priority</li>
+                <li>Redundant power supplies</li>
+                <li>DIN-rail mounting for control cabinet installation</li>
+                <li>Isolated from guest Wi-Fi and corporate networks</li>
+            </ul>
+
+            <h2>HMI Integration</h2>
+            <p>
+                The HMI/SCADA system connects to all three PLCs simultaneously via:
+            </p>
+            <ul>
+                <li><strong>Protocol:</strong> WebSocket server providing real-time bidirectional communication</li>
+                <li><strong>Port:</strong> 8765 for WebSocket connections</li>
+                <li><strong>Data Flow:</strong> HMI sends commands via Modbus writes, receives status updates via Modbus reads</li>
+                <li><strong>Update Rate:</strong> 100ms (10Hz) for smooth visualization</li>
+            </ul>
+
+            <h2>Reliability & Redundancy</h2>
+            <p>
+                System reliability features include:
+            </p>
+            <ul>
+                <li><strong>Watchdog Timers:</strong> Each PLC monitors heartbeat signals from others</li>
+                <li><strong>Fail-Safe Outputs:</strong> All critical outputs default to safe state on PLC failure</li>
+                <li><strong>Network Redundancy:</strong> Dual Ethernet paths available for critical signals</li>
+                <li><strong>UPS Backup:</strong> 30-minute battery backup for graceful shutdown</li>
+                <li><strong>Hot Spare PLCs:</strong> Available for rapid replacement if needed</li>
+            </ul>
+
+            <h2>Revision History</h2>
+            <table>
+                <tr>
+                    <th>Version</th>
+                    <th>Date</th>
+                    <th>Author</th>
+                    <th>Changes</th>
+                </tr>
+                <tr>
+                    <td>3.2</td>
+                    <td>Nov 10, 2025</td>
+                    <td>Sarah Chen</td>
+                    <td>Added effects PLC specifications</td>
+                </tr>
+                <tr>
+                    <td>3.1</td>
+                    <td>Oct 15, 2025</td>
+                    <td>Sarah Chen</td>
+                    <td>Updated communication protocol details</td>
+                </tr>
+                <tr>
+                    <td>3.0</td>
+                    <td>Sept 1, 2025</td>
+                    <td>Michael Torres</td>
+                    <td>Complete rewrite for three-PLC architecture</td>
+                </tr>
+                <tr>
+                    <td>2.0</td>
+                    <td>June 15, 2024</td>
+                    <td>Michael Torres</td>
+                    <td>Initial design document</td>
+                </tr>
+            </table>
+
+            <div class="info-box">
+                <strong>📞 Contact:</strong> For questions about this architecture, contact Sarah Chen (Control Systems Lead) at sarah.chen@nexus-project.internal or ext. 4521
+            </div>
+        </div>
+    </div>
+</body>
+</html>
