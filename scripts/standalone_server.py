@@ -173,6 +173,25 @@ def read_coil_from_plc(plc_id: str, address: int) -> dict:
         return {"success": False, "error": str(e), "value": False, "plc": plc_id}
 
 
+def read_register_from_plc(plc_id: str, address: int, count: int = 1) -> dict:
+    """Read from Modbus holding register(s) on specific PLC"""
+    if plc_id not in modbus_clients or not plc_connected_status.get(plc_id):
+        return {"success": False, "error": f"{plc_id} PLC not connected", "value": 0, "values": []}
+
+    try:
+        client = modbus_clients[plc_id]
+        result = client.read_holding_registers(address=address, count=count)
+        if result and not result.isError():
+            if count == 1:
+                return {"success": True, "address": address, "value": result.registers[0], "plc": plc_id}
+            else:
+                return {"success": True, "address": address, "values": result.registers[:count], "plc": plc_id}
+        else:
+            return {"success": False, "error": "Read failed", "value": 0, "values": [], "plc": plc_id}
+    except Exception as e:
+        return {"success": False, "error": str(e), "value": 0, "values": [], "plc": plc_id}
+
+
 async def log_modbus_operation(plc: str, operation: str, address: int, value=None, count=None):
     """Broadcast Modbus operation to connected clients for network monitoring"""
     await broadcast({
