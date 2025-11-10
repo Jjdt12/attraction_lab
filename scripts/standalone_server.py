@@ -676,7 +676,15 @@ async def poll_plc_coils():
                     else:
                         pos_value = 'ERR'
 
-                    print(f"📊 [EFFECTS DEBUG] Events: {' '.join(event_states)} | MW10={pos_value}")
+                    # Read event_enable bits from EFFECTS memory bits 800-808
+                    enable_states = []
+                    for i in range(1, 10):
+                        mem_bit_addr = 799 + i
+                        enable_bit = read_coil_from_plc('EFFECTS', mem_bit_addr)
+                        if enable_bit and enable_bit.get('success'):
+                            enable_states.append(f"EN{i}={'T' if enable_bit['value'] else 'F'}")
+
+                    print(f"📊 [EFFECTS DEBUG] Events: {' '.join(event_states)} | MW10={pos_value} | Enables: {' '.join(enable_states)}")
 
             # Inter-PLC Communication: Copy position from MAIN to EFFECTS
             if modbus_client and is_plc_connected and 'EFFECTS' in modbus_clients and plc_connected_status.get('EFFECTS'):
