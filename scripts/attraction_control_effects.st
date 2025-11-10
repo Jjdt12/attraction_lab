@@ -106,6 +106,8 @@ IF event_1_enable AND current_position_from_main >= 0 AND current_position_from_
     IF last_position < 0 OR last_position > 2 THEN
         event_1_counter := event_1_counter + 1;
     END_IF;
+ELSE
+    event_1_active := FALSE;
 END_IF;
 
 IF event_2_enable AND current_position_from_main >= 3 AND current_position_from_main <= 5 THEN
@@ -113,6 +115,8 @@ IF event_2_enable AND current_position_from_main >= 3 AND current_position_from_
     IF last_position < 3 OR last_position > 5 THEN
         event_2_counter := event_2_counter + 1;
     END_IF;
+ELSE
+    event_2_active := FALSE;
 END_IF;
 
 IF event_3_enable AND current_position_from_main >= 6 AND current_position_from_main <= 8 THEN
@@ -120,6 +124,8 @@ IF event_3_enable AND current_position_from_main >= 6 AND current_position_from_
     IF last_position < 6 OR last_position > 8 THEN
         event_3_counter := event_3_counter + 1;
     END_IF;
+ELSE
+    event_3_active := FALSE;
 END_IF;
 
 IF event_4_enable AND current_position_from_main >= 9 AND current_position_from_main <= 11 THEN
@@ -127,6 +133,8 @@ IF event_4_enable AND current_position_from_main >= 9 AND current_position_from_
     IF last_position < 9 OR last_position > 11 THEN
         event_4_counter := event_4_counter + 1;
     END_IF;
+ELSE
+    event_4_active := FALSE;
 END_IF;
 
 IF event_5_enable AND current_position_from_main >= 12 AND current_position_from_main <= 14 THEN
@@ -134,6 +142,8 @@ IF event_5_enable AND current_position_from_main >= 12 AND current_position_from
     IF last_position < 12 OR last_position > 14 THEN
         event_5_counter := event_5_counter + 1;
     END_IF;
+ELSE
+    event_5_active := FALSE;
 END_IF;
 
 IF event_6_enable AND current_position_from_main >= 15 AND current_position_from_main <= 17 THEN
@@ -141,6 +151,8 @@ IF event_6_enable AND current_position_from_main >= 15 AND current_position_from
     IF last_position < 15 OR last_position > 17 THEN
         event_6_counter := event_6_counter + 1;
     END_IF;
+ELSE
+    event_6_active := FALSE;
 END_IF;
 
 IF event_7_enable AND current_position_from_main >= 18 AND current_position_from_main <= 20 THEN
@@ -148,6 +160,8 @@ IF event_7_enable AND current_position_from_main >= 18 AND current_position_from
     IF last_position < 18 OR last_position > 20 THEN
         event_7_counter := event_7_counter + 1;
     END_IF;
+ELSE
+    event_7_active := FALSE;
 END_IF;
 
 IF event_8_enable AND current_position_from_main >= 21 AND current_position_from_main <= 23 THEN
@@ -155,6 +169,8 @@ IF event_8_enable AND current_position_from_main >= 21 AND current_position_from
     IF last_position < 21 OR last_position > 23 THEN
         event_8_counter := event_8_counter + 1;
     END_IF;
+ELSE
+    event_8_active := FALSE;
 END_IF;
 
 IF event_9_enable AND current_position_from_main >= 24 AND current_position_from_main <= 26 THEN
@@ -162,6 +178,8 @@ IF event_9_enable AND current_position_from_main >= 24 AND current_position_from
     IF last_position < 24 OR last_position > 26 THEN
         event_9_counter := event_9_counter + 1;
     END_IF;
+ELSE
+    event_9_active := FALSE;
 END_IF;
 
 IF event_4_active_from_safety THEN
