@@ -44,12 +44,10 @@ VAR_EXTERNAL
 END_VAR
 
 VAR
-    (* HMI Command Inputs - Written by SCADA via Modbus *)
-    master_enable : BOOL;              (* Coil 0 *)
-    dummy_coil_1 : BOOL;               (* Coil 1 - padding *)
-    dummy_coil_2 : BOOL;               (* Coil 2 - padding *)
-    emergency_stop_button : BOOL;      (* Coil 3 *)
-    safety_gate_closed : BOOL;         (* Coil 4 *)
+    (* HMI Command Inputs - Written by SCADA via Modbus Coils *)
+    master_enable AT %IX0.0 : BOOL;
+    emergency_stop_button AT %IX0.3 : BOOL;
+    safety_gate_closed AT %IX0.4 : BOOL;
 
     scan_counter : DINT;
     last_event_1 : BOOL;

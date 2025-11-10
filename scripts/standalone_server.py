@@ -354,6 +354,26 @@ async def poll_plc_coils():
                       f"brake={brake.get('value', '?')} | "
                       f"error={error_reg.get('value', '?')}")
 
+                # Inter-PLC Communication Bridge: Read safety_ok from SAFETY PLC, write to MAIN PLC
+                if 'SAFETY' in modbus_clients and plc_connected_status.get('SAFETY'):
+                    try:
+                        # Read safety_ok from SAFETY PLC (coil 30 based on original monolithic code)
+                        safety_result = read_coil_from_plc('SAFETY', 30)
+                        if safety_result["success"]:
+                            safety_ok_value = safety_result["value"]
+                            # Write to MAIN PLC's safety_plc_ready (coil 31)
+                            if modbus_client:
+                                try:
+                                    result = modbus_client.write_coil(address=31, value=safety_ok_value)
+                                    if result and not result.isError():
+                                        if safety_ok_value != previous_coil_states.get(31):
+                                            print(f"🔗 [BRIDGE] safety_ok from SAFETY -> safety_plc_ready on MAIN: {safety_ok_value}")
+                                            previous_coil_states[31] = safety_ok_value
+                                except Exception as e:
+                                    pass  # Fail silently to avoid spam
+                    except Exception as e:
+                        pass  # Fail silently
+
             # Poll Main PLC (backward compatibility)
             if modbus_client and is_plc_connected:
                 # Poll coils using defined range
