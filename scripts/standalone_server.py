@@ -681,13 +681,17 @@ async def poll_plc_coils():
 
                     # Read event_enable registers from holding registers 800-808 (%MW800-%MW808)
                     enable_states = []
+                    enable_reg_values = []
                     for i in range(1, 10):
                         reg_addr = 799 + i  # event_1 = MW800, event_9 = MW808
                         enable_reg = read_register_from_plc('EFFECTS', reg_addr)
                         if enable_reg and enable_reg.get('success'):
                             enable_states.append(f"EN{i}={'T' if enable_reg['value'] != 0 else 'F'}")
+                            enable_reg_values.append(f"MW{reg_addr}={enable_reg['value']}")
 
                     print(f"📊 [EFFECTS DEBUG] Events: {' '.join(event_states)} | MW10={pos_value} | Enables: {' '.join(enable_states)}")
+                    if enable_reg_values:
+                        print(f"📊 [EFFECTS RAW] {' '.join(enable_reg_values)}")
 
             # Inter-PLC Communication: Copy position from MAIN to EFFECTS
             if modbus_client and is_plc_connected and 'EFFECTS' in modbus_clients and plc_connected_status.get('EFFECTS'):
