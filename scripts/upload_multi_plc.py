@@ -119,8 +119,8 @@ def compile_program(plc):
 
     compile_cmd = (
         f"docker exec {plc['container']} /bin/bash -c '"
-        f"cd {WEBSERVER_DIR} && "
-        f"./scripts/compile_program.sh st_files/{plc['st_file']}'"
+        f"cd {WEBSERVER_DIR}/scripts/ && "
+        f"./compile_program.sh {plc['st_file']}'"
     )
 
     success, stdout, stderr = run_docker_command(compile_cmd, check=False)
