@@ -19,16 +19,6 @@ VAR
     event_8_enable_reg AT %MW807 : INT;
     event_9_enable_reg AT %MW808 : INT;
 
-    event_1_enable : BOOL;
-    event_2_enable : BOOL;
-    event_3_enable : BOOL;
-    event_4_enable : BOOL;
-    event_5_enable : BOOL;
-    event_6_enable : BOOL;
-    event_7_enable : BOOL;
-    event_8_enable : BOOL;
-    event_9_enable : BOOL;
-
     event_1_active AT %QX2.1 : BOOL;
     event_2_active AT %QX2.2 : BOOL;
     event_3_active AT %QX2.3 : BOOL;
@@ -42,9 +32,6 @@ VAR
     current_position_from_main AT %MW10 : INT;
     event_1_active_from_safety_reg AT %MW70 : INT;
     event_4_active_from_safety_reg AT %MW71 : INT;
-
-    event_1_active_from_safety : BOOL;
-    event_4_active_from_safety : BOOL;
 
     lighting_scene AT %MW60 : INT;
     audio_volume AT %MW61 : INT;
@@ -71,6 +58,19 @@ VAR
     effect_timer : INT;
     runtime_accumulator : DINT;
     last_position : INT;
+
+    event_1_enable : BOOL;
+    event_2_enable : BOOL;
+    event_3_enable : BOOL;
+    event_4_enable : BOOL;
+    event_5_enable : BOOL;
+    event_6_enable : BOOL;
+    event_7_enable : BOOL;
+    event_8_enable : BOOL;
+    event_9_enable : BOOL;
+
+    event_1_active_from_safety : BOOL;
+    event_4_active_from_safety : BOOL;
 END_VAR
 
 IF scan_counter = 0 THEN
