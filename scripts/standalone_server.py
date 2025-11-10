@@ -659,6 +659,39 @@ async def poll_plc_coils():
                     previous_coil_states['effects_first_values_logged'] = True
                     print("✓ [EFFECTS] First event poll complete")
 
+                # Poll Effects PLC for actual effect output coils
+                EFFECT_COILS = {
+                    28: 'flash_light',          # %QX3.4
+                    60: 'show_lighting_on',     # %QX7.4
+                    61: 'audio_trigger_1',      # %QX7.5
+                    62: 'audio_trigger_2',      # %QX7.6
+                    63: 'audio_trigger_3',      # %QX7.7
+                    64: 'fog_machine_on',       # %QX8.0
+                    65: 'strobe_active',        # %QX8.1
+                    66: 'laser_effect_on',      # %QX8.2
+                }
+
+                for address, name in EFFECT_COILS.items():
+                    result = read_coil_from_plc('EFFECTS', address)
+                    if result["success"]:
+                        current_value = result["value"]
+                        state_key = f"EFFECTS_COIL_{address}"
+                        previous_value = previous_coil_states.get(state_key)
+
+                        if previous_value is None:
+                            previous_coil_states[state_key] = current_value
+                        elif previous_value != current_value:
+                            print(f"💡 [EFFECTS] {name} (coil {address}): {previous_value} -> {current_value}")
+                            previous_coil_states[state_key] = current_value
+
+                            await broadcast({
+                                "type": "coil_change",
+                                "address": address,
+                                "name": name,
+                                "value": current_value,
+                                "plc": "EFFECTS",
+                            })
+
                 # Debug: Log all event states every 10 seconds
                 import time
                 if not hasattr(poll_plc_coils, 'last_event_debug_time'):

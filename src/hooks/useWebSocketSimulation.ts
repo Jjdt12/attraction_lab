@@ -268,6 +268,13 @@ export function useWebSocketSimulation() {
             }));
           } else if (data.type === 'coil_change') {
             const { address, name, value } = data;
+
+            // Effect coils - log for debugging
+            const effectCoils = [28, 60, 61, 62, 63, 64, 65, 66];
+            if (effectCoils.includes(address)) {
+              console.log(`💡 [EFFECTS] ${name} (coil ${address}) = ${value}`);
+            }
+
             // Only log important coil changes
             if (name === 'motor_running' || name === 'emergency_stop_button' || name === 'master_enable') {
               console.log(`[PLC] ${name} = ${value}`);
