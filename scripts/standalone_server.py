@@ -266,8 +266,27 @@ async def poll_plc_coils():
 
     print("🔄 Started multi-PLC polling task")
 
+    first_poll = True
+
     while True:
         try:
+            # One-time diagnostic on first poll
+            if first_poll and modbus_client and is_plc_connected:
+                print("🔍 [DEBUG] Reading critical coils and registers:")
+                # Check safety_plc_ready (coil 31)
+                result31 = read_coil(31)
+                if result31["success"]:
+                    print(f"  - Coil 31 (safety_plc_ready): {result31['value']}")
+                # Check effects_plc_ready (coil 32)
+                result32 = read_coil(32)
+                if result32["success"]:
+                    print(f"  - Coil 32 (effects_plc_ready): {result32['value']}")
+                # Check state register (4096)
+                state_result = read_register(4096, 1)
+                if state_result["success"]:
+                    print(f"  - Register 4096 (state): {state_result['value']}")
+                first_poll = False
+
             # Poll Main PLC (backward compatibility)
             if modbus_client and is_plc_connected:
                 # Poll coils using defined range
@@ -282,9 +301,8 @@ async def poll_plc_coils():
                             previous_coil_states[address] = current_value
                         elif previous_value != current_value:
                             coil_name = COIL_NAMES.get(address, f"coil_{address}")
-                            # Only log important coil changes
-                            if coil_name in ['motor_running', 'emergency_stop_button', 'master_enable', 'start_command', 'stop_command']:
-                                print(f"🔔 [PLC] {coil_name}: {previous_value} -> {current_value}")
+                            # Log ALL coil changes for debugging
+                            print(f"🔔 [PLC] {coil_name}: {previous_value} -> {current_value}")
                             previous_coil_states[address] = current_value
 
                             await broadcast({
@@ -335,9 +353,8 @@ async def poll_plc_coils():
                                     previous_register_states[address] = current_value
                                 elif previous_value != current_value:
                                     reg_name = REGISTER_NAMES.get(address, f"register_{address}")
-                                    # Only log position and state changes
-                                    if reg_name in ['current_position', 'state']:
-                                        print(f"🔔 [PLC] {reg_name}: {previous_value} -> {current_value}")
+                                    # Log all register changes for debugging
+                                    print(f"🔔 [PLC] {reg_name}: {previous_value} -> {current_value}")
                                     previous_register_states[address] = current_value
 
                                     await broadcast({
