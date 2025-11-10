@@ -604,12 +604,22 @@ async def poll_plc_coils():
                 EVENT_COIL_START = 17
                 EVENT_COIL_COUNT = 9  # Events 1-9 (coils 17-25)
 
+                # Log first poll
+                if not previous_coil_states.get('effects_poll_started'):
+                    print(f"🔍 [EFFECTS] Polling event coils {EVENT_COIL_START}-{EVENT_COIL_START + EVENT_COIL_COUNT - 1}")
+                    previous_coil_states['effects_poll_started'] = True
+
                 for address in range(EVENT_COIL_START, EVENT_COIL_START + EVENT_COIL_COUNT):
                     result = read_coil_from_plc('EFFECTS', address)
                     if result["success"]:
                         current_value = result["value"]
                         state_key = f"EFFECTS_{address}"
                         previous_value = previous_coil_states.get(state_key)
+
+                        # Debug log first poll
+                        if not previous_coil_states.get('effects_first_values_logged'):
+                            event_num = address - EVENT_COIL_START + 1
+                            print(f"🔍 [EFFECTS] event_{event_num}_active (coil {address}) = {current_value}")
 
                         if previous_value is None:
                             previous_coil_states[state_key] = current_value
@@ -628,6 +638,11 @@ async def poll_plc_coils():
                                 "value": current_value,
                                 "plc": "EFFECTS",
                             })
+
+                # Mark first poll complete
+                if not previous_coil_states.get('effects_first_values_logged'):
+                    previous_coil_states['effects_first_values_logged'] = True
+                    print("✓ [EFFECTS] First event poll complete")
 
             # Inter-PLC Communication: Copy position from MAIN to EFFECTS
             if modbus_client and is_plc_connected and 'EFFECTS' in modbus_clients and plc_connected_status.get('EFFECTS'):
