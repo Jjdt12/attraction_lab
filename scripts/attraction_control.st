@@ -112,13 +112,9 @@ END_VAR
 
 (* ============================================ *)
 (* HMI COMMAND MAPPING *)
-(* Copy coil values written by HMI to internal variables *)
+(* Read commands directly from coils written by HMI *)
+(* Note: Cannot assign to VAR_EXTERNAL, so use hmi_* vars *)
 (* ============================================ *)
-master_enable := hmi_master_enable;
-start_command := hmi_start_cmd;
-stop_command := hmi_stop_cmd;
-emergency_stop_button := hmi_estop_cmd;
-safety_gate_closed := hmi_gate_cmd;
 
 (* ============================================ *)
 (* INITIALIZATION ON FIRST SCAN *)
@@ -181,9 +177,9 @@ scan_counter := scan_counter + 1;
 (* Multi-condition check for safe operation *)
 (* ============================================ *)
 safety_ok := FALSE;
-IF safety_gate_closed THEN
-    IF NOT emergency_stop_button THEN
-        IF master_enable THEN
+IF hmi_gate_cmd THEN
+    IF NOT hmi_estop_cmd THEN
+        IF hmi_master_enable THEN
             safety_ok := TRUE;
         END_IF;
     END_IF;
@@ -191,7 +187,7 @@ END_IF;
 
 (* Detect safety bypass attempts - CTF hook *)
 IF state = 2 THEN  (* Running *)
-    IF NOT safety_gate_closed THEN
+    IF NOT hmi_gate_cmd THEN
         safety_bypass_detected := TRUE;
         stealth_counter := stealth_counter + 1;
         alarm_register := alarm_register + 1;  (* Set bit 0 *)
@@ -355,7 +351,7 @@ END_IF;
 (* ============================================ *)
 (* EMERGENCY STOP - HIGHEST PRIORITY *)
 (* ============================================ *)
-IF emergency_stop_button THEN
+IF hmi_estop_cmd THEN
     state := 4;  (* Emergency state *)
     motor_running := FALSE;
     brake_engaged := TRUE;
@@ -378,7 +374,7 @@ CASE state OF
         actual_speed := 0;
         warmup_timer := 0;
 
-        IF start_command THEN
+        IF hmi_start_cmd THEN
             IF safety_ok THEN
                 state := 1;
                 start_timer := 0;
@@ -386,11 +382,11 @@ CASE state OF
             ELSE
                 (* Safety failure *)
                 flash_light := TRUE;
-                IF NOT safety_gate_closed THEN
+                IF NOT hmi_gate_cmd THEN
                     last_error_code := 210;
-                ELSIF emergency_stop_button THEN
+                ELSIF hmi_estop_cmd THEN
                     last_error_code := 211;
-                ELSIF NOT master_enable THEN
+                ELSIF NOT hmi_master_enable THEN
                     last_error_code := 212;
                 END_IF;
             END_IF;
@@ -417,7 +413,7 @@ CASE state OF
         motor_running := TRUE;
         brake_engaged := FALSE;
 
-        IF stop_command THEN
+        IF hmi_stop_cmd THEN
             state := 3;
         END_IF;
 
@@ -516,7 +512,7 @@ CASE state OF
         actual_speed := 0;
 
         (* Can only clear if E-Stop released *)
-        IF NOT emergency_stop_button THEN
+        IF NOT hmi_estop_cmd THEN
             state := 0;
             alert_active := FALSE;
             flash_light := FALSE;
