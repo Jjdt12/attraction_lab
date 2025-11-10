@@ -75,16 +75,11 @@ IF scan_counter = 0 THEN
     target_speed := 50;
     speed_ramp_rate := 2;
 
-    (* PLCs ready flags controlled by inter-PLC communication bridge *)
-    safety_plc_ready := FALSE;
-    effects_plc_ready := TRUE;
+    (* safety_plc_ready and effects_plc_ready are INPUTS - cannot initialize *)
+    (* They are written by the SCADA bridge reading from other PLCs *)
 END_IF;
 
 scan_counter := scan_counter + 1;
-
-(* Inter-PLC communication: safety_plc_ready is written by SCADA bridge *)
-(* reading safety_ok from SAFETY PLC and writing here *)
-effects_plc_ready := TRUE;
 
 zone_1_position := 0;
 zone_2_position := 0;
@@ -248,8 +243,8 @@ CONFIGURATION Config0
             zone_2_enable AT %QX0.6 : BOOL;
             zone_3_enable AT %QX0.7 : BOOL;
 
-            safety_plc_ready AT %QX0.31 : BOOL;
-            effects_plc_ready AT %QX0.32 : BOOL;
+            safety_plc_ready AT %IX0.31 : BOOL;
+            effects_plc_ready AT %IX0.32 : BOOL;
 
             speed_setpoint AT %IW0 : INT;
             current_position AT %QW1 : INT;

@@ -374,6 +374,18 @@ async def poll_plc_coils():
                     except Exception as e:
                         pass  # Fail silently
 
+                # Inter-PLC Communication: Set effects_plc_ready to TRUE (EFFECTS PLC always ready)
+                if modbus_client:
+                    try:
+                        # EFFECTS PLC doesn't have a ready signal, so just set to TRUE
+                        if previous_coil_states.get(32) != True:
+                            result = modbus_client.write_coil(address=32, value=True)
+                            if result and not result.isError():
+                                print(f"🔗 [BRIDGE] effects_plc_ready on MAIN: True (default)")
+                                previous_coil_states[32] = True
+                    except Exception as e:
+                        pass  # Fail silently
+
             # Poll Main PLC (backward compatibility)
             if modbus_client and is_plc_connected:
                 # Poll coils using defined range
