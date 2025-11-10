@@ -496,11 +496,11 @@ async def poll_plc_coils():
                             coil_addr = 7 + i  # event_1_enable = coil 8, etc.
                             enable = read_coil_from_plc('MAIN', coil_addr)
                             if enable['success']:
-                                # Write to EFFECTS PLC memory bits 800-808 (%MX100.0-%MX101.0)
-                                mem_bit_addr = 799 + i  # event_1_enable = memory bit 800, etc.
-                                modbus_clients['EFFECTS'].write_coil(mem_bit_addr, enable['value'])
+                                # Write to EFFECTS PLC discrete inputs 8-16 (%IX1.0-IX2.0)
+                                input_addr = 7 + i  # event_1_enable = input 8, etc.
+                                modbus_clients['EFFECTS'].write_coil(input_addr, enable['value'])
                     except Exception as e:
-                        print(f"⚠️ [BRIDGE] Error in Bridge 7: {e}")
+                        print(f"⚠️ [BRIDGE] Error in Bridge 8: {e}")
 
             # Continuous diagnostic every poll cycle (more verbose debugging)
             if modbus_client and is_plc_connected:
