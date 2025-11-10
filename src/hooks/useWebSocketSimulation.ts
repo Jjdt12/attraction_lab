@@ -28,6 +28,7 @@ interface SimulationState {
   speedSetpoint: number;
   state: number;
   runtimeHours: number;
+  cycleCounter: number;
   maintenanceFlag: boolean;
   lastErrorCode: number;
   activeEvents: Set<number>;  // Event numbers 1-9 from Safety PLC
@@ -56,6 +57,7 @@ export function useWebSocketSimulation() {
     activeEvents: new Set<number>(),
     state: 0,
     runtimeHours: 0,
+    cycleCounter: 0,
     maintenanceFlag: false,
     lastErrorCode: 0,
     modbusOperations: [],
@@ -315,6 +317,7 @@ export function useWebSocketSimulation() {
                 updates.runtimeHours = value;
               } else if (name === 'cycle_counter') {
                 console.log(`[Cycle Counter] Cycle counter changed to ${value}`);
+                updates.cycleCounter = value;
               }
 
               return { ...prev, ...updates };

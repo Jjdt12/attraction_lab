@@ -25,19 +25,42 @@ export class ProcessSimulator {
     this.tempAccumulator = 0;
   }
 
-  update(motorRunning: boolean, currentSpeed: number, cycleCount: number): ProcessVariables {
+  update(
+    motorRunning: boolean,
+    currentSpeed: number,
+    cycleCount: number,
+    carPosition: number = 0,
+    brakeEngaged: boolean = false,
+    runtimeHours: number = 0
+  ): ProcessVariables {
     const now = Date.now();
     const deltaTime = (now - this.lastUpdateTime) / 1000;
     this.lastUpdateTime = now;
 
     if (motorRunning && currentSpeed > 0) {
-      const loadFactor = (currentSpeed * 80) / 100;
-      this.variables.motorCurrentAmps = Math.round(50 + loadFactor + (Math.random() * 5 - 2.5));
+      // Position-based load simulation (zone effects)
+      let positionLoadFactor = 0;
+      if (carPosition >= 5 && carPosition <= 10) {
+        // Zone 1: Launch zone (high load)
+        positionLoadFactor = 15;
+      } else if (carPosition >= 15 && carPosition <= 20) {
+        // Zone 2: Show effects zone (medium load)
+        positionLoadFactor = 10;
+      } else if (carPosition >= 22 && carPosition <= 26) {
+        // Zone 3: Finale zone (high load)
+        positionLoadFactor = 12;
+      }
 
+      const speedLoadFactor = (currentSpeed * 80) / 100;
+      this.variables.motorCurrentAmps = Math.round(50 + speedLoadFactor + positionLoadFactor + (Math.random() * 5 - 2.5));
+
+      // Temperature increases faster at high speeds or high loads
+      const heatRate = currentSpeed > 80 ? 3 : 5;
       this.tempAccumulator += deltaTime;
-      if (this.tempAccumulator >= 5) {
+      if (this.tempAccumulator >= heatRate) {
         this.tempAccumulator = 0;
-        if (this.variables.bearingTempCelsius < 85) {
+        const maxTemp = currentSpeed > 80 ? 95 : 85;
+        if (this.variables.bearingTempCelsius < maxTemp) {
           this.variables.bearingTempCelsius += 1;
         }
       }
@@ -47,11 +70,19 @@ export class ProcessSimulator {
       if (currentSpeed > 80) {
         this.variables.vibrationLevel += 5;
       }
+
+      // Brake engaged while moving creates extra vibration and heat
+      if (brakeEngaged) {
+        this.variables.vibrationLevel += 8;
+        this.variables.bearingTempCelsius += 0.5;
+      }
     } else {
       this.variables.motorCurrentAmps = 0;
 
+      // Cooldown - faster if motor has been off longer
+      const cooldownRate = brakeEngaged ? 15 : 10;
       this.tempAccumulator += deltaTime;
-      if (this.tempAccumulator >= 10) {
+      if (this.tempAccumulator >= cooldownRate) {
         this.tempAccumulator = 0;
         if (this.variables.bearingTempCelsius > 25) {
           this.variables.bearingTempCelsius -= 1;
@@ -61,15 +92,24 @@ export class ProcessSimulator {
       this.variables.vibrationLevel = Math.round(10 + (Math.random() * 2 - 1));
     }
 
-    if (cycleCount > 0 && cycleCount % 10 === 0) {
+    // Brake wear based on actual cycle count
+    if (cycleCount > 0) {
       this.variables.brakeWearPercent = Math.min(100, Math.round(cycleCount / 10));
     }
 
-    this.variables.hydraulicPressurePsi = 1200 + Math.round(Math.random() * 50 - 25);
+    // Runtime-based degradation
+    const runtimeDegradation = Math.min(10, runtimeHours / 100);
+    this.variables.vibrationLevel += runtimeDegradation;
 
+    // Hydraulic pressure affected by temperature and runtime
+    let basePressure = 1200;
     if (this.variables.bearingTempCelsius > 80) {
-      this.variables.hydraulicPressurePsi -= 50;
+      basePressure -= 50;
     }
+    if (runtimeHours > 500) {
+      basePressure -= Math.min(100, (runtimeHours - 500) / 10);
+    }
+    this.variables.hydraulicPressurePsi = basePressure + Math.round(Math.random() * 50 - 25);
 
     this.variables.motorCurrentAmps = Math.max(0, this.variables.motorCurrentAmps);
     this.variables.hydraulicPressurePsi = Math.max(0, this.variables.hydraulicPressurePsi);

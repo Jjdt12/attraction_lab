@@ -39,6 +39,7 @@ function App() {
     speedSetpoint,
     state: plcState,
     runtimeHours,
+    cycleCounter,
     maintenanceFlag,
     lastErrorCode,
     trackLength,
@@ -77,7 +78,14 @@ function App() {
     return () => clearInterval(interval);
   }, [carPosition, speedSetpoint]);
 
-  const processVars = processSimulator.update(rideRunning, speedSetpoint, 0);
+  const processVars = processSimulator.update(
+    rideRunning,
+    speedSetpoint,
+    cycleCounter,
+    carPosition,
+    coilStates[27] || false,  // brake_engaged (QX1.11)
+    runtimeHours
+  );
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -167,7 +175,7 @@ function App() {
                 motorRunning={coilStates[26] || false}
                 brakeEngaged={coilStates[27] || false}
                 runtimeHours={runtimeHours}
-                cycleCounter={0}
+                cycleCounter={cycleCounter}
                 maintenanceFlag={maintenanceFlag}
                 lastErrorCode={lastErrorCode}
                 zones={{
@@ -213,7 +221,7 @@ function App() {
             <SystemHealthDashboard
               processVars={processVars}
               runtimeHours={runtimeHours}
-              cycleCount={0}
+              cycleCount={cycleCounter}
             />
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <CoilStatus flashLight={flashLight} coilStates={coilStates} />
@@ -227,7 +235,7 @@ function App() {
                 motorRunning={coilStates[26] || false}
                 brakeEngaged={coilStates[27] || false}
                 runtimeHours={runtimeHours}
-                cycleCounter={0}
+                cycleCounter={cycleCounter}
                 maintenanceFlag={maintenanceFlag}
                 lastErrorCode={lastErrorCode}
                 zones={{
