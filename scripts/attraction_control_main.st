@@ -77,15 +77,15 @@ IF scan_counter = 0 THEN
     target_speed := 50;
     speed_ramp_rate := 2;
 
-    (* Read inter-PLC ready signals from input registers *)
-    safety_plc_ready := (safety_plc_ready_reg <> 0);
-    effects_plc_ready := (effects_plc_ready_reg <> 0);
-
     (* safety_plc_ready_reg and effects_plc_ready_reg are written by SCADA bridge *)
     (* PLC reads their state but does not write to them *)
 END_IF;
 
 scan_counter := scan_counter + 1;
+
+(* Read inter-PLC ready signals from input registers EVERY SCAN *)
+safety_plc_ready := (safety_plc_ready_reg <> 0);
+effects_plc_ready := (effects_plc_ready_reg <> 0);
 
 zone_1_position := 0;
 zone_2_position := 0;
