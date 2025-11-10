@@ -10,6 +10,7 @@ import asyncio
 import json
 import os
 import mimetypes
+import time
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
@@ -172,6 +173,19 @@ def read_coil_from_plc(plc_id: str, address: int) -> dict:
         return {"success": False, "error": str(e), "value": False, "plc": plc_id}
 
 
+async def log_modbus_operation(plc: str, operation: str, address: int, value=None, count=None):
+    """Broadcast Modbus operation to connected clients for network monitoring"""
+    await broadcast({
+        "type": "modbus_operation",
+        "timestamp": int(time.time() * 1000),
+        "plc": plc,
+        "operation": operation,
+        "address": address,
+        "value": value,
+        "count": count,
+    })
+
+
 def write_input_register_to_plc(plc_id: str, address: int, value: int) -> dict:
     """Write to Modbus holding register on specific PLC (for input register simulation)"""
     if plc_id not in modbus_clients or not plc_connected_status.get(plc_id):
@@ -181,6 +195,7 @@ def write_input_register_to_plc(plc_id: str, address: int, value: int) -> dict:
         client = modbus_clients[plc_id]
         result = client.write_register(address=address, value=value)
         if result and not result.isError():
+            asyncio.create_task(log_modbus_operation(plc_id, "WRITE_HOLDING", address, value))
             return {"success": True, "address": address, "value": value, "plc": plc_id}
         else:
             return {"success": False, "error": "Write failed", "plc": plc_id}
@@ -199,6 +214,7 @@ def write_coil(address: int, value: bool) -> dict:
         result = modbus_client.write_coil(address=address, value=value)
         if result and not result.isError():
             print(f"✅ [WRITE] Success: {coil_name} = {value}")
+            asyncio.create_task(log_modbus_operation("MAIN", "WRITE_COIL", address, value))
             return {"success": True, "address": address, "value": value}
         else:
             print(f"❌ [WRITE] Failed: {coil_name}")
@@ -231,6 +247,7 @@ def write_register(address: int, value: int) -> dict:
     try:
         result = modbus_client.write_register(address=address, value=value)
         if result and not result.isError():
+            asyncio.create_task(log_modbus_operation("MAIN", "WRITE_HOLDING", address, value))
             return {"success": True, "address": address, "value": value}
         else:
             return {"success": False, "error": "Write failed"}

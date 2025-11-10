@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../lib/supabase';
+import { ModbusOperation, PLCType } from './useMultiPLCConnection';
 
 const TRACK_LENGTH = 27;
 const TICK_INTERVAL = 33;
@@ -30,6 +31,7 @@ interface SimulationState {
   maintenanceFlag: boolean;
   lastErrorCode: number;
   activeEvents: Set<number>;  // Event numbers 1-9 from Safety PLC
+  modbusOperations: ModbusOperation[];
   multiPLCStatus: {
     MAIN: PLCStatus;
     SAFETY: PLCStatus;
@@ -56,6 +58,7 @@ export function useWebSocketSimulation() {
     runtimeHours: 0,
     maintenanceFlag: false,
     lastErrorCode: 0,
+    modbusOperations: [],
     multiPLCStatus: {
       MAIN: { connected: false, host: 'localhost', port: 502, name: 'Main Control' },
       SAFETY: { connected: false, host: 'localhost', port: 503, name: 'Safety Systems' },
@@ -330,6 +333,21 @@ export function useWebSocketSimulation() {
               }
               return { ...prev, activeEvents: newActiveEvents };
             });
+          } else if (data.type === 'modbus_operation') {
+            // Handle Modbus operation logs for network monitor
+            const operation: ModbusOperation = {
+              timestamp: data.timestamp,
+              plc: data.plc as PLCType,
+              operation: data.operation,
+              address: data.address,
+              value: data.value,
+              count: data.count,
+            };
+
+            setState(prev => ({
+              ...prev,
+              modbusOperations: [...prev.modbusOperations.slice(-99), operation], // Keep last 100
+            }));
           }
         } catch (error) {
           console.error('Error parsing WebSocket message:', error);
@@ -637,6 +655,10 @@ export function useWebSocketSimulation() {
     }
   }, [sendMessage, resetRide]);
 
+  const clearModbusOperations = useCallback(() => {
+    setState(prev => ({ ...prev, modbusOperations: [] }));
+  }, []);
+
   return {
     ...state,
     trackLength: TRACK_LENGTH,
@@ -647,5 +669,6 @@ export function useWebSocketSimulation() {
     setSafetyConditions,
     triggerEmergencyStop,
     writeCoil,
+    clearModbusOperations,
   };
 }

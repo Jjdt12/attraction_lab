@@ -44,12 +44,14 @@ function App() {
     trackLength,
     activeEvents: plcActiveEvents,
     multiPLCStatus,
+    modbusOperations,
     startRide,
     stopRide,
     resetRide,
     connectToPLC,
     setSafetyConditions,
     triggerEmergencyStop,
+    clearModbusOperations,
   } = useWebSocketSimulation();
 
   const multiPLC = useMultiPLCConnection();
@@ -297,8 +299,8 @@ function App() {
         {activeTab === 'network' && (
           <div className="bg-gray-800 border border-gray-700 rounded-lg p-6 h-[calc(100vh-250px)]">
             <NetworkMonitor
-              operations={multiPLC.operations}
-              onClear={multiPLC.clearOperationLog}
+              operations={modbusOperations}
+              onClear={clearModbusOperations}
             />
           </div>
         )}
