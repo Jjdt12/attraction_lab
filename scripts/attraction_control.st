@@ -52,6 +52,13 @@ VAR_EXTERNAL
     zone_2_position : INT;  (* QW11: 1 if in zone 2, else 0 *)
     zone_3_position : INT;  (* QW12: 1 if in zone 3, else 0 *)
 
+    (* HMI Command Inputs - map coils to inputs internally *)
+    hmi_master_enable AT %QX0.0 : BOOL;
+    hmi_start_cmd AT %QX0.1 : BOOL;
+    hmi_stop_cmd AT %QX0.2 : BOOL;
+    hmi_estop_cmd AT %QX0.3 : BOOL;
+    hmi_gate_cmd AT %QX0.4 : BOOL;
+
     (* Event Counters - track how many times each event triggered *)
     event_1_counter : INT;  (* MW20 *)
     event_2_counter : INT;  (* MW21 *)
@@ -102,6 +109,16 @@ VAR
     event_sequence_step : INT;
     event_out_of_order : BOOL;
 END_VAR
+
+(* ============================================ *)
+(* HMI COMMAND MAPPING *)
+(* Copy coil values written by HMI to internal variables *)
+(* ============================================ *)
+master_enable := hmi_master_enable;
+start_command := hmi_start_cmd;
+stop_command := hmi_stop_cmd;
+emergency_stop_button := hmi_estop_cmd;
+safety_gate_closed := hmi_gate_cmd;
 
 (* ============================================ *)
 (* INITIALIZATION ON FIRST SCAN *)
