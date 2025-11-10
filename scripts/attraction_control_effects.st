@@ -19,6 +19,36 @@ VAR_EXTERNAL
 
     show_trigger_count : INT;
     effect_runtime_minutes : INT;
+
+    event_1_enable : BOOL;
+    event_2_enable : BOOL;
+    event_3_enable : BOOL;
+    event_4_enable : BOOL;
+    event_5_enable : BOOL;
+    event_6_enable : BOOL;
+    event_7_enable : BOOL;
+    event_8_enable : BOOL;
+    event_9_enable : BOOL;
+
+    event_1_active : BOOL;
+    event_2_active : BOOL;
+    event_3_active : BOOL;
+    event_4_active : BOOL;
+    event_5_active : BOOL;
+    event_6_active : BOOL;
+    event_7_active : BOOL;
+    event_8_active : BOOL;
+    event_9_active : BOOL;
+
+    event_1_counter : INT;
+    event_2_counter : INT;
+    event_3_counter : INT;
+    event_4_counter : INT;
+    event_5_counter : INT;
+    event_6_counter : INT;
+    event_7_counter : INT;
+    event_8_counter : INT;
+    event_9_counter : INT;
 END_VAR
 
 VAR
@@ -47,9 +77,102 @@ IF scan_counter = 0 THEN
     show_trigger_count := 0;
     effect_runtime_minutes := 0;
     runtime_accumulator := 0;
+
+    event_1_enable := TRUE;
+    event_2_enable := TRUE;
+    event_3_enable := TRUE;
+    event_4_enable := TRUE;
+    event_5_enable := TRUE;
+    event_6_enable := TRUE;
+    event_7_enable := TRUE;
+    event_8_enable := TRUE;
+    event_9_enable := TRUE;
+
+    event_1_counter := 0;
+    event_2_counter := 0;
+    event_3_counter := 0;
+    event_4_counter := 0;
+    event_5_counter := 0;
+    event_6_counter := 0;
+    event_7_counter := 0;
+    event_8_counter := 0;
+    event_9_counter := 0;
 END_IF;
 
 scan_counter := scan_counter + 1;
+
+event_1_active := FALSE;
+event_2_active := FALSE;
+event_3_active := FALSE;
+event_4_active := FALSE;
+event_5_active := FALSE;
+event_6_active := FALSE;
+event_7_active := FALSE;
+event_8_active := FALSE;
+event_9_active := FALSE;
+
+IF event_1_enable AND current_position_from_main >= 0 AND current_position_from_main <= 2 THEN
+    event_1_active := TRUE;
+    IF last_position < 0 OR last_position > 2 THEN
+        event_1_counter := event_1_counter + 1;
+    END_IF;
+END_IF;
+
+IF event_2_enable AND current_position_from_main >= 3 AND current_position_from_main <= 5 THEN
+    event_2_active := TRUE;
+    IF last_position < 3 OR last_position > 5 THEN
+        event_2_counter := event_2_counter + 1;
+    END_IF;
+END_IF;
+
+IF event_3_enable AND current_position_from_main >= 6 AND current_position_from_main <= 8 THEN
+    event_3_active := TRUE;
+    IF last_position < 6 OR last_position > 8 THEN
+        event_3_counter := event_3_counter + 1;
+    END_IF;
+END_IF;
+
+IF event_4_enable AND current_position_from_main >= 9 AND current_position_from_main <= 11 THEN
+    event_4_active := TRUE;
+    IF last_position < 9 OR last_position > 11 THEN
+        event_4_counter := event_4_counter + 1;
+    END_IF;
+END_IF;
+
+IF event_5_enable AND current_position_from_main >= 12 AND current_position_from_main <= 14 THEN
+    event_5_active := TRUE;
+    IF last_position < 12 OR last_position > 14 THEN
+        event_5_counter := event_5_counter + 1;
+    END_IF;
+END_IF;
+
+IF event_6_enable AND current_position_from_main >= 15 AND current_position_from_main <= 17 THEN
+    event_6_active := TRUE;
+    IF last_position < 15 OR last_position > 17 THEN
+        event_6_counter := event_6_counter + 1;
+    END_IF;
+END_IF;
+
+IF event_7_enable AND current_position_from_main >= 18 AND current_position_from_main <= 20 THEN
+    event_7_active := TRUE;
+    IF last_position < 18 OR last_position > 20 THEN
+        event_7_counter := event_7_counter + 1;
+    END_IF;
+END_IF;
+
+IF event_8_enable AND current_position_from_main >= 21 AND current_position_from_main <= 23 THEN
+    event_8_active := TRUE;
+    IF last_position < 21 OR last_position > 23 THEN
+        event_8_counter := event_8_counter + 1;
+    END_IF;
+END_IF;
+
+IF event_9_enable AND current_position_from_main >= 24 AND current_position_from_main <= 26 THEN
+    event_9_active := TRUE;
+    IF last_position < 24 OR last_position > 26 THEN
+        event_9_counter := event_9_counter + 1;
+    END_IF;
+END_IF;
 
 IF event_4_active_from_safety THEN
     flash_light := TRUE;
@@ -136,6 +259,26 @@ CONFIGURATION Config0
             strobe_active AT %QX0.65 : BOOL;
             laser_effect_on AT %QX0.66 : BOOL;
 
+            event_1_enable AT %QX0.8 : BOOL;
+            event_2_enable AT %QX0.9 : BOOL;
+            event_3_enable AT %QX0.10 : BOOL;
+            event_4_enable AT %QX0.11 : BOOL;
+            event_5_enable AT %QX0.12 : BOOL;
+            event_6_enable AT %QX0.13 : BOOL;
+            event_7_enable AT %QX0.14 : BOOL;
+            event_8_enable AT %QX0.15 : BOOL;
+            event_9_enable AT %QX0.16 : BOOL;
+
+            event_1_active AT %QX0.17 : BOOL;
+            event_2_active AT %QX0.18 : BOOL;
+            event_3_active AT %QX0.19 : BOOL;
+            event_4_active AT %QX0.20 : BOOL;
+            event_5_active AT %QX0.21 : BOOL;
+            event_6_active AT %QX0.22 : BOOL;
+            event_7_active AT %QX0.23 : BOOL;
+            event_8_active AT %QX0.24 : BOOL;
+            event_9_active AT %QX0.25 : BOOL;
+
             current_position_from_main AT %IW10 : INT;
             event_1_active_from_safety AT %IX0.70 : BOOL;
             event_4_active_from_safety AT %IX0.71 : BOOL;
@@ -146,6 +289,16 @@ CONFIGURATION Config0
 
             show_trigger_count AT %MW63 : INT;
             effect_runtime_minutes AT %MW64 : INT;
+
+            event_1_counter AT %MW1044 : INT;
+            event_2_counter AT %MW1045 : INT;
+            event_3_counter AT %MW1046 : INT;
+            event_4_counter AT %MW1047 : INT;
+            event_5_counter AT %MW1048 : INT;
+            event_6_counter AT %MW1049 : INT;
+            event_7_counter AT %MW1050 : INT;
+            event_8_counter AT %MW1051 : INT;
+            event_9_counter AT %MW1052 : INT;
         END_VAR
 
         TASK task0(INTERVAL := T#20ms, PRIORITY := 0);
