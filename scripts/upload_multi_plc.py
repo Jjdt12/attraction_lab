@@ -120,7 +120,6 @@ def compile_program(plc):
     compile_cmd = (
         f"docker exec {plc['container']} /bin/bash -c '"
         f"cd {WEBSERVER_DIR} && "
-        f"python3 compile_program.py st_files/{plc['st_file']} && "
         f"./scripts/compile_program.sh st_files/{plc['st_file']}'"
     )
 
