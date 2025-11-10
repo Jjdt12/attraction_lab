@@ -488,7 +488,7 @@ async def poll_plc_coils():
                     except Exception as e:
                         pass
 
-                # Bridge 7: Copy event_enable coils from MAIN to EFFECTS PLC
+                # Bridge 7: Copy event_enable coils from MAIN to EFFECTS PLC memory bits
                 if 'EFFECTS' in modbus_clients and plc_connected_status.get('EFFECTS'):
                     try:
                         # Read event_enable from MAIN PLC (coils 8-16)
@@ -496,7 +496,9 @@ async def poll_plc_coils():
                             coil_addr = 7 + i  # event_1_enable = coil 8, etc.
                             enable = read_coil_from_plc('MAIN', coil_addr)
                             if enable['success']:
-                                modbus_clients['EFFECTS'].write_coil(coil_addr, enable['value'])
+                                # Write to EFFECTS PLC memory bits 800-808 (%MX100.0-%MX101.0)
+                                mem_bit_addr = 799 + i  # event_1_enable = memory bit 800, etc.
+                                modbus_clients['EFFECTS'].write_coil(mem_bit_addr, enable['value'])
                     except Exception as e:
                         print(f"⚠️ [BRIDGE] Error in Bridge 7: {e}")
 
