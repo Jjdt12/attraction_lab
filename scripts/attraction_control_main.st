@@ -239,7 +239,7 @@ END_PROGRAM
 CONFIGURATION Config0
     RESOURCE Res0 ON PLC
         VAR_GLOBAL
-            start_command AT %MX0.1 : BOOL;
+            start_command AT %QX0.1 : BOOL;
             stop_command AT %QX0.2 : BOOL;
             motor_running AT %QX0.26 : BOOL;
             brake_engaged AT %QX0.27 : BOOL;
