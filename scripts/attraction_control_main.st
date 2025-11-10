@@ -28,6 +28,8 @@ VAR_EXTERNAL
     brake_wear_percent : INT;
     vibration_level : INT;
 
+    safety_plc_ready_reg : INT;
+    effects_plc_ready_reg : INT;
     safety_plc_ready : BOOL;
     effects_plc_ready : BOOL;
 END_VAR
@@ -75,7 +77,11 @@ IF scan_counter = 0 THEN
     target_speed := 50;
     speed_ramp_rate := 2;
 
-    (* safety_plc_ready and effects_plc_ready are written by SCADA bridge *)
+    (* Read inter-PLC ready signals from input registers *)
+    safety_plc_ready := (safety_plc_ready_reg <> 0);
+    effects_plc_ready := (effects_plc_ready_reg <> 0);
+
+    (* safety_plc_ready_reg and effects_plc_ready_reg are written by SCADA bridge *)
     (* PLC reads their state but does not write to them *)
 END_IF;
 
@@ -243,8 +249,8 @@ CONFIGURATION Config0
             zone_2_enable AT %QX0.6 : BOOL;
             zone_3_enable AT %QX0.7 : BOOL;
 
-            safety_plc_ready AT %QX0.31 : BOOL;
-            effects_plc_ready AT %QX0.32 : BOOL;
+            safety_plc_ready_reg AT %IW100 : INT;
+            effects_plc_ready_reg AT %IW101 : INT;
 
             speed_setpoint AT %IW0 : INT;
             current_position AT %QW1 : INT;

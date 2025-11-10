@@ -325,19 +325,20 @@ async def poll_plc_coils():
     while True:
         try:
             # Inter-PLC Communication Bridge: Run FIRST before reads
+            # Use INPUT REGISTERS instead of coils (OpenPLC coil limit is 0-27)
             if modbus_client and is_plc_connected:
-                # Bridge 1: Read safety_ok from SAFETY PLC, write to MAIN PLC
+                # Bridge 1: Read safety_ok from SAFETY PLC, write to MAIN PLC input register
                 if 'SAFETY' in modbus_clients and plc_connected_status.get('SAFETY'):
                     try:
                         safety_result = read_coil_from_plc('SAFETY', 30)
                         if safety_result["success"]:
-                            safety_ok_value = safety_result["value"]
+                            safety_ok_value = 1 if safety_result["value"] else 0
                             try:
-                                result = modbus_client.write_coil(address=31, value=safety_ok_value)
+                                result = modbus_client.write_register(address=100, value=safety_ok_value)
                                 if result and not result.isError():
-                                    if safety_ok_value != previous_coil_states.get(31):
-                                        print(f"🔗 [BRIDGE] safety_ok from SAFETY -> safety_plc_ready on MAIN: {safety_ok_value}")
-                                        previous_coil_states[31] = safety_ok_value
+                                    if safety_ok_value != previous_register_states.get('safety_ready_bridge'):
+                                        print(f"🔗 [BRIDGE] safety_ok from SAFETY -> safety_plc_ready_reg on MAIN: {safety_ok_value}")
+                                        previous_register_states['safety_ready_bridge'] = safety_ok_value
                             except Exception as e:
                                 pass
                     except Exception as e:
@@ -345,11 +346,11 @@ async def poll_plc_coils():
 
                 # Bridge 2: Set effects_plc_ready to TRUE (EFFECTS PLC always ready)
                 try:
-                    result = modbus_client.write_coil(address=32, value=True)
+                    result = modbus_client.write_register(address=101, value=1)
                     if result and not result.isError():
-                        if previous_coil_states.get(32) != True:
-                            print(f"🔗 [BRIDGE] effects_plc_ready on MAIN: True (default)")
-                            previous_coil_states[32] = True
+                        if previous_register_states.get('effects_ready_bridge') != 1:
+                            print(f"🔗 [BRIDGE] effects_plc_ready_reg on MAIN: 1 (default)")
+                            previous_register_states['effects_ready_bridge'] = 1
                 except Exception as e:
                     pass
 
@@ -364,13 +365,12 @@ async def poll_plc_coils():
                 master_en = read_coil(COILS['master_enable'])
                 safety_gate = read_coil(COILS['safety_gate_closed'])
                 estop = read_coil(COILS['emergency_stop_button'])
-                safety_ok = read_coil(COILS['safety_ok'])
-                safety_ready = read_coil(COILS['safety_plc_ready'])
-                effects_ready = read_coil(COILS['effects_plc_ready'])
                 motor_run = read_coil(COILS['motor_running'])
                 brake = read_coil(COILS['brake_engaged'])
                 state_reg = read_register(HOLDING_REGISTERS['state'], 1)
                 error_reg = read_register(HOLDING_REGISTERS['last_error_code'], 1)
+                safety_ready_reg = read_register(100, 1)
+                effects_ready_reg = read_register(101, 1)
 
                 # Print state machine status every cycle
                 print(f"📊 [STATE] state={state_reg.get('value', '?')} | "
@@ -378,8 +378,8 @@ async def poll_plc_coils():
                       f"master_en={master_en.get('value', '?')} | "
                       f"gate={safety_gate.get('value', '?')} | "
                       f"estop={estop.get('value', '?')} | "
-                      f"safety_plc_ready={safety_ready.get('value', '?')} | "
-                      f"effects_plc_ready={effects_ready.get('value', '?')} | "
+                      f"safety_plc_ready_reg={safety_ready_reg.get('value', '?')} | "
+                      f"effects_plc_ready_reg={effects_ready_reg.get('value', '?')} | "
                       f"motor={motor_run.get('value', '?')} | "
                       f"brake={brake.get('value', '?')} | "
                       f"error={error_reg.get('value', '?')}")
