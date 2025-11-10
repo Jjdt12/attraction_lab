@@ -279,9 +279,9 @@ CONFIGURATION Config0
             event_8_active AT %QX3.0 : BOOL;  (* bit 24 = byte 3, bit 0 *)
             event_9_active AT %QX3.1 : BOOL;  (* bit 25 = byte 3, bit 1 *)
 
-            current_position_from_main AT %IW10 : INT;
-            event_1_active_from_safety AT %IX8.6 : BOOL;  (* bit 70 = byte 8, bit 6 *)
-            event_4_active_from_safety AT %IX8.7 : BOOL;  (* bit 71 = byte 8, bit 7 *)
+            current_position_from_main AT %MW10 : INT;
+            event_1_active_from_safety AT %MX70 : BOOL;  (* bit 70 via bridge *)
+            event_4_active_from_safety AT %MX71 : BOOL;  (* bit 71 via bridge *)
 
             lighting_scene AT %MW60 : INT;
             audio_volume AT %MW61 : INT;

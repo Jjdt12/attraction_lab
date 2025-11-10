@@ -357,18 +357,63 @@ async def poll_plc_coils():
                 # Bridge 3: Copy control signals from MAIN to SAFETY PLC
                 if 'SAFETY' in modbus_clients and plc_connected_status.get('SAFETY'):
                     try:
-                        # Read from MAIN PLC
-                        master_enable = read_coil_from_plc('MAIN', 0)  # COILS['master_enable']
-                        estop = read_coil_from_plc('MAIN', 3)  # COILS['emergency_stop_button']
-                        gate = read_coil_from_plc('MAIN', 4)  # COILS['safety_gate_closed']
+                        # Read control signals from MAIN PLC
+                        master_enable = read_coil_from_plc('MAIN', 0)
+                        estop = read_coil_from_plc('MAIN', 3)
+                        gate = read_coil_from_plc('MAIN', 4)
 
-                        # Write to SAFETY PLC (coils 0, 3, 4)
+                        # Write to SAFETY PLC
                         if master_enable['success']:
                             modbus_clients['SAFETY'].write_coil(0, master_enable['value'])
                         if estop['success']:
                             modbus_clients['SAFETY'].write_coil(3, estop['value'])
                         if gate['success']:
                             modbus_clients['SAFETY'].write_coil(4, gate['value'])
+                    except Exception as e:
+                        pass
+
+                # Bridge 4: Copy MAIN position/speed/motor to SAFETY PLC
+                if 'SAFETY' in modbus_clients and plc_connected_status.get('SAFETY'):
+                    try:
+                        # Read from MAIN PLC holding registers
+                        position = read_register_from_plc('MAIN', 1, 1)  # current_position at %QW1
+                        speed = read_register_from_plc('MAIN', 2, 1)  # current_speed at %QW2
+                        motor = read_coil_from_plc('MAIN', 26)  # motor_running at %QX3.2 (bit 26)
+
+                        # Write to SAFETY PLC holding registers (bridge uses holding regs)
+                        if position['success']:
+                            modbus_clients['SAFETY'].write_register(10, position['value'])  # %MW10
+                        if speed['success']:
+                            modbus_clients['SAFETY'].write_register(11, speed['value'])  # %MW11
+                        if motor['success']:
+                            modbus_clients['SAFETY'].write_coil(50, motor['value'])  # %MX50 (memory bit)
+                    except Exception as e:
+                        pass
+
+                # Bridge 5: Copy MAIN position to EFFECTS PLC
+                if 'EFFECTS' in modbus_clients and plc_connected_status.get('EFFECTS'):
+                    try:
+                        # Read from MAIN PLC
+                        position = read_register_from_plc('MAIN', 1, 1)  # current_position
+
+                        # Write to EFFECTS PLC holding register
+                        if position['success']:
+                            modbus_clients['EFFECTS'].write_register(10, position['value'])  # %MW10
+                    except Exception as e:
+                        pass
+
+                # Bridge 6: Copy SAFETY event signals to EFFECTS PLC
+                if 'SAFETY' in modbus_clients and plc_connected_status.get('SAFETY') and 'EFFECTS' in modbus_clients and plc_connected_status.get('EFFECTS'):
+                    try:
+                        # Read from SAFETY PLC
+                        event1 = read_coil_from_plc('SAFETY', 17)  # event_1_active at %QX2.1
+                        event4 = read_coil_from_plc('SAFETY', 20)  # event_4_active at %QX2.4
+
+                        # Write to EFFECTS PLC memory bits
+                        if event1['success']:
+                            modbus_clients['EFFECTS'].write_coil(70, event1['value'])  # %MX70
+                        if event4['success']:
+                            modbus_clients['EFFECTS'].write_coil(71, event4['value'])  # %MX71
                     except Exception as e:
                         pass
 

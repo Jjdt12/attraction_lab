@@ -272,9 +272,9 @@ CONFIGURATION Config0
             event_8_counter AT %MW27 : INT;
             event_9_counter AT %MW28 : INT;
 
-            current_position_from_main AT %IW10 : INT;
-            current_speed_from_main AT %IW11 : INT;
-            motor_running_from_main AT %IX6.2 : BOOL;  (* bit 50 = byte 6, bit 2 *)
+            current_position_from_main AT %MW10 : INT;
+            current_speed_from_main AT %MW11 : INT;
+            motor_running_from_main AT %MX50 : BOOL;  (* bit 50 via bridge *)
 
             safety_violation_count AT %MW50 : INT;
             alarm_register AT %MW30 : INT;
