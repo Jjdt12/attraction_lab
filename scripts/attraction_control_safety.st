@@ -272,8 +272,8 @@ CONFIGURATION Config0
             event_8_counter AT %MW27 : INT;
             event_9_counter AT %MW28 : INT;
 
-            current_position_from_main AT %MW10 : INT;
-            current_speed_from_main AT %MW11 : INT;
+            current_position_from_main AT %IW1 : INT;
+            current_speed_from_main AT %IW2 : INT;
             motor_running_from_main AT %MX50 : BOOL;  (* bit 50 via bridge *)
 
             safety_violation_count AT %MW50 : INT;
