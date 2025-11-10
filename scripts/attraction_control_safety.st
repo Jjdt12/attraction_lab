@@ -4,8 +4,7 @@ VAR_EXTERNAL
     master_enable : BOOL;
     emergency_stop_button : BOOL;
     safety_gate_closed : BOOL;
-    safety_ok : BOOL;
-    alert_active : BOOL;
+    safety_ok_reg : INT;
 
     event_1_enable : BOOL;
     event_2_enable : BOOL;
@@ -54,12 +53,12 @@ VAR
     last_event_4 : BOOL;
     safety_bypass_detected : BOOL;
     watchdog_counter : INT;
+    safety_ok : BOOL;
 END_VAR
 
 IF scan_counter = 0 THEN
     (* master_enable, emergency_stop_button, safety_gate_closed are written by HMI *)
     safety_ok := FALSE;
-    alert_active := FALSE;
 
     event_1_enable := TRUE;
     event_2_enable := TRUE;
@@ -97,6 +96,13 @@ IF safety_gate_closed THEN
             safety_ok := TRUE;
         END_IF;
     END_IF;
+END_IF;
+
+(* Write safety_ok to holding register for SCADA bridge *)
+IF safety_ok THEN
+    safety_ok_reg := 1;
+ELSE
+    safety_ok_reg := 0;
 END_IF;
 
 IF motor_running_from_main THEN
@@ -230,11 +236,10 @@ END_PROGRAM
 CONFIGURATION Config0
     RESOURCE Res0 ON PLC
         VAR_GLOBAL
-            master_enable AT %QX0.0 : BOOL;
-            emergency_stop_button AT %QX0.3 : BOOL;
-            safety_gate_closed AT %QX0.4 : BOOL;
-            safety_ok AT %QX0.30 : BOOL;
-            alert_active AT %QX0.29 : BOOL;
+            master_enable AT %IX0.0 : BOOL;
+            emergency_stop_button AT %IX0.3 : BOOL;
+            safety_gate_closed AT %IX0.4 : BOOL;
+            safety_ok_reg AT %MW100 : INT;
 
             event_1_enable AT %QX0.8 : BOOL;
             event_2_enable AT %QX0.9 : BOOL;

@@ -327,12 +327,12 @@ async def poll_plc_coils():
             # Inter-PLC Communication Bridge: Run FIRST before reads
             # Use INPUT REGISTERS instead of coils (OpenPLC coil limit is 0-27)
             if modbus_client and is_plc_connected:
-                # Bridge 1: Read safety_ok from SAFETY PLC, write to MAIN PLC input register
+                # Bridge 1: Read safety_ok_reg from SAFETY PLC holding register, write to MAIN PLC input register
                 if 'SAFETY' in modbus_clients and plc_connected_status.get('SAFETY'):
                     try:
-                        safety_result = read_coil_from_plc('SAFETY', 30)
+                        safety_result = read_register_from_plc('SAFETY', 100, 1)
                         if safety_result["success"]:
-                            safety_ok_value = 1 if safety_result["value"] else 0
+                            safety_ok_value = safety_result["value"]
                             try:
                                 result = modbus_client.write_register(address=100, value=safety_ok_value)
                                 if result and not result.isError():
