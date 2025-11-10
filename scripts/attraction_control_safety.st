@@ -57,7 +57,7 @@ VAR
 END_VAR
 
 IF scan_counter = 0 THEN
-    (* master_enable, emergency_stop_button, safety_gate_closed are INPUTS - cannot initialize *)
+    (* master_enable, emergency_stop_button, safety_gate_closed are written by HMI *)
     safety_ok := FALSE;
     alert_active := FALSE;
 
@@ -230,9 +230,9 @@ END_PROGRAM
 CONFIGURATION Config0
     RESOURCE Res0 ON PLC
         VAR_GLOBAL
-            master_enable AT %IX0.0 : BOOL;
-            emergency_stop_button AT %IX0.3 : BOOL;
-            safety_gate_closed AT %IX0.4 : BOOL;
+            master_enable AT %QX0.0 : BOOL;
+            emergency_stop_button AT %QX0.3 : BOOL;
+            safety_gate_closed AT %QX0.4 : BOOL;
             safety_ok AT %QX0.30 : BOOL;
             alert_active AT %QX0.29 : BOOL;
 
