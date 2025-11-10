@@ -54,6 +54,8 @@ COILS = {
     'flash_light': 28,               # %QX0.28
     'alert_active': 29,              # %QX0.29
     'safety_ok': 30,                 # %QX0.30
+    'safety_plc_ready': 31,          # %QX0.31 - Safety PLC handshake
+    'effects_plc_ready': 32,         # %QX0.32 - Effects PLC handshake
 }
 
 # ============================================
@@ -136,7 +138,7 @@ def get_all_addresses():
 # ============================================
 # ADDRESS RANGES TO POLL
 # ============================================
-COIL_RANGE = (0, 31)  # Read coils 0-30 (all coils)
+COIL_RANGE = (0, 33)  # Read coils 0-32 (all coils including PLC ready signals)
 INPUT_REGISTER_RANGE = (0, 1)  # Read input register 0 (speed_setpoint)
 HOLDING_REGISTER_RANGES = [
     (1, 2),  # %QW1-QW2 (current_position, current_speed)

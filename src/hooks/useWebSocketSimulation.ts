@@ -129,6 +129,8 @@ export function useWebSocketSimulation() {
                           wsRef.current.send(JSON.stringify({ action: 'write_coil', address: 14, value: true }));  // event_7_enable
                           wsRef.current.send(JSON.stringify({ action: 'write_coil', address: 15, value: true }));  // event_8_enable
                           wsRef.current.send(JSON.stringify({ action: 'write_coil', address: 16, value: true }));  // event_9_enable
+                          wsRef.current.send(JSON.stringify({ action: 'write_coil', address: 31, value: true }));  // safety_plc_ready
+                          wsRef.current.send(JSON.stringify({ action: 'write_coil', address: 32, value: true }));  // effects_plc_ready
                           wsRef.current.send(JSON.stringify({ action: 'write_register', address: 1, value: 0 }));  // current_position = 0
                           console.log('[Auto-Connect] ✓ Auto-reset complete - all PLCs ready!');
                         }
@@ -176,6 +178,8 @@ export function useWebSocketSimulation() {
                           wsRef.current.send(JSON.stringify({ action: 'write_coil', address: 14, value: true }));  // event_7_enable
                           wsRef.current.send(JSON.stringify({ action: 'write_coil', address: 15, value: true }));  // event_8_enable
                           wsRef.current.send(JSON.stringify({ action: 'write_coil', address: 16, value: true }));  // event_9_enable
+                          wsRef.current.send(JSON.stringify({ action: 'write_coil', address: 31, value: true }));  // safety_plc_ready
+                          wsRef.current.send(JSON.stringify({ action: 'write_coil', address: 32, value: true }));  // effects_plc_ready
                           wsRef.current.send(JSON.stringify({ action: 'write_register', address: 1, value: 0 }));  // current_position = 0
                           console.log('[Auto-Connect] ✓ Auto-reset complete - lab ready to use!');
                         }
