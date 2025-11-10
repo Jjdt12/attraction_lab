@@ -354,6 +354,24 @@ async def poll_plc_coils():
                 except Exception as e:
                     pass
 
+                # Bridge 3: Copy control signals from MAIN to SAFETY PLC
+                if 'SAFETY' in modbus_clients and plc_connected_status.get('SAFETY'):
+                    try:
+                        # Read from MAIN PLC
+                        master_enable = read_coil_from_plc('MAIN', 0)  # COILS['master_enable']
+                        estop = read_coil_from_plc('MAIN', 3)  # COILS['emergency_stop_button']
+                        gate = read_coil_from_plc('MAIN', 4)  # COILS['safety_gate_closed']
+
+                        # Write to SAFETY PLC (coils 0, 3, 4)
+                        if master_enable['success']:
+                            modbus_clients['SAFETY'].write_coil(0, master_enable['value'])
+                        if estop['success']:
+                            modbus_clients['SAFETY'].write_coil(3, estop['value'])
+                        if gate['success']:
+                            modbus_clients['SAFETY'].write_coil(4, gate['value'])
+                    except Exception as e:
+                        pass
+
             # Continuous diagnostic every poll cycle (more verbose debugging)
             if modbus_client and is_plc_connected:
                 if first_poll:
