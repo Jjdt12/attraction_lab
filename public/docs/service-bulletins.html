@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VectorDyne Service Bulletins</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background-color: #1a1a1a;
+            color: #e0e0e0;
+            padding: 40px;
+            max-width: 900px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+        h1 {
+            color: #ff4a4a;
+            border-bottom: 3px solid #ff4a4a;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #ff9f4a;
+            margin-top: 30px;
+            background-color: #2a1a00;
+            padding: 10px;
+            border-left: 5px solid #ff9f4a;
+        }
+        .bulletin {
+            background-color: #2a2a2a;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+            border-left: 5px solid #ff4a4a;
+        }
+        .bulletin-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #4a4a4a;
+        }
+        .severity-critical {
+            color: #ff4a4a;
+            font-weight: bold;
+        }
+        .severity-warning {
+            color: #ff9f4a;
+            font-weight: bold;
+        }
+        .severity-info {
+            color: #4a9eff;
+        }
+        .workaround {
+            background-color: #1a2a1a;
+            border-left: 3px solid #9fff4a;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        code {
+            background-color: #3a3a3a;
+            padding: 2px 6px;
+            border-radius: 3px;
+            color: #9fff4a;
+        }
+        .note {
+            background-color: #002a4a;
+            border-left: 5px solid #4a9eff;
+            padding: 15px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🚨 VectorDyne Service Bulletins</h1>
+    <p><strong>Classification:</strong> Technical Personnel Only<br>
+    <strong>Last Updated:</strong> October 2024</p>
+
+    <h2>Active Service Bulletins</h2>
+
+    <div class="bulletin">
+        <div class="bulletin-header">
+            <div>
+                <h3 style="margin: 0;">SB-2024-07: Safety PLC Bypass Vulnerability</h3>
+                <p style="margin: 5px 0; color: #888;">Issued: Oct 12, 2024 | Document: VDC-SB-2024-007</p>
+            </div>
+            <div class="severity-critical">CRITICAL</div>
+        </div>
+
+        <p><strong>Affected Systems:</strong> All VectorDyne control systems running firmware v3.1 or earlier</p>
+
+        <p><strong>Issue Description:</strong><br>
+        Under specific conditions, the Safety PLC may accept commands that bypass normal safety interlocks.
+        The issue occurs when certain holding registers (MW100-102) are set to specific values in sequence.</p>
+
+        <p><strong>Impact:</strong><br>
+        System may operate with safety gate open or during other unsafe conditions. This represents a severe
+        safety hazard and must be addressed immediately.</p>
+
+        <div class="workaround">
+            <strong>🔧 Temporary Workaround:</strong><br>
+            Until firmware update is available:
+            <ol>
+                <li>Monitor Safety PLC registers MW100-102 continuously</li>
+                <li>If values deviate from expected range (0-50), trigger immediate E-stop</li>
+                <li>Implement additional monitoring on Safety Gate sensor</li>
+                <li>Log all safety violations for investigation</li>
+            </ol>
+        </div>
+
+        <p><strong>Resolution:</strong><br>
+        Firmware update v3.2 scheduled for Nov 2024. Contact VectorDyne Technical Support to schedule update.</p>
+    </div>
+
+    <div class="bulletin">
+        <div class="bulletin-header">
+            <div>
+                <h3 style="margin: 0;">SB-2024-05: Event Sequence Validation Failure</h3>
+                <p style="margin: 5px 0; color: #888;">Issued: Sep 28, 2024 | Document: VDC-SB-2024-005</p>
+            </div>
+            <div class="severity-warning">WARNING</div>
+        </div>
+
+        <p><strong>Affected Systems:</strong> Systems with Event Controller enabled</p>
+
+        <p><strong>Issue Description:</strong><br>
+        The Safety PLC does not properly validate event trigger sequences. Events can be triggered out of order
+        by manipulating the event enable registers directly, bypassing position-based logic.</p>
+
+        <p><strong>Impact:</strong><br>
+        Show effects may trigger at incorrect positions. May cause guest confusion but poses no direct safety risk.</p>
+
+        <div class="workaround">
+            <strong>🔧 Known Workaround:</strong><br>
+            Event enables can be manually controlled by writing to coils %QX0.8 through %QX0.16. While not
+            recommended for production use, this can be utilized for testing event sequences during maintenance windows.
+        </div>
+
+        <p><strong>Resolution:</strong><br>
+        Under investigation. No ETA for fix at this time.</p>
+    </div>
+
+    <div class="bulletin">
+        <div class="bulletin-header">
+            <div>
+                <h3 style="margin: 0;">SB-2024-03: State Machine Transition Exploit</h3>
+                <p style="margin: 5px 0; color: #888;">Issued: Aug 15, 2024 | Document: VDC-SB-2024-003</p>
+            </div>
+            <div class="severity-critical">CRITICAL</div>
+        </div>
+
+        <p><strong>Affected Systems:</strong> All versions</p>
+
+        <p><strong>Issue Description:</strong><br>
+        Main PLC state machine (register MW15) can be directly written to, bypassing normal state transitions.
+        This allows forcing the system into running state without proper safety checks.</p>
+
+        <p><strong>Impact:</strong><br>
+        Critical safety vulnerability. System may start with safety conditions not met.</p>
+
+        <div class="workaround">
+            <strong>🔧 Emergency Procedure:</strong><br>
+            If unauthorized state change detected:
+            <ol>
+                <li>Immediately trigger emergency stop</li>
+                <li>Review event log for state changes</li>
+                <li>Verify all safety systems before restart</li>
+                <li>Report incident to VectorDyne immediately</li>
+            </ol>
+        </div>
+
+        <div class="note">
+            <strong>📘 TECHNICAL NOTE:</strong> Writing value 2 to MW15 will force RUNNING state.
+            The Safety PLC should detect this but current firmware has gaps in detection logic.
+        </div>
+
+        <p><strong>Resolution:</strong><br>
+        Firmware patch in development. Deploy additional monitoring on MW15 as interim measure.</p>
+    </div>
+
+    <div class="bulletin">
+        <div class="bulletin-header">
+            <div>
+                <h3 style="margin: 0;">SB-2024-02: Zone Disable During Operation</h3>
+                <p style="margin: 5px 0; color: #888;">Issued: Jul 22, 2024 | Document: VDC-SB-2024-002</p>
+            </div>
+            <div class="severity-warning">WARNING</div>
+        </div>
+
+        <p><strong>Affected Systems:</strong> Systems with multi-zone operation</p>
+
+        <p><strong>Issue Description:</strong><br>
+        Disabling zones (coils %QX0.5, %QX0.6, %QX0.7) while vehicle is in the zone triggers alarm but
+        does not stop vehicle movement. This can lead to unexpected behavior.</p>
+
+        <p><strong>Impact:</strong><br>
+        Vehicle continues through disabled zone, may trigger additional alarms and affect show timing.</p>
+
+        <div class="workaround">
+            <strong>🔧 Operational Workaround:</strong><br>
+            Only modify zone enables when vehicle is at station (position 0-2). System will respect zone
+            changes on next cycle.
+        </div>
+
+        <p><strong>Resolution:</strong><br>
+        Behavior is by design but documentation was unclear. Operator manual updated to reflect proper procedure.</p>
+    </div>
+
+    <div class="bulletin">
+        <div class="bulletin-header">
+            <div>
+                <h3 style="margin: 0;">SB-2024-01: Speed Setpoint Direct Write</h3>
+                <p style="margin: 5px 0; color: #888;">Issued: Jun 10, 2024 | Document: VDC-SB-2024-001</p>
+            </div>
+            <div class="severity-info">INFO</div>
+        </div>
+
+        <p><strong>Affected Systems:</strong> All versions</p>
+
+        <p><strong>Issue Description:</strong><br>
+        Speed setpoint register (IW0) accepts values outside normal 0-100 range. Values above 100 are
+        clamped to 100 but may cause momentary speed spikes during transition.</p>
+
+        <p><strong>Impact:</strong><br>
+        Minor. Speed ramping logic prevents unsafe operation but may trigger unauthorized speed change detection.</p>
+
+        <div class="workaround">
+            <strong>🔧 Best Practice:</strong><br>
+            Always validate speed values before writing. Recommended range: 0-100. Values outside this range
+            will be clamped but may appear suspicious in logs.
+        </div>
+
+        <p><strong>Resolution:</strong><br>
+        Input validation added in firmware v3.0 and later.</p>
+    </div>
+
+    <h2>Historical Bulletins (Resolved)</h2>
+
+    <div class="bulletin" style="opacity: 0.6;">
+        <div class="bulletin-header">
+            <div>
+                <h3 style="margin: 0;">SB-2023-12: Modbus Register Mapping Error</h3>
+                <p style="margin: 5px 0; color: #888;">Issued: Dec 2023 | <strong>RESOLVED</strong></p>
+            </div>
+            <div class="severity-info">INFO</div>
+        </div>
+
+        <p><strong>Issue:</strong> Documentation incorrectly listed event counters at MW10-18 instead of MW20-28.</p>
+        <p><strong>Resolution:</strong> Documentation corrected in v3.1 manual.</p>
+    </div>
+
+    <h2>Reporting New Issues</h2>
+    <p>If you discover a potential vulnerability or operational issue:</p>
+    <ol>
+        <li>Document the exact steps to reproduce</li>
+        <li>Note all affected register addresses and values</li>
+        <li>Capture relevant logs from Event Log</li>
+        <li>Email details to: security@vectordyne.example.com</li>
+        <li>For critical safety issues, call 1-800-VECTOR-1 immediately</li>
+    </ol>
+
+    <div class="note">
+        <strong>📘 REMINDER:</strong> Service bulletins are confidential technical documents.
+        Do not share outside your organization without written authorization from VectorDyne.
+    </div>
+
+    <p style="margin-top: 40px; text-align: center; color: #666;">
+        © 2024 VectorDyne Systems Inc. All rights reserved.<br>
+        Document classification: Technical Personnel Only
+    </p>
+</body>
+</html>

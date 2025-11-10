@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import Header from './components/Header';
 import AttractionVisualizer from './components/AttractionVisualizer';
 import ControlPanel from './components/ControlPanel';
@@ -9,9 +9,22 @@ import FlagNotificationManager from './components/FlagNotificationManager';
 import { useWebSocketSimulation } from './hooks/useWebSocketSimulation';
 import { useAdvancedChallengeDetection } from './hooks/useAdvancedChallengeDetection';
 import { ALL_EVENTS } from './types/rideEvents';
+import { TabNavigation, TabType } from './components/TabNavigation';
+import { AlarmPanel, AlarmList } from './components/AlarmPanel';
+import { EventLog } from './components/EventLog';
+import { SystemHealthDashboard } from './components/SystemHealthDashboard';
+import { NetworkMonitor } from './components/NetworkMonitor';
+import { TrendChart, useTrendData } from './components/TrendChart';
+import { DocumentationViewer } from './components/DocumentationViewer';
+import { MultiPLCStatus } from './components/MultiPLCStatus';
+import { useMultiPLCConnection } from './hooks/useMultiPLCConnection';
+import { useAlarmSystem } from './hooks/useAlarmSystem';
+import { ProcessSimulator } from './utils/processSimulation';
 
 function App() {
   const [flagCapture, setFlagCapture] = useState<{ title: string; points: number } | null>(null);
+  const [activeTab, setActiveTab] = useState<TabType>('overview');
+  const [processSimulator] = useState(() => new ProcessSimulator());
   const {
     carPosition,
     rideRunning,
@@ -36,6 +49,32 @@ function App() {
     setSafetyConditions,
     triggerEmergencyStop,
   } = useWebSocketSimulation();
+
+  const multiPLC = useMultiPLCConnection();
+  const alarmSystem = useAlarmSystem();
+
+  const positionTrend = useTrendData(60);
+  const speedTrend = useTrendData(60);
+  const tempTrend = useTrendData(60);
+  const currentTrend = useTrendData(60);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      positionTrend.addDataPoint(carPosition);
+      speedTrend.addDataPoint(speedSetpoint);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [carPosition, speedSetpoint]);
+
+  const processVars = processSimulator.update(rideRunning, speedSetpoint, 0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      tempTrend.addDataPoint(processVars.bearingTempCelsius);
+      currentTrend.addDataPoint(processVars.motorCurrentAmps);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [processVars.bearingTempCelsius, processVars.motorCurrentAmps]);
 
   const activeEvents = useMemo(() => {
     const events = new Set<string>();
@@ -77,9 +116,10 @@ function App() {
   });
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-100 via-slate-50 to-blue-50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800 transition-colors">
+    <div className="min-h-screen bg-gray-950 text-gray-100">
       <FlagNotificationManager trigger={flagCapture} />
-      <div className="container mx-auto px-4 py-8">
+      <AlarmPanel />
+      <div className="container mx-auto px-4 py-8 pt-24">
         <Header
           wsConnected={wsConnected}
           plcConnected={plcConnected}
@@ -88,7 +128,12 @@ function App() {
           sessionId={sessionId}
         />
 
-        <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
+        <div className="mb-6">
+          <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
+        </div>
+
+        {activeTab === 'overview' && (
+          <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
           <div className="xl:col-span-3 space-y-6">
             <AttractionVisualizer
               carPosition={carPosition}
@@ -143,6 +188,117 @@ function App() {
             />
           </div>
         </div>
+        )}
+
+        {activeTab === 'diagnostics' && (
+          <div className="space-y-6">
+            <MultiPLCStatus
+              plcs={multiPLC.plcs}
+              onConnect={multiPLC.connectToPLC}
+              onDisconnect={multiPLC.disconnectFromPLC}
+              onConnectAll={multiPLC.connectToAllPLCs}
+              onDisconnectAll={multiPLC.disconnectAllPLCs}
+            />
+            <SystemHealthDashboard
+              processVars={processVars}
+              runtimeHours={runtimeHours}
+              cycleCount={0}
+            />
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <CoilStatus flashLight={flashLight} coilStates={coilStates} />
+              <PLCStateMonitor
+                state={plcState}
+                speedSetpoint={speedSetpoint}
+                safetyOk={coilStates[0] && !coilStates[3] && coilStates[4]}
+                emergencyStop={coilStates[3] || false}
+                safetyGate={coilStates[4] || false}
+                masterEnable={coilStates[0] || false}
+                motorRunning={coilStates[26] || false}
+                brakeEngaged={coilStates[27] || false}
+                runtimeHours={runtimeHours}
+                cycleCounter={0}
+                maintenanceFlag={maintenanceFlag}
+                lastErrorCode={lastErrorCode}
+                zones={{
+                  zone1: coilStates[5] !== false,
+                  zone2: coilStates[6] !== false,
+                  zone3: coilStates[7] !== false,
+                }}
+              />
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'trends' && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <TrendChart
+              title="Vehicle Position"
+              data={positionTrend.data}
+              unit="pos"
+              color="#3b82f6"
+              minValue={0}
+              maxValue={27}
+            />
+            <TrendChart
+              title="Speed Setpoint"
+              data={speedTrend.data}
+              unit="%"
+              color="#10b981"
+              minValue={0}
+              maxValue={100}
+            />
+            <TrendChart
+              title="Bearing Temperature"
+              data={tempTrend.data}
+              unit="°C"
+              color="#f59e0b"
+              minValue={0}
+              maxValue={100}
+            />
+            <TrendChart
+              title="Motor Current"
+              data={currentTrend.data}
+              unit="A"
+              color="#eab308"
+              minValue={0}
+              maxValue={150}
+            />
+          </div>
+        )}
+
+        {activeTab === 'alarms' && (
+          <div className="space-y-6">
+            <div className="bg-gray-800 border border-gray-700 rounded-lg p-6">
+              <h2 className="text-xl font-bold text-white mb-4">Active Alarms</h2>
+              <AlarmList showHistory={false} />
+            </div>
+            <div className="bg-gray-800 border border-gray-700 rounded-lg p-6">
+              <h2 className="text-xl font-bold text-white mb-4">Alarm History</h2>
+              <AlarmList showHistory={true} />
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'events' && (
+          <div className="bg-gray-800 border border-gray-700 rounded-lg p-6 h-[calc(100vh-250px)]">
+            <EventLog />
+          </div>
+        )}
+
+        {activeTab === 'network' && (
+          <div className="bg-gray-800 border border-gray-700 rounded-lg p-6 h-[calc(100vh-250px)]">
+            <NetworkMonitor
+              operations={multiPLC.operations}
+              onClear={multiPLC.clearOperationLog}
+            />
+          </div>
+        )}
+
+        {activeTab === 'docs' && (
+          <div className="h-[calc(100vh-250px)]">
+            <DocumentationViewer />
+          </div>
+        )}
       </div>
     </div>
   );

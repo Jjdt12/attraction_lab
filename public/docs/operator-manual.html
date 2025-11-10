@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VectorDyne Ride Control System - Operator Manual</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background-color: #1a1a1a;
+            color: #e0e0e0;
+            padding: 40px;
+            max-width: 900px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+        h1 {
+            color: #4a9eff;
+            border-bottom: 3px solid #4a9eff;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #ff9f4a;
+            margin-top: 30px;
+        }
+        h3 {
+            color: #9fff4a;
+        }
+        .warning {
+            background-color: #4a2a00;
+            border-left: 5px solid #ff9f4a;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .note {
+            background-color: #002a4a;
+            border-left: 5px solid #4a9eff;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .procedure {
+            background-color: #2a2a2a;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+        .procedure ol {
+            margin: 10px 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #4a4a4a;
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #2a2a2a;
+            color: #4a9eff;
+        }
+        code {
+            background-color: #2a2a2a;
+            padding: 2px 6px;
+            border-radius: 3px;
+            color: #9fff4a;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎢 VectorDyne Ride Control System</h1>
+    <h2>Operator Manual v3.2</h2>
+    <p><strong>Document Number:</strong> VDC-OP-2024-001<br>
+    <strong>Revision Date:</strong> October 15, 2024<br>
+    <strong>Classification:</strong> Internal Use Only</p>
+
+    <div class="warning">
+        <strong>⚠️ SAFETY WARNING</strong><br>
+        This system controls a high-speed attraction. Improper operation may result in equipment damage or safety violations.
+        All operators must be trained and certified before operating this system.
+    </div>
+
+    <h2>1. System Overview</h2>
+    <p>The VectorDyne Ride Control System consists of three interconnected PLCs:</p>
+    <ul>
+        <li><strong>Main Control PLC (Port 502):</strong> Manages ride sequencing, position tracking, and speed control</li>
+        <li><strong>Safety PLC (Port 503):</strong> Monitors safety interlocks, emergency stops, and event triggers</li>
+        <li><strong>Effects PLC (Port 504):</strong> Controls show lighting, audio triggers, and special effects</li>
+    </ul>
+
+    <div class="note">
+        <strong>📘 NOTE:</strong> All three PLCs must be operational for normal ride operation.
+        The Safety PLC has override authority and can halt operations at any time.
+    </div>
+
+    <h2>2. Daily Startup Procedure</h2>
+    <div class="procedure">
+        <h3>Morning System Initialization</h3>
+        <ol>
+            <li>Verify all three PLCs show green status indicators</li>
+            <li>Check hydraulic pressure reads 1100-1300 PSI</li>
+            <li>Confirm bearing temperature is below 30°C</li>
+            <li>Enable <code>Master Enable</code> on Safety PLC</li>
+            <li>Close safety gate and verify <code>Safety Gate Closed</code> indicator</li>
+            <li>Press <code>Start Command</code> on Main PLC</li>
+            <li>Monitor warmup sequence (approximately 10 seconds)</li>
+            <li>Verify motor running and brake disengaged</li>
+        </ol>
+    </div>
+
+    <div class="warning">
+        <strong>⚠️ COMMON STARTUP ERRORS</strong><br>
+        <strong>Error 300:</strong> Safety PLC not ready - Ensure Safety PLC is enabled first<br>
+        <strong>Error 301:</strong> Safety PLC lost during startup - Check network connection to Safety PLC<br>
+        <strong>Error 210:</strong> Safety gate not closed - Verify physical gate closure
+    </div>
+
+    <h2>3. Normal Operation</h2>
+
+    <h3>3.1 Speed Control</h3>
+    <p>Adjust vehicle speed by writing to the <code>Speed Setpoint</code> register (0-100%):</p>
+    <ul>
+        <li><strong>0-30%:</strong> Station operations and loading</li>
+        <li><strong>30-50%:</strong> Normal cruise speed</li>
+        <li><strong>50-70%:</strong> High-speed segments (use caution)</li>
+        <li><strong>70-100%:</strong> Emergency operations only</li>
+    </ul>
+
+    <div class="note">
+        <strong>📘 HINT:</strong> The system includes automatic speed ramping. Rapid changes may trigger
+        unauthorized speed change detection in the Safety PLC.
+    </div>
+
+    <h3>3.2 Zone Management</h3>
+    <p>The track is divided into three zones. Each zone can be independently disabled:</p>
+    <table>
+        <tr>
+            <th>Zone</th>
+            <th>Positions</th>
+            <th>Description</th>
+        </tr>
+        <tr>
+            <td>Zone 1</td>
+            <td>0-8</td>
+            <td>Station and launch area</td>
+        </tr>
+        <tr>
+            <td>Zone 2</td>
+            <td>9-17</td>
+            <td>High-speed course</td>
+        </tr>
+        <tr>
+            <td>Zone 3</td>
+            <td>18-26</td>
+            <td>Brake and return</td>
+        </tr>
+    </table>
+
+    <div class="warning">
+        <strong>⚠️ WARNING:</strong> Disabling a zone while the vehicle is in that zone will trigger an alarm.
+        Always plan zone changes during station stops.
+    </div>
+
+    <h2>4. Event System</h2>
+    <p>The system features 9 programmable events triggered at specific track positions:</p>
+
+    <table>
+        <tr>
+            <th>Event</th>
+            <th>Position</th>
+            <th>Function</th>
+        </tr>
+        <tr>
+            <td>Event 1</td>
+            <td>0-2</td>
+            <td>Loading Gate</td>
+        </tr>
+        <tr>
+            <td>Event 2</td>
+            <td>3-5</td>
+            <td>Safety Interlock Check</td>
+        </tr>
+        <tr>
+            <td>Event 3</td>
+            <td>6-8</td>
+            <td>Launch Accelerator</td>
+        </tr>
+        <tr>
+            <td>Event 4</td>
+            <td>9-11</td>
+            <td>Photo Flash Point</td>
+        </tr>
+        <tr>
+            <td>Event 5</td>
+            <td>12-14</td>
+            <td>Mid-Course Brake (max 70% speed)</td>
+        </tr>
+        <tr>
+            <td>Event 6</td>
+            <td>15-17</td>
+            <td>Track Switch</td>
+        </tr>
+        <tr>
+            <td>Event 7</td>
+            <td>18-20</td>
+            <td>Final Brake (max 50% speed)</td>
+        </tr>
+        <tr>
+            <td>Event 8</td>
+            <td>21-23</td>
+            <td>Station Approach (max 30% speed)</td>
+        </tr>
+        <tr>
+            <td>Event 9</td>
+            <td>24-26</td>
+            <td>Unload Platform</td>
+        </tr>
+    </table>
+
+    <h2>5. Emergency Procedures</h2>
+
+    <h3>5.1 Emergency Stop</h3>
+    <div class="procedure">
+        <ol>
+            <li>Press <code>Emergency Stop Button</code> on Safety PLC</li>
+            <li>System enters State 4 (Emergency)</li>
+            <li>Motor immediately stops, brakes engage</li>
+            <li>Alert active, flash light activated</li>
+            <li>To clear: Release E-Stop, system returns to IDLE</li>
+        </ol>
+    </div>
+
+    <h3>5.2 Controlled Shutdown</h3>
+    <div class="procedure">
+        <ol>
+            <li>Allow vehicle to reach station (position 0-2)</li>
+            <li>Press <code>Stop Command</code> on Main PLC</li>
+            <li>System enters State 3 (Stopping)</li>
+            <li>Motor stops gracefully, brakes engage</li>
+            <li>System returns to IDLE</li>
+        </ol>
+    </div>
+
+    <h2>6. Maintenance Indicators</h2>
+    <p>Monitor these critical parameters during operation:</p>
+    <ul>
+        <li><strong>Motor Current:</strong> Normal range 50-130A</li>
+        <li><strong>Bearing Temperature:</strong> Alert at 70°C, critical at 85°C</li>
+        <li><strong>Hydraulic Pressure:</strong> Normal 1100-1300 PSI</li>
+        <li><strong>Brake Wear:</strong> Replace at 100%</li>
+        <li><strong>Vibration Level:</strong> Normal 10-20, warning at 30+</li>
+    </ul>
+
+    <div class="note">
+        <strong>📘 MAINTENANCE TIP:</strong> Check brake wear every 100 cycles. High wear rates may indicate
+        aggressive braking or speed control issues.
+    </div>
+
+    <h2>7. Troubleshooting</h2>
+
+    <h3>7.1 Common Issues</h3>
+    <p><strong>Vehicle Won't Start:</strong></p>
+    <ul>
+        <li>Verify Master Enable is ON</li>
+        <li>Check Safety Gate is closed</li>
+        <li>Ensure Emergency Stop is not pressed</li>
+        <li>Confirm all three PLCs show connected status</li>
+    </ul>
+
+    <p><strong>Excessive Alarms:</strong></p>
+    <ul>
+        <li>Review Event Log for patterns</li>
+        <li>Check if speed exceeds zone limits</li>
+        <li>Verify event enables match operational needs</li>
+    </ul>
+
+    <div class="warning">
+        <strong>⚠️ KNOWN ISSUE SB-2024-03:</strong> Under certain conditions, the Safety PLC may not
+        properly validate event sequences. See Service Bulletin 2024-03 for workaround procedures.
+    </div>
+
+    <h2>8. Support Contact</h2>
+    <p>
+        <strong>VectorDyne Technical Support</strong><br>
+        Phone: 1-800-VECTOR-1<br>
+        Email: support@vectordyne.example.com<br>
+        Hours: 24/7/365
+    </p>
+
+    <p style="margin-top: 40px; text-align: center; color: #666;">
+        © 2024 VectorDyne Systems Inc. All rights reserved.<br>
+        Document classification: Internal Use Only
+    </p>
+</body>
+</html>
