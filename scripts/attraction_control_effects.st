@@ -78,16 +78,6 @@ IF scan_counter = 0 THEN
     effect_runtime_minutes := 0;
     runtime_accumulator := 0;
 
-    event_1_enable := TRUE;
-    event_2_enable := TRUE;
-    event_3_enable := TRUE;
-    event_4_enable := TRUE;
-    event_5_enable := TRUE;
-    event_6_enable := TRUE;
-    event_7_enable := TRUE;
-    event_8_enable := TRUE;
-    event_9_enable := TRUE;
-
     event_1_counter := 0;
     event_2_counter := 0;
     event_3_counter := 0;
