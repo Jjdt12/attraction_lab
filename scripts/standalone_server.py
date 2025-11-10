@@ -488,7 +488,7 @@ async def poll_plc_coils():
                     except Exception as e:
                         pass
 
-                # Bridge 8: Copy event_enable coils from MAIN to EFFECTS PLC coils
+                # Bridge 8: Copy event_enable coils from MAIN to EFFECTS PLC memory bits
                 if 'EFFECTS' in modbus_clients and plc_connected_status.get('EFFECTS'):
                     try:
                         # Read event_enable from MAIN PLC (coils 8-16)
@@ -496,9 +496,8 @@ async def poll_plc_coils():
                             coil_addr = 7 + i  # event_1_enable = coil 8, etc.
                             enable = read_coil_from_plc('MAIN', coil_addr)
                             if enable['success']:
-                                # Write to EFFECTS PLC coils 32-40 (%QX4.0-QX5.0)
-                                # %QX4.0 = coil 32, %QX4.1 = coil 33, ... %QX5.0 = coil 40
-                                effects_coil_addr = 31 + i  # event_1 = coil 32, event_9 = coil 40
+                                # Write to EFFECTS PLC coils 800-808 (%MX800-%MX808)
+                                effects_coil_addr = 799 + i  # event_1 = coil 800, event_9 = coil 808
                                 modbus_clients['EFFECTS'].write_coil(effects_coil_addr, enable['value'])
                     except Exception as e:
                         print(f"⚠️ [BRIDGE] Error in Bridge 8: {e}")
@@ -677,10 +676,10 @@ async def poll_plc_coils():
                     else:
                         pos_value = 'ERR'
 
-                    # Read event_enable bits - coils 32-40 map to %IX4.0-IX5.0 in PLC
+                    # Read event_enable bits from memory bits 800-808 (%MX800-%MX808)
                     enable_states = []
                     for i in range(1, 10):
-                        coil_addr = 31 + i  # event_1 = coil 32, event_9 = coil 40
+                        coil_addr = 799 + i  # event_1 = coil 800, event_9 = coil 808
                         enable_bit = read_coil_from_plc('EFFECTS', coil_addr)
                         if enable_bit and enable_bit.get('success'):
                             enable_states.append(f"EN{i}={'T' if enable_bit['value'] else 'F'}")
