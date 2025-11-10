@@ -550,7 +550,9 @@ async def main():
     print(f"🌐 Web Interface: http://localhost:{HTTP_PORT}")
     print(f"🔌 WebSocket: ws://localhost:{WS_PORT}")
     print(f"\n📡 Ready for PLC connection")
-    print("Press Ctrl+C to stop\n")
+    print("   → Will auto-connect to Main PLC (localhost:502)")
+    print("   → Other PLCs accessible via Diagnostics tab")
+    print("\nPress Ctrl+C to stop\n")
 
     # Check if dist directory exists
     if not DIST_DIR.exists():
