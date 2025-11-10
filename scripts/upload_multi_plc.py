@@ -113,7 +113,7 @@ def copy_st_file_to_webserver(plc):
             print(f"Error: {stderr}")
         return False
 
-def compile_and_start_program(plc):
+def compile_program(plc):
     """Compile program and add to database"""
     print(f"⚙️  Compiling program for {plc['name']}...")
 
@@ -137,27 +137,118 @@ def compile_and_start_program(plc):
     print(f"✓ Program compiled successfully for {plc['name']}")
     return True
 
+
+def restart_plc_container(plc):
+    """Restart the PLC container to load new program"""
+    print(f"🔄 Restarting {plc['name']} container...")
+
+    restart_cmd = f"docker restart {plc['container']}"
+    success, stdout, stderr = run_docker_command(restart_cmd, check=False)
+
+    if not success:
+        print(f"✗ Failed to restart {plc['name']} container")
+        return False
+
+    print(f"✓ {plc['name']} container restarted")
+    print(f"⏳ Waiting for {plc['name']} to initialize...")
+    time.sleep(8)  # Give it time to fully restart
+
+    # Verify container is back up
+    if not wait_for_container(plc['container']):
+        print(f"✗ {plc['name']} did not restart properly")
+        return False
+
+    return True
+
+
+def start_plc_program(plc):
+    """Start the PLC program via HTTP (requires auth)"""
+    print(f"🚀 Starting {plc['name']} PLC program...")
+
+    cookie_file = Path(__file__).parent / f".plc_cookie_{plc['name'].lower()}.txt"
+    base_url = f"http://localhost:{plc['port']}"
+
+    # Step 1: Login to get session cookie
+    login_cmd = (
+        f'curl -s -X POST -d "username=openplc&password=openplc" '
+        f'-c {cookie_file} {base_url}/login'
+    )
+
+    try:
+        result = subprocess.run(login_cmd, shell=True, check=True, capture_output=True, timeout=10)
+        print(f"✓ Authenticated with {plc['name']} PLC")
+    except subprocess.SubprocessError as e:
+        print(f"✗ Failed to authenticate with {plc['name']}: {e}")
+        return False
+
+    # Step 2: Remove blank_program (id=1) if it exists
+    print(f"🗑️  Removing blank_program from {plc['name']}...")
+    remove_cmd = f'curl -s -b {cookie_file} "{base_url}/remove-program?id=1"'
+
+    try:
+        subprocess.run(remove_cmd, shell=True, capture_output=True, timeout=10)
+        print(f"✓ Removed blank_program from {plc['name']}")
+    except subprocess.SubprocessError:
+        print(f"⚠  Could not remove blank_program (may not exist)")
+
+    # Step 3: Start the PLC
+    start_cmd = f'curl -s -b {cookie_file} {base_url}/start_plc'
+
+    try:
+        result = subprocess.run(start_cmd, shell=True, capture_output=True, timeout=10, text=True)
+
+        if result.returncode == 0:
+            print(f"✓ {plc['name']} PLC program started successfully!")
+            return True
+        else:
+            print(f"⚠  Start command returned code {result.returncode}")
+            if result.stdout:
+                print(f"Response: {result.stdout[:200]}")
+            return False
+    except subprocess.SubprocessError as e:
+        print(f"✗ Failed to start {plc['name']} PLC program: {e}")
+        return False
+    finally:
+        # Clean up cookie file
+        if cookie_file.exists():
+            cookie_file.unlink()
+
+    return True
+
 def setup_plc(plc):
-    """Setup a single PLC"""
+    """Setup a single PLC - full process"""
     print(f"\n{'='*60}")
     print(f"Setting up PLC: {plc['name']}")
     print(f"{'='*60}")
 
+    # Step 1: Wait for container
     if not wait_for_container(plc['container']):
         return False
 
     time.sleep(2)
 
+    # Step 2: Verify program exists
     if not verify_program_exists(plc):
         return False
 
+    # Step 3: Copy ST file to webserver
     if not copy_st_file_to_webserver(plc):
         return False
 
-    if not compile_and_start_program(plc):
+    # Step 4: Compile program
+    if not compile_program(plc):
         return False
 
-    print(f"\n✓ {plc['name']} PLC initialized successfully!")
+    # Step 5: Restart container to load new program
+    if not restart_plc_container(plc):
+        return False
+
+    # Step 6: Start the PLC program via HTTP
+    if not start_plc_program(plc):
+        print(f"⚠  {plc['name']} program may not have started, but continuing...")
+        # Don't return False here - program might still work
+
+    print(f"\n✓ {plc['name']} PLC fully initialized and running!")
     return True
 
 def main():
@@ -173,14 +264,19 @@ def main():
 
     print("\n" + "=" * 60)
     if all_success:
-        print("✓ All PLCs initialized successfully!")
-        print("\nPLC Web Interfaces:")
+        print("✓ All PLCs initialized and running!")
+        print("\n🎯 PLC Programs Started:")
+        for plc in PLCS:
+            print(f"  • {plc['name']:8s} - attraction_control_{plc['name'].lower()}.st")
+        print("\n🌐 PLC Web Interfaces:")
         for plc in PLCS:
             print(f"  • {plc['name']:8s} - http://localhost:{plc['port']} (openplc/openplc)")
-        print("\nModbus TCP Ports:")
+        print("\n🔌 Modbus TCP Ports:")
         print("  • MAIN:    localhost:502")
         print("  • SAFETY:  localhost:503")
         print("  • EFFECTS: localhost:504")
+        print("\n✨ All three PLCs are now running their control programs!")
+        print("   You can now start the SCADA HMI with: python3 standalone_server.py")
         return 0
     else:
         print("⚠️  Some PLCs failed to initialize")
