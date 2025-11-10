@@ -61,16 +61,14 @@ export function useWebSocketSimulation() {
         console.log('WebSocket connected');
         setState(prev => ({ ...prev, wsConnected: true }));
 
-        // Auto-connect to PLC on WebSocket connection (only once)
+        // Auto-connect to all three PLCs on WebSocket connection (only once)
         if (!autoConnectAttemptedRef.current) {
           autoConnectAttemptedRef.current = true;
-          console.log('[Auto-Connect] Attempting to connect to PLC at localhost:502');
+          console.log('[Auto-Connect] Attempting to connect to all three PLCs (Main, Safety, Effects)');
           setTimeout(() => {
             if (ws.readyState === WebSocket.OPEN) {
               ws.send(JSON.stringify({
-                action: 'connect_plc',
-                host: 'localhost',
-                port: 502,
+                action: 'connect_all_plcs',
               }));
             }
           }, 500);
@@ -85,7 +83,60 @@ export function useWebSocketSimulation() {
             console.log('[WebSocket Message]', data);
           }
 
-          if (data.type === 'connection_status' || data.type === 'connect_result') {
+          if (data.type === 'multi_plc_connect_result') {
+            // Handle multi-PLC connection result
+            console.log('[Multi-PLC] Connection results:', data.results);
+            console.log('[Multi-PLC] Status:', data.plc_status);
+
+            const allConnected = Object.values(data.results).every(r => r === true);
+            const mainConnected = data.results.MAIN === true;
+
+            if (allConnected) {
+              console.log('[Multi-PLC] ✓ All three PLCs connected successfully!');
+            } else {
+              console.warn('[Multi-PLC] ⚠ Some PLCs failed to connect:',
+                Object.entries(data.results).filter(([_, success]) => !success).map(([id]) => id));
+            }
+
+            // Trigger auto-reset if Main PLC is connected
+            if (mainConnected) {
+              console.log('[Auto-Connect] Main PLC connected, performing auto-reset...');
+              setTimeout(() => {
+                if (wsRef.current?.readyState === WebSocket.OPEN) {
+                  // Emergency stop first
+                  wsRef.current.send(JSON.stringify({ action: 'write_coil', address: 3, value: true }));
+                  setTimeout(() => {
+                    if (wsRef.current?.readyState === WebSocket.OPEN) {
+                      // Release emergency stop
+                      wsRef.current.send(JSON.stringify({ action: 'write_coil', address: 3, value: false }));
+                      setTimeout(() => {
+                        if (wsRef.current?.readyState === WebSocket.OPEN) {
+                          // Set baseline conditions
+                          wsRef.current.send(JSON.stringify({ action: 'write_coil', address: 0, value: true }));   // master_enable
+                          wsRef.current.send(JSON.stringify({ action: 'write_coil', address: 1, value: false }));  // start_command
+                          wsRef.current.send(JSON.stringify({ action: 'write_coil', address: 4, value: true }));   // safety_gate_closed
+                          wsRef.current.send(JSON.stringify({ action: 'write_coil', address: 5, value: true }));   // zone_1_enable
+                          wsRef.current.send(JSON.stringify({ action: 'write_coil', address: 6, value: true }));   // zone_2_enable
+                          wsRef.current.send(JSON.stringify({ action: 'write_coil', address: 7, value: true }));   // zone_3_enable
+                          wsRef.current.send(JSON.stringify({ action: 'write_coil', address: 8, value: true }));   // event_1_enable
+                          wsRef.current.send(JSON.stringify({ action: 'write_coil', address: 9, value: true }));   // event_2_enable
+                          wsRef.current.send(JSON.stringify({ action: 'write_coil', address: 10, value: true }));  // event_3_enable
+                          wsRef.current.send(JSON.stringify({ action: 'write_coil', address: 11, value: true }));  // event_4_enable
+                          wsRef.current.send(JSON.stringify({ action: 'write_coil', address: 12, value: true }));  // event_5_enable
+                          wsRef.current.send(JSON.stringify({ action: 'write_coil', address: 13, value: true }));  // event_6_enable
+                          wsRef.current.send(JSON.stringify({ action: 'write_coil', address: 14, value: true }));  // event_7_enable
+                          wsRef.current.send(JSON.stringify({ action: 'write_coil', address: 15, value: true }));  // event_8_enable
+                          wsRef.current.send(JSON.stringify({ action: 'write_coil', address: 16, value: true }));  // event_9_enable
+                          wsRef.current.send(JSON.stringify({ action: 'write_register', address: 1, value: 0 }));  // current_position = 0
+                          console.log('[Auto-Connect] ✓ Auto-reset complete - all PLCs ready!');
+                        }
+                      }, 300);
+                    }
+                  }, 300);
+                }
+              }, 500);
+            }
+          } else if (data.type === 'connection_status' || data.type === 'connect_result') {
             setState(prev => ({
               ...prev,
               plcConnected: data.connected,
@@ -93,7 +144,7 @@ export function useWebSocketSimulation() {
               plcPort: data.plc_port,
             }));
 
-            // If this is an auto-connect success, trigger auto-reset
+            // If this is an auto-connect success (backward compatibility), trigger auto-reset
             if (data.connected && data.plc_host === 'localhost' && data.plc_port === 502) {
               console.log('[Auto-Connect] PLC connected successfully, performing auto-reset...');
               setTimeout(() => {

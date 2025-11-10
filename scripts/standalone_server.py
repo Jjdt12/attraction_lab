@@ -42,15 +42,26 @@ SUPABASE_KEY = os.getenv("VITE_SUPABASE_ANON_KEY")
 TRACK_LENGTH = 9
 EVENT_POS = 5
 
+# Multi-PLC Configuration
+PLC_CONFIGS = {
+    'MAIN': {'host': 'localhost', 'port': 502, 'name': 'Main Control'},
+    'SAFETY': {'host': 'localhost', 'port': 503, 'name': 'Safety Systems'},
+    'EFFECTS': {'host': 'localhost', 'port': 504, 'name': 'Show Effects'},
+}
+
 # Global state
-modbus_client: Optional[ModbusTcpClient] = None
-current_plc_host: Optional[str] = None
-current_plc_port: Optional[int] = None
-is_plc_connected: bool = False  # Manual connection state tracking
+modbus_clients: dict[str, ModbusTcpClient] = {}
+plc_connected_status: dict[str, bool] = {}
 connected_clients = set()
 previous_coil_states = {}
 previous_register_states = {}
 polling_task = None
+
+# Backward compatibility - default to MAIN PLC
+modbus_client: Optional[ModbusTcpClient] = None
+current_plc_host: Optional[str] = None
+current_plc_port: Optional[int] = None
+is_plc_connected: bool = False
 
 # Dist directory path
 DIST_DIR = PROJECT_DIR / "dist"
@@ -92,6 +103,57 @@ def init_modbus(host: str, port: int):
         current_plc_port = None
         is_plc_connected = False
         return False
+
+
+def connect_to_plc(plc_id: str) -> bool:
+    """Connect to a specific PLC by ID"""
+    global modbus_clients, plc_connected_status, modbus_client, current_plc_host, current_plc_port, is_plc_connected
+
+    if plc_id not in PLC_CONFIGS:
+        print(f"✗ Unknown PLC ID: {plc_id}")
+        return False
+
+    config = PLC_CONFIGS[plc_id]
+
+    try:
+        # Close existing connection for this PLC if any
+        if plc_id in modbus_clients:
+            try:
+                modbus_clients[plc_id].close()
+            except:
+                pass
+
+        # Create new connection
+        client = ModbusTcpClient(host=config['host'], port=config['port'])
+        if client.connect():
+            modbus_clients[plc_id] = client
+            plc_connected_status[plc_id] = True
+            print(f"✓ Connected to {config['name']} PLC at {config['host']}:{config['port']}")
+
+            # If this is the MAIN PLC, also set backward compatibility variables
+            if plc_id == 'MAIN':
+                modbus_client = client
+                current_plc_host = config['host']
+                current_plc_port = config['port']
+                is_plc_connected = True
+
+            return True
+        else:
+            plc_connected_status[plc_id] = False
+            print(f"✗ Failed to connect to {config['name']} PLC at {config['host']}:{config['port']}")
+            return False
+    except Exception as e:
+        plc_connected_status[plc_id] = False
+        print(f"✗ Error connecting to {config['name']} PLC: {e}")
+        return False
+
+
+def connect_to_all_plcs() -> dict:
+    """Connect to all configured PLCs"""
+    results = {}
+    for plc_id in PLC_CONFIGS.keys():
+        results[plc_id] = connect_to_plc(plc_id)
+    return results
 
 
 def write_coil(address: int, value: bool) -> dict:
@@ -335,7 +397,29 @@ async def handle_websocket(websocket):
             data = json.loads(message)
             action = data.get("action")
 
-            if action == "connect_plc":
+            if action == "connect_all_plcs":
+                # Connect to all three PLCs
+                results = connect_to_all_plcs()
+                await websocket.send(json.dumps({
+                    "type": "multi_plc_connect_result",
+                    "results": results,
+                    "plc_status": {
+                        plc_id: {
+                            "connected": plc_connected_status.get(plc_id, False),
+                            "config": PLC_CONFIGS[plc_id]
+                        }
+                        for plc_id in PLC_CONFIGS.keys()
+                    }
+                }))
+                # Also send backward compatible message for MAIN PLC
+                await broadcast({
+                    "type": "connection_status",
+                    "connected": is_plc_connected,
+                    "plc_host": current_plc_host,
+                    "plc_port": current_plc_port,
+                })
+
+            elif action == "connect_plc":
                 host = data.get("host")
                 port = data.get("port", 502)
                 success = init_modbus(host, port)
@@ -549,9 +633,11 @@ async def main():
     print(f"\n📁 Serving from: {DIST_DIR}")
     print(f"🌐 Web Interface: http://localhost:{HTTP_PORT}")
     print(f"🔌 WebSocket: ws://localhost:{WS_PORT}")
-    print(f"\n📡 Ready for PLC connection")
-    print("   → Will auto-connect to Main PLC (localhost:502)")
-    print("   → Other PLCs accessible via Diagnostics tab")
+    print(f"\n📡 Ready for multi-PLC connection")
+    print("   → Will auto-connect to all three PLCs:")
+    print("      • Main Control (localhost:502)")
+    print("      • Safety Systems (localhost:503)")
+    print("      • Show Effects (localhost:504)")
     print("\nPress Ctrl+C to stop\n")
 
     # Check if dist directory exists
