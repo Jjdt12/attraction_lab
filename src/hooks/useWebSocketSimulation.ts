@@ -547,6 +547,9 @@ export function useWebSocketSimulation() {
           .update({ status: 'completed', ended_at: new Date().toISOString() })
           .eq('id', state.sessionId);
 
+        // Clear start_command first to prevent auto-restart
+        await writeCoil(1, false);
+
         // Write to coil 2 (stop_command) - pulse it for 200ms
         await writeCoil(2, true);
         await new Promise(resolve => setTimeout(resolve, 200));
