@@ -317,6 +317,9 @@ async def poll_plc_coils():
                 # Read all critical values
                 start_cmd = read_coil(COILS['start_command'])
                 master_en = read_coil(COILS['master_enable'])
+                safety_gate = read_coil(COILS['safety_gate_closed'])
+                estop = read_coil(COILS['emergency_stop_button'])
+                safety_ok = read_coil(COILS['safety_ok'])
                 safety_ready = read_coil(COILS['safety_plc_ready'])
                 effects_ready = read_coil(COILS['effects_plc_ready'])
                 motor_run = read_coil(COILS['motor_running'])
@@ -328,8 +331,9 @@ async def poll_plc_coils():
                 print(f"📊 [STATE] state={state_reg.get('value', '?')} | "
                       f"start_cmd={start_cmd.get('value', '?')} | "
                       f"master_en={master_en.get('value', '?')} | "
-                      f"safety_ready={safety_ready.get('value', '?')} | "
-                      f"effects_ready={effects_ready.get('value', '?')} | "
+                      f"gate={safety_gate.get('value', '?')} | "
+                      f"estop={estop.get('value', '?')} | "
+                      f"safety_ok={safety_ok.get('value', '?')} | "
                       f"motor={motor_run.get('value', '?')} | "
                       f"brake={brake.get('value', '?')} | "
                       f"error={error_reg.get('value', '?')}")
