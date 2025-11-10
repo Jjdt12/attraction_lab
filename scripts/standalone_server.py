@@ -460,13 +460,15 @@ async def poll_plc_coils():
 
                             # Verify write by reading back
                             readback = read_register_from_plc('EFFECTS', 10, 1)
-                            if readback['success']:
+                            verified_value = '?'
+                            if readback and readback.get('success'):
+                                verified_value = readback['value']
                                 if readback['value'] != position['value']:
                                     print(f"⚠️ [BRIDGE] MISMATCH! Wrote {position['value']} but read {readback['value']} from EFFECTS MW10")
 
                             # Log position changes for event debugging
                             if position['value'] != previous_register_states.get('effects_position'):
-                                print(f"🔗 [BRIDGE] position {position['value']} -> EFFECTS MW10 (verified: {readback.get('value', '?')})")
+                                print(f"🔗 [BRIDGE] position {position['value']} -> EFFECTS MW10 (verified: {verified_value})")
                                 previous_register_states['effects_position'] = position['value']
                     except Exception as e:
                         print(f"⚠️ [BRIDGE] Error in Bridge 5: {e}")
@@ -667,7 +669,10 @@ async def poll_plc_coils():
 
                     # Also read EFFECTS MW10 to see position value
                     effects_pos = read_register_from_plc('EFFECTS', 10, 1)
-                    pos_value = effects_pos.get('value', '?') if effects_pos.get('success') else 'ERR'
+                    if effects_pos and effects_pos.get('success'):
+                        pos_value = effects_pos['value']
+                    else:
+                        pos_value = 'ERR'
 
                     print(f"📊 [EFFECTS DEBUG] Events: {' '.join(event_states)} | MW10={pos_value}")
 
