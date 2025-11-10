@@ -9,15 +9,15 @@ VAR
     strobe_active AT %QX8.1 : BOOL;
     laser_effect_on AT %QX8.2 : BOOL;
 
-    event_1_enable AT %QX4.0 : BOOL;
-    event_2_enable AT %QX4.1 : BOOL;
-    event_3_enable AT %QX4.2 : BOOL;
-    event_4_enable AT %QX4.3 : BOOL;
-    event_5_enable AT %QX4.4 : BOOL;
-    event_6_enable AT %QX4.5 : BOOL;
-    event_7_enable AT %QX4.6 : BOOL;
-    event_8_enable AT %QX4.7 : BOOL;
-    event_9_enable AT %QX5.0 : BOOL;
+    event_1_enable AT %IX4.0 : BOOL;
+    event_2_enable AT %IX4.1 : BOOL;
+    event_3_enable AT %IX4.2 : BOOL;
+    event_4_enable AT %IX4.3 : BOOL;
+    event_5_enable AT %IX4.4 : BOOL;
+    event_6_enable AT %IX4.5 : BOOL;
+    event_7_enable AT %IX4.6 : BOOL;
+    event_8_enable AT %IX4.7 : BOOL;
+    event_9_enable AT %IX5.0 : BOOL;
 
     event_1_active AT %QX2.1 : BOOL;
     event_2_active AT %QX2.2 : BOOL;
