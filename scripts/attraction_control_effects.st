@@ -49,7 +49,9 @@ VAR
     event_7_counter AT %MW1050 : INT;
     event_8_counter AT %MW1051 : INT;
     event_9_counter AT %MW1052 : INT;
+END_VAR
 
+VAR
     scan_counter : DINT;
     flash_timer : INT;
     strobe_timer : INT;
