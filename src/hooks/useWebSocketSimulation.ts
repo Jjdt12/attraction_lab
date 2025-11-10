@@ -22,6 +22,7 @@ interface SimulationState {
   runtimeHours: number;
   maintenanceFlag: boolean;
   lastErrorCode: number;
+  activeEvents: Set<number>;  // Event numbers 1-9 from Safety PLC
 }
 
 export function useWebSocketSimulation() {
@@ -38,6 +39,7 @@ export function useWebSocketSimulation() {
     coilStates: Array(31).fill(false),
     registerStates: Array(100).fill(0),
     speedSetpoint: 50,
+    activeEvents: new Set<number>(),
     state: 0,
     runtimeHours: 0,
     maintenanceFlag: false,
@@ -267,6 +269,20 @@ export function useWebSocketSimulation() {
               }
 
               return { ...prev, ...updates };
+            });
+          } else if (data.type === 'event_change') {
+            // Handle ride event changes from Safety PLC
+            const { event_num, value, name } = data;
+            console.log(`🎪 [Ride Event] ${name} = ${value ? 'ACTIVE' : 'inactive'}`);
+
+            setState(prev => {
+              const newActiveEvents = new Set(prev.activeEvents);
+              if (value) {
+                newActiveEvents.add(event_num);
+              } else {
+                newActiveEvents.delete(event_num);
+              }
+              return { ...prev, activeEvents: newActiveEvents };
             });
           }
         } catch (error) {

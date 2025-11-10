@@ -42,6 +42,7 @@ function App() {
     maintenanceFlag,
     lastErrorCode,
     trackLength,
+    activeEvents: plcActiveEvents,
     startRide,
     stopRide,
     resetRide,
@@ -76,18 +77,18 @@ function App() {
     return () => clearInterval(interval);
   }, [processVars.bearingTempCelsius, processVars.motorCurrentAmps]);
 
+  // Convert PLC active event numbers (1-9) to event IDs for UI
   const activeEvents = useMemo(() => {
     const events = new Set<string>();
-    if (rideRunning) {
-      ALL_EVENTS.filter(event => {
-        const [start, end] = event.position;
-        return carPosition >= start && carPosition <= end;
-      }).forEach(event => {
+    // Use real event data from Safety PLC
+    plcActiveEvents.forEach(eventNum => {
+      const event = ALL_EVENTS.find(e => e.eventNumber === eventNum);
+      if (event) {
         events.add(event.id);
-      });
-    }
+      }
+    });
     return events;
-  }, [carPosition, rideRunning]);
+  }, [plcActiveEvents]);
 
   useAdvancedChallengeDetection({
     sessionId,

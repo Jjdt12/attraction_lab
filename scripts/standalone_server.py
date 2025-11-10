@@ -156,6 +156,22 @@ def connect_to_all_plcs() -> dict:
     return results
 
 
+def read_coil_from_plc(plc_id: str, address: int) -> dict:
+    """Read from Modbus coil on specific PLC"""
+    if plc_id not in modbus_clients or not plc_connected_status.get(plc_id):
+        return {"success": False, "error": f"{plc_id} PLC not connected", "value": False}
+
+    try:
+        client = modbus_clients[plc_id]
+        result = client.read_coils(address=address, count=1)
+        if result and not result.isError():
+            return {"success": True, "address": address, "value": result.bits[0], "plc": plc_id}
+        else:
+            return {"success": False, "error": "Read failed", "value": False, "plc": plc_id}
+    except Exception as e:
+        return {"success": False, "error": str(e), "value": False, "plc": plc_id}
+
+
 def write_coil(address: int, value: bool) -> dict:
     """Write to Modbus coil"""
     if not modbus_client:
@@ -245,13 +261,14 @@ async def broadcast(message: dict):
 
 
 async def poll_plc_coils():
-    """Continuously poll PLC coils and holding registers, broadcast changes"""
+    """Continuously poll PLC coils and holding registers from all PLCs, broadcast changes"""
     global previous_coil_states, previous_register_states
 
-    print("🔄 Started PLC polling task")
+    print("🔄 Started multi-PLC polling task")
 
     while True:
         try:
+            # Poll Main PLC (backward compatibility)
             if modbus_client and is_plc_connected:
                 # Poll coils using defined range
                 start_coil, count_coils = COIL_RANGE
@@ -329,6 +346,36 @@ async def poll_plc_coils():
                                         "name": reg_name,
                                         "value": current_value,
                                     })
+
+            # Poll Safety PLC for event coils (addresses 17-25)
+            if 'SAFETY' in modbus_clients and plc_connected_status.get('SAFETY'):
+                EVENT_COIL_START = 17
+                EVENT_COIL_COUNT = 9  # Events 1-9 (coils 17-25)
+
+                for address in range(EVENT_COIL_START, EVENT_COIL_START + EVENT_COIL_COUNT):
+                    result = read_coil_from_plc('SAFETY', address)
+                    if result["success"]:
+                        current_value = result["value"]
+                        state_key = f"SAFETY_{address}"
+                        previous_value = previous_coil_states.get(state_key)
+
+                        if previous_value is None:
+                            previous_coil_states[state_key] = current_value
+                        elif previous_value != current_value:
+                            event_num = address - EVENT_COIL_START + 1
+                            event_name = f"event_{event_num}_active"
+                            # Log all event changes for visibility
+                            print(f"🎪 [SAFETY PLC] {event_name}: {previous_value} -> {current_value}")
+                            previous_coil_states[state_key] = current_value
+
+                            await broadcast({
+                                "type": "event_change",
+                                "address": address,
+                                "name": event_name,
+                                "event_num": event_num,
+                                "value": current_value,
+                                "plc": "SAFETY",
+                            })
 
             await asyncio.sleep(0.5)
         except Exception as e:
