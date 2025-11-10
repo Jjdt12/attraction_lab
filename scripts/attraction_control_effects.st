@@ -20,26 +20,6 @@ VAR_EXTERNAL
     show_trigger_count : INT;
     effect_runtime_minutes : INT;
 
-    event_1_enable : BOOL;
-    event_2_enable : BOOL;
-    event_3_enable : BOOL;
-    event_4_enable : BOOL;
-    event_5_enable : BOOL;
-    event_6_enable : BOOL;
-    event_7_enable : BOOL;
-    event_8_enable : BOOL;
-    event_9_enable : BOOL;
-
-    event_1_active : BOOL;
-    event_2_active : BOOL;
-    event_3_active : BOOL;
-    event_4_active : BOOL;
-    event_5_active : BOOL;
-    event_6_active : BOOL;
-    event_7_active : BOOL;
-    event_8_active : BOOL;
-    event_9_active : BOOL;
-
     event_1_counter : INT;
     event_2_counter : INT;
     event_3_counter : INT;
