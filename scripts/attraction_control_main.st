@@ -240,7 +240,7 @@ END_PROGRAM
 CONFIGURATION Config0
     RESOURCE Res0 ON PLC
         VAR_GLOBAL
-            start_command AT %IX0.1 : BOOL;
+            start_command AT %QX0.1 : BOOL;
             stop_command AT %IX0.2 : BOOL;
             motor_running AT %QX3.2 : BOOL;  (* bit 26 = byte 3, bit 2 *)
             brake_engaged AT %QX3.3 : BOOL;  (* bit 27 = byte 3, bit 3 *)
