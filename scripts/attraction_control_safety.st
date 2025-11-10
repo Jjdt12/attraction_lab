@@ -1,4 +1,52 @@
 PROGRAM attraction_control_safety
+VAR_EXTERNAL
+    (* Reference to global variables declared in CONFIGURATION section *)
+    master_enable : BOOL;
+    emergency_stop_button : BOOL;
+    safety_gate_closed : BOOL;
+    safety_ok : BOOL;
+    alert_active : BOOL;
+
+    event_1_enable : BOOL;
+    event_2_enable : BOOL;
+    event_3_enable : BOOL;
+    event_4_enable : BOOL;
+    event_5_enable : BOOL;
+    event_6_enable : BOOL;
+    event_7_enable : BOOL;
+    event_8_enable : BOOL;
+    event_9_enable : BOOL;
+
+    event_1_active : BOOL;
+    event_2_active : BOOL;
+    event_3_active : BOOL;
+    event_4_active : BOOL;
+    event_5_active : BOOL;
+    event_6_active : BOOL;
+    event_7_active : BOOL;
+    event_8_active : BOOL;
+    event_9_active : BOOL;
+
+    event_1_counter : INT;
+    event_2_counter : INT;
+    event_3_counter : INT;
+    event_4_counter : INT;
+    event_5_counter : INT;
+    event_6_counter : INT;
+    event_7_counter : INT;
+    event_8_counter : INT;
+    event_9_counter : INT;
+
+    current_position_from_main : INT;
+    current_speed_from_main : INT;
+    motor_running_from_main : BOOL;
+
+    safety_violation_count : INT;
+    alarm_register : INT;
+    stealth_counter : INT;
+    watchdog_timeout_seconds : INT;
+END_VAR
+
 VAR
     (* Local-only variables - not mapped to Modbus *)
     scan_counter : DINT;
