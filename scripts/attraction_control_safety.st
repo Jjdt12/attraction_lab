@@ -44,10 +44,12 @@ VAR_EXTERNAL
 END_VAR
 
 VAR
-    (* HMI Command Coils - Written by SCADA *)
-    hmi_master_enable AT %QX0.0 : BOOL;
-    hmi_estop_cmd AT %QX0.3 : BOOL;
-    hmi_gate_cmd AT %QX0.4 : BOOL;
+    (* HMI Command Inputs - Written by SCADA via Modbus *)
+    master_enable : BOOL;              (* Coil 0 *)
+    dummy_coil_1 : BOOL;               (* Coil 1 - padding *)
+    dummy_coil_2 : BOOL;               (* Coil 2 - padding *)
+    emergency_stop_button : BOOL;      (* Coil 3 *)
+    safety_gate_closed : BOOL;         (* Coil 4 *)
 
     scan_counter : DINT;
     last_event_1 : BOOL;
@@ -57,6 +59,9 @@ VAR
 END_VAR
 
 IF scan_counter = 0 THEN
+    master_enable := FALSE;
+    emergency_stop_button := FALSE;
+    safety_gate_closed := TRUE;
     safety_ok := FALSE;
     alert_active := FALSE;
 
@@ -90,16 +95,16 @@ END_IF;
 scan_counter := scan_counter + 1;
 
 safety_ok := FALSE;
-IF hmi_gate_cmd THEN
-    IF NOT hmi_estop_cmd THEN
-        IF hmi_master_enable THEN
+IF safety_gate_closed THEN
+    IF NOT emergency_stop_button THEN
+        IF master_enable THEN
             safety_ok := TRUE;
         END_IF;
     END_IF;
 END_IF;
 
 IF motor_running_from_main THEN
-    IF NOT hmi_gate_cmd THEN
+    IF NOT safety_gate_closed THEN
         safety_bypass_detected := TRUE;
         stealth_counter := stealth_counter + 1;
         alarm_register := alarm_register + 1;
