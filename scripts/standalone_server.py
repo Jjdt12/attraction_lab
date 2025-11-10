@@ -172,6 +172,22 @@ def read_coil_from_plc(plc_id: str, address: int) -> dict:
         return {"success": False, "error": str(e), "value": False, "plc": plc_id}
 
 
+def write_input_register_to_plc(plc_id: str, address: int, value: int) -> dict:
+    """Write to Modbus holding register on specific PLC (for input register simulation)"""
+    if plc_id not in modbus_clients or not plc_connected_status.get(plc_id):
+        return {"success": False, "error": f"{plc_id} PLC not connected"}
+
+    try:
+        client = modbus_clients[plc_id]
+        result = client.write_register(address=address, value=value)
+        if result and not result.isError():
+            return {"success": True, "address": address, "value": value, "plc": plc_id}
+        else:
+            return {"success": False, "error": "Write failed", "plc": plc_id}
+    except Exception as e:
+        return {"success": False, "error": str(e), "plc": plc_id}
+
+
 def write_coil(address: int, value: bool) -> dict:
     """Write to Modbus coil"""
     if not modbus_client:
@@ -378,16 +394,16 @@ async def poll_plc_coils():
                                         "value": current_value,
                                     })
 
-            # Poll Safety PLC for event coils (addresses 17-25)
-            if 'SAFETY' in modbus_clients and plc_connected_status.get('SAFETY'):
+            # Poll Effects PLC for event coils (addresses 17-25)
+            if 'EFFECTS' in modbus_clients and plc_connected_status.get('EFFECTS'):
                 EVENT_COIL_START = 17
                 EVENT_COIL_COUNT = 9  # Events 1-9 (coils 17-25)
 
                 for address in range(EVENT_COIL_START, EVENT_COIL_START + EVENT_COIL_COUNT):
-                    result = read_coil_from_plc('SAFETY', address)
+                    result = read_coil_from_plc('EFFECTS', address)
                     if result["success"]:
                         current_value = result["value"]
-                        state_key = f"SAFETY_{address}"
+                        state_key = f"EFFECTS_{address}"
                         previous_value = previous_coil_states.get(state_key)
 
                         if previous_value is None:
@@ -396,7 +412,7 @@ async def poll_plc_coils():
                             event_num = address - EVENT_COIL_START + 1
                             event_name = f"event_{event_num}_active"
                             # Log all event changes for visibility
-                            print(f"🎪 [SAFETY PLC] {event_name}: {previous_value} -> {current_value}")
+                            print(f"🎪 [EFFECTS PLC] {event_name}: {previous_value} -> {current_value}")
                             previous_coil_states[state_key] = current_value
 
                             await broadcast({
@@ -405,8 +421,18 @@ async def poll_plc_coils():
                                 "name": event_name,
                                 "event_num": event_num,
                                 "value": current_value,
-                                "plc": "SAFETY",
+                                "plc": "EFFECTS",
                             })
+
+            # Inter-PLC Communication: Copy position from MAIN to EFFECTS
+            if modbus_client and is_plc_connected and 'EFFECTS' in modbus_clients and plc_connected_status.get('EFFECTS'):
+                # Read current_position from MAIN PLC (holding register %QW1)
+                position_result = read_register(HOLDING_REGISTERS['current_position'], 1)
+                if position_result["success"]:
+                    position_value = position_result["value"]
+                    # Write to EFFECTS PLC input register %IW10 (address 10)
+                    write_result = write_input_register_to_plc('EFFECTS', 10, position_value)
+                    # Note: OpenPLC maps input registers to holding registers internally
 
             await asyncio.sleep(0.5)
         except Exception as e:
