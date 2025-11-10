@@ -436,13 +436,17 @@ async def poll_plc_coils():
 
                         # Write to SAFETY PLC holding registers (bridge uses holding regs)
                         if position['success']:
-                            modbus_clients['SAFETY'].write_register(10, position['value'])  # %MW10
+                            result = modbus_clients['SAFETY'].write_register(10, position['value'])  # %MW10
+                            # Log position changes
+                            if position['value'] != previous_register_states.get('bridge_position'):
+                                print(f"🔗 [BRIDGE] position {position['value']} -> SAFETY MW10")
+                                previous_register_states['bridge_position'] = position['value']
                         if speed['success']:
                             modbus_clients['SAFETY'].write_register(11, speed['value'])  # %MW11
                         if motor['success']:
                             modbus_clients['SAFETY'].write_coil(50, motor['value'])  # %MX50 (memory bit)
                     except Exception as e:
-                        pass
+                        print(f"⚠️ [BRIDGE] Error in Bridge 4: {e}")
 
                 # Bridge 5: Copy MAIN position to EFFECTS PLC
                 if 'EFFECTS' in modbus_clients and plc_connected_status.get('EFFECTS'):
@@ -452,9 +456,13 @@ async def poll_plc_coils():
 
                         # Write to EFFECTS PLC holding register
                         if position['success']:
-                            modbus_clients['EFFECTS'].write_register(10, position['value'])  # %MW10
+                            result = modbus_clients['EFFECTS'].write_register(10, position['value'])  # %MW10
+                            # Log position changes for event debugging
+                            if position['value'] != previous_register_states.get('effects_position'):
+                                print(f"🔗 [BRIDGE] position {position['value']} -> EFFECTS MW10")
+                                previous_register_states['effects_position'] = position['value']
                     except Exception as e:
-                        pass
+                        print(f"⚠️ [BRIDGE] Error in Bridge 5: {e}")
 
                 # Bridge 6: Copy SAFETY event signals to EFFECTS PLC
                 if 'SAFETY' in modbus_clients and plc_connected_status.get('SAFETY') and 'EFFECTS' in modbus_clients and plc_connected_status.get('EFFECTS'):
