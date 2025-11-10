@@ -1,5 +1,6 @@
+import { useState } from 'react';
 import { RIDE_ZONES } from '../types/rideEvents';
-import { Shield, ShieldCheck, Zap, Camera, Gauge, GitBranch, Octagon, Target, DoorOpen, Lightbulb, Volume2, Wind, Sparkles, Projector, Droplets, Flame } from 'lucide-react';
+import { Shield, ShieldCheck, Zap, Camera, Gauge, GitBranch, Octagon, Target, DoorOpen, Lightbulb, Volume2, Wind, Sparkles, Eye, EyeOff } from 'lucide-react';
 
 interface AttractionVisualizerProps {
   carPosition: number;
@@ -18,6 +19,7 @@ interface EffectConfig {
   positions: [number, number]; // Position range where this effect is active
 }
 
+// Match the PLC logic exactly from attraction_control_effects.st
 const EFFECTS_CONFIG: EffectConfig[] = [
   { name: 'Show Lighting', icon: Lightbulb, coil: 60, color: 'yellow', positions: [0, 26] },
   { name: 'Audio 1', icon: Volume2, coil: 61, color: 'blue', positions: [0, 5] },
@@ -87,6 +89,7 @@ export default function AttractionVisualizer({
   rideRunning,
   coilStates,
 }: AttractionVisualizerProps) {
+  const [showEffectBadges, setShowEffectBadges] = useState(true);
   const getZoneColor = (zoneId: number) => {
     const colors = {
       1: 'from-blue-500/30 to-blue-600/40',
@@ -144,8 +147,8 @@ export default function AttractionVisualizer({
 
       positions.push(
         <div key={pos} className="flex flex-col items-center gap-2 relative">
-          {/* Effects badges above position */}
-          {hasEffects && (
+          {/* Effects badges above position - only show if toggle is on and near car */}
+          {showEffectBadges && hasEffects && Math.abs(pos - carPosition) <= 2 && (
             <div className="absolute -top-16 left-1/2 -translate-x-1/2 flex gap-1 flex-wrap justify-center w-24">
               {potentialEffects.map(effect => {
                 const isActive = activeEffects.some(e => e.coil === effect.coil);
@@ -233,12 +236,22 @@ export default function AttractionVisualizer({
                 {rideRunning ? 'Ride in Operation' : 'Ride Standby'}
               </p>
             </div>
-            <div className={`px-4 py-2 rounded-lg font-bold text-sm ${
-              rideRunning
-                ? 'bg-green-500/20 text-green-400 border border-green-500/30'
-                : 'bg-slate-700/50 text-slate-400 border border-slate-600'
-            }`}>
-              {rideRunning ? 'ACTIVE' : 'STANDBY'}
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowEffectBadges(!showEffectBadges)}
+                className="px-3 py-2 rounded-lg font-medium text-xs bg-slate-700/50 hover:bg-slate-700 text-slate-300 border border-slate-600 transition-colors flex items-center gap-2"
+                title={showEffectBadges ? 'Hide effect badges' : 'Show effect badges'}
+              >
+                {showEffectBadges ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                Show Effects
+              </button>
+              <div className={`px-4 py-2 rounded-lg font-bold text-sm ${
+                rideRunning
+                  ? 'bg-green-500/20 text-green-400 border border-green-500/30'
+                  : 'bg-slate-700/50 text-slate-400 border border-slate-600'
+              }`}>
+                {rideRunning ? 'ACTIVE' : 'STANDBY'}
+              </div>
             </div>
           </div>
 
