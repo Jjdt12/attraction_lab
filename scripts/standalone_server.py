@@ -644,6 +644,21 @@ async def poll_plc_coils():
                     previous_coil_states['effects_first_values_logged'] = True
                     print("✓ [EFFECTS] First event poll complete")
 
+                # Debug: Log all event states every 10 seconds
+                import time
+                if not hasattr(poll_plc_coils, 'last_event_debug_time'):
+                    poll_plc_coils.last_event_debug_time = 0
+                current_time = time.time()
+                if current_time - poll_plc_coils.last_event_debug_time >= 10:
+                    poll_plc_coils.last_event_debug_time = current_time
+                    event_states = []
+                    for addr in range(EVENT_COIL_START, EVENT_COIL_START + EVENT_COIL_COUNT):
+                        state_key = f"EFFECTS_{addr}"
+                        value = previous_coil_states.get(state_key, False)
+                        event_num = addr - EVENT_COIL_START + 1
+                        event_states.append(f"E{event_num}={'T' if value else 'F'}")
+                    print(f"📊 [EFFECTS DEBUG] Events: {' '.join(event_states)}")
+
             # Inter-PLC Communication: Copy position from MAIN to EFFECTS
             if modbus_client and is_plc_connected and 'EFFECTS' in modbus_clients and plc_connected_status.get('EFFECTS'):
                 # Read current_position from MAIN PLC (holding register %QW1)
