@@ -75,8 +75,8 @@ IF scan_counter = 0 THEN
     target_speed := 50;
     speed_ramp_rate := 2;
 
-    (* safety_plc_ready and effects_plc_ready are INPUTS - cannot initialize *)
-    (* They are written by the SCADA bridge reading from other PLCs *)
+    (* safety_plc_ready and effects_plc_ready are written by SCADA bridge *)
+    (* PLC reads their state but does not write to them *)
 END_IF;
 
 scan_counter := scan_counter + 1;
@@ -243,8 +243,8 @@ CONFIGURATION Config0
             zone_2_enable AT %QX0.6 : BOOL;
             zone_3_enable AT %QX0.7 : BOOL;
 
-            safety_plc_ready AT %IX0.31 : BOOL;
-            effects_plc_ready AT %IX0.32 : BOOL;
+            safety_plc_ready AT %QX0.31 : BOOL;
+            effects_plc_ready AT %QX0.32 : BOOL;
 
             speed_setpoint AT %IW0 : INT;
             current_position AT %QW1 : INT;
