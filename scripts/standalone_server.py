@@ -158,11 +158,14 @@ def connect_to_all_plcs() -> dict:
         # Initialize safety ready registers after MAIN PLC connects
         if plc_id == 'MAIN' and results[plc_id] and modbus_clients.get('MAIN'):
             try:
-                # Set safety_plc_ready_reg (MW100) = 1
-                modbus_clients['MAIN'].write_register(address=100, value=1)
-                # Set effects_plc_ready_reg (MW101) = 1
-                modbus_clients['MAIN'].write_register(address=101, value=1)
-                print("✓ [INIT] Initialized safety and effects ready registers on MAIN PLC")
+                # Set safety_plc_ready_reg (IW100) = 1 - write to INPUT register
+                result1 = modbus_clients['MAIN'].write_registers(address=30100, values=[1])
+                # Set effects_plc_ready_reg (IW101) = 1 - write to INPUT register
+                result2 = modbus_clients['MAIN'].write_registers(address=30101, values=[1])
+                if not result1.isError() and not result2.isError():
+                    print("✓ [INIT] Initialized safety and effects ready input registers on MAIN PLC")
+                else:
+                    print(f"✗ [INIT] Error writing input registers: {result1}, {result2}")
             except Exception as e:
                 print(f"✗ [INIT] Failed to initialize ready registers: {e}")
 
@@ -365,10 +368,11 @@ async def poll_plc_coils():
                         if safety_result["success"]:
                             safety_ok_value = safety_result["value"]
                             try:
-                                result = modbus_client.write_register(address=100, value=safety_ok_value)
+                                # Write to INPUT register (IW100 = Modbus address 30100)
+                                result = modbus_client.write_registers(address=30100, values=[safety_ok_value])
                                 if result and not result.isError():
                                     if safety_ok_value != previous_register_states.get('safety_ready_bridge'):
-                                        print(f"🔗 [BRIDGE] safety_ok from SAFETY -> safety_plc_ready_reg on MAIN: {safety_ok_value}")
+                                        print(f"🔗 [BRIDGE] safety_ok from SAFETY -> safety_plc_ready_reg on MAIN (IW100): {safety_ok_value}")
                                         previous_register_states['safety_ready_bridge'] = safety_ok_value
                             except Exception as e:
                                 pass
@@ -377,10 +381,11 @@ async def poll_plc_coils():
 
                 # Bridge 2: Set effects_plc_ready to TRUE (EFFECTS PLC always ready)
                 try:
-                    result = modbus_client.write_register(address=101, value=1)
+                    # Write to INPUT register (IW101 = Modbus address 30101)
+                    result = modbus_client.write_registers(address=30101, values=[1])
                     if result and not result.isError():
                         if previous_register_states.get('effects_ready_bridge') != 1:
-                            print(f"🔗 [BRIDGE] effects_plc_ready_reg on MAIN: 1 (default)")
+                            print(f"🔗 [BRIDGE] effects_plc_ready_reg on MAIN (IW101): 1 (default)")
                             previous_register_states['effects_ready_bridge'] = 1
                 except Exception as e:
                     pass
@@ -463,8 +468,9 @@ async def poll_plc_coils():
                 brake = read_coil(COILS['brake_engaged'])
                 state_reg = read_register(HOLDING_REGISTERS['state'], 1)
                 error_reg = read_register(HOLDING_REGISTERS['last_error_code'], 1)
-                safety_ready_reg = read_register(100, 1)
-                effects_ready_reg = read_register(101, 1)
+                # Read INPUT registers (IW100 = 30100, IW101 = 30101)
+                safety_ready_reg = read_input_register(30100, 1)
+                effects_ready_reg = read_input_register(30101, 1)
 
                 # Print state machine status every cycle
                 print(f"📊 [STATE] state={state_reg.get('value', '?')} | "

@@ -249,8 +249,8 @@ CONFIGURATION Config0
             zone_2_enable AT %QX0.6 : BOOL;
             zone_3_enable AT %QX0.7 : BOOL;
 
-            safety_plc_ready_reg AT %MW100 : INT;
-            effects_plc_ready_reg AT %MW101 : INT;
+            safety_plc_ready_reg AT %IW100 : INT;
+            effects_plc_ready_reg AT %IW101 : INT;
 
             speed_setpoint AT %IW0 : INT;
             current_position AT %QW1 : INT;
