@@ -2,15 +2,14 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PLC Programming - Project Nexus Wiki</title>
+    <title>PLC Programming - Project Nexus</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f4f5f7; color: #172b4d; }
         .header { background: linear-gradient(135deg, #0052cc 0%, #2684ff 100%); color: white; padding: 1rem 2rem; }
         .header h1 { font-size: 1.5rem; font-weight: 600; }
         .container { display: flex; min-height: calc(100vh - 80px); }
-        .sidebar { width: 280px; background: white; border-right: 1px solid #dfe1e6; padding: 1.5rem 1rem; }
+        .sidebar { width: 280px; background: white; border-right: 1px solid #dfe1e6; padding: 1.5rem 1rem; overflow-y: auto; }
         .sidebar h3 { font-size: 0.75rem; text-transform: uppercase; color: #5e6c84; font-weight: 700; margin: 1.5rem 0 0.75rem; }
         .nav-item { display: block; padding: 0.5rem 0.75rem; color: #172b4d; text-decoration: none; border-radius: 4px; margin-bottom: 2px; font-size: 0.9rem; }
         .nav-item:hover { background: #f4f5f7; }
@@ -19,32 +18,105 @@
         .breadcrumb { font-size: 0.85rem; color: #5e6c84; margin-bottom: 1rem; }
         .breadcrumb a { color: #0052cc; text-decoration: none; }
         .page-title { font-size: 2rem; font-weight: 600; margin-bottom: 0.5rem; }
+        .page-meta { font-size: 0.85rem; color: #5e6c84; margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 2px solid #dfe1e6; }
         .info-box { background: #deebff; border-left: 4px solid #0052cc; padding: 1rem; margin: 1.5rem 0; border-radius: 4px; }
+        .warning-box { background: #ffebe6; border-left: 4px solid #de350b; padding: 1rem; margin: 1.5rem 0; border-radius: 4px; }
+        .content h2 { font-size: 1.5rem; margin: 2rem 0 1rem; }
+        .content h3 { font-size: 1.25rem; margin: 1.5rem 0 0.75rem; }
+        .content p { line-height: 1.6; margin-bottom: 1rem; }
+        .content ul, .content ol { margin: 1rem 0 1rem 2rem; line-height: 1.8; }
+        .content table { width: 100%; border-collapse: collapse; margin: 1.5rem 0; }
+        .content table th, .content table td { padding: 0.75rem; text-align: left; border: 1px solid #dfe1e6; }
+        .content table th { background: #f4f5f7; font-weight: 600; }
+        .code-block { background: #1e1e1e; color: #d4d4d4; padding: 1.5rem; border-radius: 8px; margin: 1.5rem 0; overflow-x: auto; font-family: 'Courier New', monospace; font-size: 0.85rem; line-height: 1.6; }
+        code { background: #f4f5f7; padding: 0.2rem 0.4rem; border-radius: 3px; font-family: monospace; font-size: 0.9em; }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>🎢 Project Nexus - Internal Wiki</h1>
-    </div>
+    <div class="header"><h1>🎢 Project Nexus - Internal Wiki</h1></div>
     <div class="container">
         <div class="sidebar">
             <h3>📚 Overview</h3>
             <a href="index.html" class="nav-item">Project Home</a>
+            <a href="project-overview.html" class="nav-item">Project Overview</a>
+            <a href="team-directory.html" class="nav-item">Team Directory</a>
             <h3>🔧 Engineering</h3>
             <a href="system-architecture.html" class="nav-item">System Architecture</a>
             <a href="plc-programming.html" class="nav-item active">PLC Programming</a>
+            <a href="network-topology.html" class="nav-item">Network Topology</a>
+            <a href="control-logic.html" class="nav-item">Control Logic</a>
             <h3>⚙️ Operations</h3>
             <a href="operator-manual.html" class="nav-item">Operator Manual</a>
+            <a href="startup-shutdown.html" class="nav-item">Startup/Shutdown</a>
             <a href="troubleshooting.html" class="nav-item">Troubleshooting Guide</a>
+            <h3>🛡️ Safety</h3>
+            <a href="safety-systems.html" class="nav-item">Safety Systems</a>
+            <a href="emergency-procedures.html" class="nav-item">Emergency Procedures</a>
+            <a href="safety-audits.html" class="nav-item">Safety Audits</a>
+            <h3>🔨 Maintenance</h3>
+            <a href="maintenance-schedule.html" class="nav-item">Maintenance Schedule</a>
+            <a href="parts-inventory.html" class="nav-item">Parts Inventory</a>
+            <a href="maintenance-logs.html" class="nav-item">Maintenance Logs</a>
+            <h3>📋 Project Management</h3>
+            <a href="project-timeline.html" class="nav-item">Project Timeline</a>
+            <a href="meeting-notes.html" class="nav-item">Meeting Notes</a>
+            <a href="change-requests.html" class="nav-item">Change Requests</a>
         </div>
         <div class="content">
-            <div class="breadcrumb">
-                <a href="index.html">Home</a> / Engineering / PLC Programming
-            </div>
+            <div class="breadcrumb"><a href="index.html">Home</a> / <a href="#">Engineering</a> / PLC Programming</div>
             <h1 class="page-title">PLC Programming Guide</h1>
-            <div class="info-box">
-                <strong>📝 Coming Soon:</strong> Detailed PLC programming documentation, ladder logic examples, and structured text code samples will be added to this page.
+            <div class="page-meta">Last updated: November 10, 2025 | Owner: Michael Torres | Version: 2.4</div>
+
+            <div class="warning-box"><strong>⚠️ Warning:</strong> Only authorized personnel should modify PLC programs. All changes must be tested in simulation first.</div>
+
+            <h2>Programming Standards</h2>
+            <p>Project Nexus uses IEC 61131-3 Structured Text (ST) with OpenPLC Runtime.</p>
+
+            <h3>Naming Conventions</h3>
+            <ul>
+                <li><strong>Variables:</strong> lowercase_with_underscores</li>
+                <li><strong>Constants:</strong> UPPERCASE_WITH_UNDERSCORES</li>
+                <li><strong>Memory Tags:</strong> %QX (coils), %MW (registers)</li>
+            </ul>
+
+            <h2>Main Program Structure</h2>
+            <div class="code-block">
+(* MAIN CONTROL PROGRAM *)
+PROGRAM MainControl
+VAR
+    ride_state : INT := 0;  (* 0=IDLE, 1=RUNNING *)
+    position : INT := 0;
+    motor_running AT %QX0.26 : BOOL;
+END_VAR
+
+IF master_enable THEN
+    IF start_command THEN
+        motor_running := TRUE;
+        position := position + 1;
+    END_IF;
+END_IF;
+
+END_PROGRAM
             </div>
+
+            <h2>Memory Map</h2>
+            <table>
+                <tr><th>Address</th><th>Variable</th><th>Description</th></tr>
+                <tr><td>%QX0.0</td><td>master_enable</td><td>Master system enable</td></tr>
+                <tr><td>%QX0.1</td><td>start_command</td><td>Start ride</td></tr>
+                <tr><td>%QX0.26</td><td>motor_running</td><td>Motor status</td></tr>
+                <tr><td>%MW0</td><td>position</td><td>Vehicle position</td></tr>
+            </table>
+
+            <h2>Uploading to OpenPLC</h2>
+            <ol>
+                <li>Save .st file in <code>/scripts/</code></li>
+                <li>Run: <code>python upload_st_to_openplc.py program.st</code></li>
+                <li>Verify at http://localhost:8080</li>
+                <li>Click "Start PLC"</li>
+            </ol>
+
+            <div class="info-box"><strong>📞 Support:</strong> Contact Michael Torres (ext. 4522) for programming assistance.</div>
         </div>
     </div>
 </body>

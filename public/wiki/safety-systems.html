@@ -1,48 +1,82 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Safety Systems - Project Nexus Wiki</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f4f5f7; color: #172b4d; }
-        .header { background: linear-gradient(135deg, #0052cc 0%, #2684ff 100%); color: white; padding: 1rem 2rem; }
-        .header h1 { font-size: 1.5rem; font-weight: 600; }
-        .container { display: flex; min-height: calc(100vh - 80px); }
-        .sidebar { width: 280px; background: white; border-right: 1px solid #dfe1e6; padding: 1.5rem 1rem; }
-        .sidebar h3 { font-size: 0.75rem; text-transform: uppercase; color: #5e6c84; font-weight: 700; margin: 1.5rem 0 0.75rem; }
-        .nav-item { display: block; padding: 0.5rem 0.75rem; color: #172b4d; text-decoration: none; border-radius: 4px; margin-bottom: 2px; font-size: 0.9rem; }
-        .nav-item:hover { background: #f4f5f7; }
-        .content { flex: 1; padding: 2rem 3rem; max-width: 1200px; }
-        .breadcrumb { font-size: 0.85rem; color: #5e6c84; margin-bottom: 1rem; }
-        .breadcrumb a { color: #0052cc; text-decoration: none; }
-        .page-title { font-size: 2rem; font-weight: 600; margin-bottom: 0.5rem; }
-        .info-box { background: #deebff; border-left: 4px solid #0052cc; padding: 1rem; margin: 1.5rem 0; border-radius: 4px; }
-    </style>
-</head>
-<body>
-    <div class="header">
-        <h1>🎢 Project Nexus - Internal Wiki</h1>
-    </div>
-    <div class="container">
-        <div class="sidebar">
-            <h3>📚 Overview</h3>
-            <a href="index.html" class="nav-item">Project Home</a>
-            <h3>🔧 Engineering</h3>
-            <a href="system-architecture.html" class="nav-item">System Architecture</a>
-            <h3>⚙️ Operations</h3>
-            <a href="operator-manual.html" class="nav-item">Operator Manual</a>
-            <a href="troubleshooting.html" class="nav-item">Troubleshooting Guide</a>
-        </div>
-        <div class="content">
-            <div class="breadcrumb">
-                <a href="index.html">Home</a> / Safety Systems
-            </div>
-            <h1 class="page-title">Safety Systems</h1>
-            <div class="info-box">
-                <strong>📝 Coming Soon:</strong> This page is under construction. Content will be added soon.
-            </div>
-        </div>
-    </div>
-</body>
-</html>
+<html><head><meta charset="UTF-8"><title>Safety Systems - Nexus</title>
+<style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:-apple-system,sans-serif;background:#f4f5f7;color:#172b4d}.header{background:linear-gradient(135deg,#0052cc,#2684ff);color:white;padding:1rem 2rem}.header h1{font-size:1.5rem;font-weight:600}.container{display:flex;min-height:calc(100vh - 80px)}.sidebar{width:280px;background:white;border-right:1px solid #dfe1e6;padding:1.5rem 1rem}.sidebar h3{font-size:.75rem;text-transform:uppercase;color:#5e6c84;font-weight:700;margin:1.5rem 0 .75rem}.nav-item{display:block;padding:.5rem .75rem;color:#172b4d;text-decoration:none;border-radius:4px;margin-bottom:2px;font-size:.9rem}.nav-item:hover{background:#f4f5f7}.nav-item.active{background:#deebff;color:#0052cc}.content{flex:1;padding:2rem 3rem;max-width:1200px}.breadcrumb{font-size:.85rem;color:#5e6c84;margin-bottom:1rem}.breadcrumb a{color:#0052cc;text-decoration:none}.page-title{font-size:2rem;font-weight:600;margin-bottom:.5rem}.page-meta{font-size:.85rem;color:#5e6c84;margin-bottom:2rem;padding-bottom:1rem;border-bottom:2px solid #dfe1e6}.warning-box{background:#ffebe6;border-left:4px solid #de350b;padding:1rem;margin:1.5rem 0;border-radius:4px}.content h2{font-size:1.5rem;margin:2rem 0 1rem}.content h3{font-size:1.25rem;margin:1.5rem 0 .75rem}.content p{line-height:1.6;margin-bottom:1rem}.content ul{margin:1rem 0 1rem 2rem;line-height:1.8}.content table{width:100%;border-collapse:collapse;margin:1.5rem 0}.content table th,.content table td{padding:.75rem;text-align:left;border:1px solid #dfe1e6}.content table th{background:#f4f5f7;font-weight:600}</style>
+</head><body>
+<div class="header"><h1>🎢 Project Nexus - Safety Systems</h1></div>
+<div class="container">
+<div class="sidebar"><h3>🛡️ Safety</h3>
+<a href="safety-systems.html" class="nav-item active">Safety Systems</a>
+<a href="emergency-procedures.html" class="nav-item">Emergency Procedures</a>
+<a href="safety-audits.html" class="nav-item">Safety Audits</a>
+<h3>📚 Overview</h3>
+<a href="index.html" class="nav-item">Project Home</a>
+</div>
+<div class="content">
+<div class="breadcrumb"><a href="index.html">Home</a> / Safety / Safety Systems</div>
+<h1 class="page-title">Safety Systems Documentation</h1>
+<div class="page-meta">Last updated: October 20, 2025 | Owner: Marcus Johnson, Safety Officer | Version: 3.0</div>
+
+<div class="warning-box"><strong>⚠️ Critical:</strong> Safety systems must NEVER be bypassed or disabled. Any modification requires Safety Engineering approval and re-certification.</div>
+
+<h2>Safety PLC Architecture</h2>
+<p>The dedicated Safety PLC (Port 503) monitors all safety-critical functions independently from the Main control PLC. It can override ride operation at any time.</p>
+
+<h3>Key Safety Features</h3>
+<ul>
+<li><strong>Emergency Stop System:</strong> Hardwired E-Stop buttons at 4 locations</li>
+<li><strong>Safety Gates:</strong> Magnetic safety switches on loading gates</li>
+<li><strong>Zone Occupancy:</strong> Infrared sensors detect vehicle position</li>
+<li><strong>Speed Monitoring:</strong> Independent speed encoder verification</li>
+<li><strong>Brake Monitoring:</strong> Pressure sensors + position switches</li>
+<li><strong>Watchdog Timer:</strong> Resets system if PLC stops responding</li>
+</ul>
+
+<h2>Emergency Stop Response</h2>
+<p>When E-Stop activated:</p>
+<ol>
+<li>Motor power cut within 50ms</li>
+<li>Friction brakes engage within 200ms</li>
+<li>All show effects disable immediately</li>
+<li>Alarm sounds in control room</li>
+<li>System requires manual reset</li>
+</ol>
+
+<h2>Safety Interlock Matrix</h2>
+<table>
+<tr><th>Interlock</th><th>Sensor Type</th><th>Safe State</th><th>Response</th></tr>
+<tr><td>E-Stop Circuit</td><td>Hardwired NC contacts</td><td>Circuit closed</td><td>Immediate halt</td></tr>
+<tr><td>Safety Gate</td><td>Magnetic switch</td><td>Gate closed</td><td>Prevent start</td></tr>
+<tr><td>Zone Sensors</td><td>Infrared beam</td><td>One vehicle max</td><td>Auto brake</td></tr>
+<tr><td>Brake Pressure</td><td>Analog 4-20mA</td><td>>1100 PSI</td><td>Prevent start</td></tr>
+<tr><td>Over-Speed</td><td>Encoder</td><td><110 units/s</td><td>Engage brake</td></tr>
+</table>
+
+<h2>Fail-Safe Principles</h2>
+<ul>
+<li>Loss of power = brakes engage (spring-applied, electrically released)</li>
+<li>Loss of signal = system interprets as fault</li>
+<li>All safety inputs normally closed (NC) contacts</li>
+<li>Redundant sensors on critical functions</li>
+<li>Safety PLC uses watchdog timer</li>
+</ul>
+
+<h2>SIL Rating</h2>
+<p>System targets <strong>SIL-2 (Safety Integrity Level 2)</strong> certification per IEC 61508:</p>
+<ul>
+<li>Probability of dangerous failure: 10⁻⁶ to 10⁻⁷ per hour</li>
+<li>Independent safety assessment completed August 2025</li>
+<li>Annual safety audit required</li>
+<li>All safety components must be SIL-rated</li>
+</ul>
+
+<h2>Maintenance Requirements</h2>
+<ul>
+<li><strong>Daily:</strong> E-Stop test, gate interlock test</li>
+<li><strong>Weekly:</strong> Brake pressure check, sensor alignment</li>
+<li><strong>Monthly:</strong> Full safety system functional test</li>
+<li><strong>Annual:</strong> Third-party safety audit & certification</li>
+</ul>
+
+<div class="warning-box"><strong>📞 Safety Concerns:</strong> Report immediately to Marcus Johnson, Safety Officer (ext. 4502) or Emergency Line (ext. 911)</div>
+
+</div></div></body></html>

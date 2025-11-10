@@ -2,47 +2,121 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Network Topology - Project Nexus Wiki</title>
+    <title>Network Topology - Project Nexus</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f4f5f7; color: #172b4d; }
         .header { background: linear-gradient(135deg, #0052cc 0%, #2684ff 100%); color: white; padding: 1rem 2rem; }
         .header h1 { font-size: 1.5rem; font-weight: 600; }
         .container { display: flex; min-height: calc(100vh - 80px); }
-        .sidebar { width: 280px; background: white; border-right: 1px solid #dfe1e6; padding: 1.5rem 1rem; }
+        .sidebar { width: 280px; background: white; border-right: 1px solid #dfe1e6; padding: 1.5rem 1rem; overflow-y: auto; }
         .sidebar h3 { font-size: 0.75rem; text-transform: uppercase; color: #5e6c84; font-weight: 700; margin: 1.5rem 0 0.75rem; }
         .nav-item { display: block; padding: 0.5rem 0.75rem; color: #172b4d; text-decoration: none; border-radius: 4px; margin-bottom: 2px; font-size: 0.9rem; }
         .nav-item:hover { background: #f4f5f7; }
+        .nav-item.active { background: #deebff; color: #0052cc; font-weight: 500; }
         .content { flex: 1; padding: 2rem 3rem; max-width: 1200px; }
         .breadcrumb { font-size: 0.85rem; color: #5e6c84; margin-bottom: 1rem; }
         .breadcrumb a { color: #0052cc; text-decoration: none; }
         .page-title { font-size: 2rem; font-weight: 600; margin-bottom: 0.5rem; }
+        .page-meta { font-size: 0.85rem; color: #5e6c84; margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 2px solid #dfe1e6; }
         .info-box { background: #deebff; border-left: 4px solid #0052cc; padding: 1rem; margin: 1.5rem 0; border-radius: 4px; }
+        .warning-box { background: #ffebe6; border-left: 4px solid #de350b; padding: 1rem; margin: 1.5rem 0; border-radius: 4px; }
+        .success-box { background: #e3fcef; border-left: 4px solid #006644; padding: 1rem; margin: 1.5rem 0; border-radius: 4px; }
+        .content h2 { font-size: 1.5rem; margin: 2rem 0 1rem; }
+        .content h3 { font-size: 1.25rem; margin: 1.5rem 0 0.75rem; }
+        .content p { line-height: 1.6; margin-bottom: 1rem; }
+        .content ul, .content ol { margin: 1rem 0 1rem 2rem; line-height: 1.8; }
+        .content table { width: 100%; border-collapse: collapse; margin: 1.5rem 0; }
+        .content table th, .content table td { padding: 0.75rem; text-align: left; border: 1px solid #dfe1e6; }
+        .content table th { background: #f4f5f7; font-weight: 600; }
+        code { background: #f4f5f7; padding: 0.2rem 0.4rem; border-radius: 3px; font-family: monospace; font-size: 0.9em; }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>🎢 Project Nexus - Internal Wiki</h1>
-    </div>
+    <div class="header"><h1>🎢 Project Nexus - Internal Wiki</h1></div>
     <div class="container">
         <div class="sidebar">
             <h3>📚 Overview</h3>
             <a href="index.html" class="nav-item">Project Home</a>
+            <a href="project-overview.html" class="nav-item">Project Overview</a>
+            <a href="team-directory.html" class="nav-item">Team Directory</a>
             <h3>🔧 Engineering</h3>
             <a href="system-architecture.html" class="nav-item">System Architecture</a>
+            <a href="plc-programming.html" class="nav-item">PLC Programming</a>
+            <a href="network-topology.html" class="nav-item">Network Topology</a>
+            <a href="control-logic.html" class="nav-item">Control Logic</a>
             <h3>⚙️ Operations</h3>
             <a href="operator-manual.html" class="nav-item">Operator Manual</a>
+            <a href="startup-shutdown.html" class="nav-item">Startup/Shutdown</a>
             <a href="troubleshooting.html" class="nav-item">Troubleshooting Guide</a>
+            <h3>🛡️ Safety</h3>
+            <a href="safety-systems.html" class="nav-item">Safety Systems</a>
+            <a href="emergency-procedures.html" class="nav-item">Emergency Procedures</a>
+            <a href="safety-audits.html" class="nav-item">Safety Audits</a>
+            <h3>🔨 Maintenance</h3>
+            <a href="maintenance-schedule.html" class="nav-item">Maintenance Schedule</a>
+            <a href="parts-inventory.html" class="nav-item">Parts Inventory</a>
+            <a href="maintenance-logs.html" class="nav-item">Maintenance Logs</a>
+            <h3>📋 Project Management</h3>
+            <a href="project-timeline.html" class="nav-item">Project Timeline</a>
+            <a href="meeting-notes.html" class="nav-item">Meeting Notes</a>
+            <a href="change-requests.html" class="nav-item">Change Requests</a>
         </div>
         <div class="content">
-            <div class="breadcrumb">
-                <a href="index.html">Home</a> / Network Topology
-            </div>
-            <h1 class="page-title">Network Topology</h1>
-            <div class="info-box">
-                <strong>📝 Coming Soon:</strong> This page is under construction. Content will be added soon.
-            </div>
+
+    <div class="breadcrumb"><a href="index.html">Home</a> / Engineering / Network Topology</div>
+    <h1 class="page-title">Network Topology</h1>
+    <div class="page-meta">Last updated: October 25, 2025 | Owner: Sarah Chen | Version: 1.3</div>
+
+    <h2>Network Overview</h2>
+    <p>The Nexus control system uses an isolated industrial Ethernet network with dedicated VLANs for control traffic, ensuring deterministic timing and security.</p>
+
+    <h2>IP Address Scheme</h2>
+    <table>
+        <tr><th>Device</th><th>IP Address</th><th>Port</th><th>Purpose</th></tr>
+        <tr><td>Main PLC</td><td>192.168.1.10</td><td>502</td><td>Primary control logic</td></tr>
+        <tr><td>Safety PLC</td><td>192.168.1.11</td><td>503</td><td>Safety monitoring</td></tr>
+        <tr><td>Effects PLC</td><td>192.168.1.12</td><td>504</td><td>Show effects</td></tr>
+        <tr><td>HMI Server</td><td>192.168.1.20</td><td>8765</td><td>WebSocket interface</td></tr>
+        <tr><td>Network Switch</td><td>192.168.1.1</td><td>-</td><td>Managed switch</td></tr>
+    </table>
+
+    <h2>Network Requirements</h2>
+    <ul>
+        <li><strong>Bandwidth:</strong> 100 Mbps per PLC (1 Gbps switch)</li>
+        <li><strong>Latency:</strong> <5ms between PLCs</li>
+        <li><strong>Cabling:</strong> CAT6 shielded, max 100m runs</li>
+        <li><strong>Redundancy:</strong> Dual-homed connections for critical devices</li>
+        <li><strong>Isolation:</strong> Air-gapped from guest Wi-Fi and corporate networks</li>
+    </ul>
+
+    <h2>VLAN Configuration</h2>
+    <ul>
+        <li><strong>VLAN 10:</strong> PLC Control Traffic (highest priority)</li>
+        <li><strong>VLAN 20:</strong> HMI/SCADA Traffic</li>
+        <li><strong>VLAN 30:</strong> Maintenance Access (restricted)</li>
+    </ul>
+
+    <h2>Security Measures</h2>
+    <ul>
+        <li>No internet connectivity on control network</li>
+        <li>MAC address filtering enabled</li>
+        <li>Port security on all switch ports</li>
+        <li>Modbus traffic encrypted via VPN for remote access</li>
+        <li>Annual penetration testing required</li>
+    </ul>
+
+    <div class="info-box"><strong>📞 Contact:</strong> Network issues should be reported to Sarah Chen (ext. 4521) or Control Room (ext. 4500).</div>
+
         </div>
     </div>
+    <script>
+        // Highlight active nav item
+        document.querySelectorAll('.nav-item').forEach(item => {
+            if (item.getAttribute('href') === 'network-topology.html') {
+                item.classList.add('active');
+            }
+        });
+    </script>
 </body>
 </html>

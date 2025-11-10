@@ -2,46 +2,121 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Control Logic - Project Nexus Wiki</title>
+    <title>Control Logic - Project Nexus</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f4f5f7; color: #172b4d; }
         .header { background: linear-gradient(135deg, #0052cc 0%, #2684ff 100%); color: white; padding: 1rem 2rem; }
         .header h1 { font-size: 1.5rem; font-weight: 600; }
         .container { display: flex; min-height: calc(100vh - 80px); }
-        .sidebar { width: 280px; background: white; border-right: 1px solid #dfe1e6; padding: 1.5rem 1rem; }
+        .sidebar { width: 280px; background: white; border-right: 1px solid #dfe1e6; padding: 1.5rem 1rem; overflow-y: auto; }
         .sidebar h3 { font-size: 0.75rem; text-transform: uppercase; color: #5e6c84; font-weight: 700; margin: 1.5rem 0 0.75rem; }
         .nav-item { display: block; padding: 0.5rem 0.75rem; color: #172b4d; text-decoration: none; border-radius: 4px; margin-bottom: 2px; font-size: 0.9rem; }
         .nav-item:hover { background: #f4f5f7; }
+        .nav-item.active { background: #deebff; color: #0052cc; font-weight: 500; }
         .content { flex: 1; padding: 2rem 3rem; max-width: 1200px; }
         .breadcrumb { font-size: 0.85rem; color: #5e6c84; margin-bottom: 1rem; }
         .breadcrumb a { color: #0052cc; text-decoration: none; }
         .page-title { font-size: 2rem; font-weight: 600; margin-bottom: 0.5rem; }
+        .page-meta { font-size: 0.85rem; color: #5e6c84; margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 2px solid #dfe1e6; }
         .info-box { background: #deebff; border-left: 4px solid #0052cc; padding: 1rem; margin: 1.5rem 0; border-radius: 4px; }
+        .content h2 { font-size: 1.5rem; margin: 2rem 0 1rem; }
+        .content h3 { font-size: 1.25rem; margin: 1.5rem 0 0.75rem; }
+        .content p { line-height: 1.6; margin-bottom: 1rem; }
+        .content ul { margin: 1rem 0 1rem 2rem; line-height: 1.8; }
+        .content table { width: 100%; border-collapse: collapse; margin: 1.5rem 0; }
+        .content table th, .content table td { padding: 0.75rem; text-align: left; border: 1px solid #dfe1e6; }
+        .content table th { background: #f4f5f7; font-weight: 600; }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>🎢 Project Nexus - Internal Wiki</h1>
-    </div>
+    <div class="header"><h1>🎢 Project Nexus - Internal Wiki</h1></div>
     <div class="container">
         <div class="sidebar">
             <h3>📚 Overview</h3>
             <a href="index.html" class="nav-item">Project Home</a>
             <h3>🔧 Engineering</h3>
             <a href="system-architecture.html" class="nav-item">System Architecture</a>
+            <a href="plc-programming.html" class="nav-item">PLC Programming</a>
+            <a href="network-topology.html" class="nav-item">Network Topology</a>
+            <a href="control-logic.html" class="nav-item active">Control Logic</a>
             <h3>⚙️ Operations</h3>
             <a href="operator-manual.html" class="nav-item">Operator Manual</a>
             <a href="troubleshooting.html" class="nav-item">Troubleshooting Guide</a>
         </div>
         <div class="content">
-            <div class="breadcrumb">
-                <a href="index.html">Home</a> / Control Logic
-            </div>
-            <h1 class="page-title">Control Logic</h1>
-            <div class="info-box">
-                <strong>📝 Coming Soon:</strong> This page is under construction. Content will be added soon.
-            </div>
+            <div class="breadcrumb"><a href="index.html">Home</a> / Engineering / Control Logic</div>
+            <h1 class="page-title">Control Logic Documentation</h1>
+            <div class="page-meta">Last updated: November 5, 2025 | Owner: Michael Torres | Version: 3.1</div>
+
+            <h2>State Machine Overview</h2>
+            <p>The ride control system uses a finite state machine (FSM) with six primary states:</p>
+
+            <table>
+                <tr><th>State</th><th>Code</th><th>Description</th><th>Exit Conditions</th></tr>
+                <tr><td>IDLE</td><td>0</td><td>System powered, ready to start</td><td>Start command received</td></tr>
+                <tr><td>STARTING</td><td>1</td><td>Pre-start safety checks</td><td>All checks pass</td></tr>
+                <tr><td>RUNNING</td><td>2</td><td>Normal ride operation</td><td>Position reaches 270 or stop command</td></tr>
+                <tr><td>STOPPING</td><td>3</td><td>Controlled deceleration</td><td>Vehicle at position 0</td></tr>
+                <tr><td>STOPPED</td><td>4</td><td>Vehicle stationary at station</td><td>Reset command</td></tr>
+                <tr><td>ERROR</td><td>99</td><td>Fault detected</td><td>Fault cleared and reset</td></tr>
+            </table>
+
+            <h2>Zone Control Logic</h2>
+            <p>The track is divided into three zones for position-based control:</p>
+
+            <ul>
+                <li><strong>Zone 1 (0-90):</strong> Loading/Launch - Acceleration from station</li>
+                <li><strong>Zone 2 (91-180):</strong> Main Experience - Primary show scenes</li>
+                <li><strong>Zone 3 (181-270):</strong> Return/Unload - Deceleration and station approach</li>
+            </ul>
+
+            <h3>Zone Transition Rules</h3>
+            <ul>
+                <li>Only one vehicle allowed in system (single-vehicle operation)</li>
+                <li>Zone enables must be active before vehicle entry</li>
+                <li>Safety PLC monitors zone occupancy</li>
+                <li>Automatic braking if zone violation detected</li>
+            </ul>
+
+            <h2>Event Sequence</h2>
+            <p>Nine ride events trigger at specific positions:</p>
+
+            <table>
+                <tr><th>Event</th><th>Position</th><th>Description</th><th>Duration</th></tr>
+                <tr><td>Event 1</td><td>30</td><td>Loading Gate Release</td><td>Instant</td></tr>
+                <tr><td>Event 2</td><td>60</td><td>Safety Interlock Check</td><td>2 sec</td></tr>
+                <tr><td>Event 3</td><td>90</td><td>Launch Accelerator</td><td>3 sec</td></tr>
+                <tr><td>Event 4</td><td>120</td><td>Photo Flash</td><td>Instant</td></tr>
+                <tr><td>Event 5</td><td>150</td><td>Mid-Course Brake Test</td><td>1 sec</td></tr>
+                <tr><td>Event 6</td><td>180</td><td>Track Switch</td><td>2 sec</td></tr>
+                <tr><td>Event 7</td><td>210</td><td>Final Brake Zone</td><td>4 sec</td></tr>
+                <tr><td>Event 8</td><td>240</td><td>Station Approach</td><td>2 sec</td></tr>
+                <tr><td>Event 9</td><td>270</td><td>Unload Platform Align</td><td>Instant</td></tr>
+            </table>
+
+            <h2>Speed Control Algorithm</h2>
+            <p>The speed controller uses a position-based profile:</p>
+            <ul>
+                <li><strong>Position 0-30:</strong> Ramp from 0 to 30 units/sec (loading)</li>
+                <li><strong>Position 31-90:</strong> Accelerate to 100 units/sec (launch)</li>
+                <li><strong>Position 91-180:</strong> Maintain 80-100 units/sec (cruise)</li>
+                <li><strong>Position 181-240:</strong> Decelerate to 40 units/sec (approach)</li>
+                <li><strong>Position 241-270:</strong> Decelerate to 0 units/sec (brake)</li>
+            </ul>
+
+            <h2>Safety Interlocks</h2>
+            <p>The following conditions must be TRUE for operation:</p>
+            <ul>
+                <li>Emergency stop NOT pressed (%QX0.3 = FALSE)</li>
+                <li>Safety gate closed (%QX0.4 = TRUE)</li>
+                <li>Safety PLC ready (%QX0.31 = TRUE)</li>
+                <li>Effects PLC ready (%QX0.32 = TRUE)</li>
+                <li>Master enable active (%QX0.0 = TRUE)</li>
+                <li>No active safety faults</li>
+            </ul>
+
+            <div class="info-box"><strong>📝 Note:</strong> Any change to control logic requires approval from both Control Systems Engineering and Safety Engineering teams. Test thoroughly in simulation before deployment.</div>
         </div>
     </div>
 </body>

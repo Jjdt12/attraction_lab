@@ -1,48 +1,78 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Startup Shutdown - Project Nexus Wiki</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f4f5f7; color: #172b4d; }
-        .header { background: linear-gradient(135deg, #0052cc 0%, #2684ff 100%); color: white; padding: 1rem 2rem; }
-        .header h1 { font-size: 1.5rem; font-weight: 600; }
-        .container { display: flex; min-height: calc(100vh - 80px); }
-        .sidebar { width: 280px; background: white; border-right: 1px solid #dfe1e6; padding: 1.5rem 1rem; }
-        .sidebar h3 { font-size: 0.75rem; text-transform: uppercase; color: #5e6c84; font-weight: 700; margin: 1.5rem 0 0.75rem; }
-        .nav-item { display: block; padding: 0.5rem 0.75rem; color: #172b4d; text-decoration: none; border-radius: 4px; margin-bottom: 2px; font-size: 0.9rem; }
-        .nav-item:hover { background: #f4f5f7; }
-        .content { flex: 1; padding: 2rem 3rem; max-width: 1200px; }
-        .breadcrumb { font-size: 0.85rem; color: #5e6c84; margin-bottom: 1rem; }
-        .breadcrumb a { color: #0052cc; text-decoration: none; }
-        .page-title { font-size: 2rem; font-weight: 600; margin-bottom: 0.5rem; }
-        .info-box { background: #deebff; border-left: 4px solid #0052cc; padding: 1rem; margin: 1.5rem 0; border-radius: 4px; }
-    </style>
-</head>
-<body>
-    <div class="header">
-        <h1>🎢 Project Nexus - Internal Wiki</h1>
-    </div>
-    <div class="container">
-        <div class="sidebar">
-            <h3>📚 Overview</h3>
-            <a href="index.html" class="nav-item">Project Home</a>
-            <h3>🔧 Engineering</h3>
-            <a href="system-architecture.html" class="nav-item">System Architecture</a>
-            <h3>⚙️ Operations</h3>
-            <a href="operator-manual.html" class="nav-item">Operator Manual</a>
-            <a href="troubleshooting.html" class="nav-item">Troubleshooting Guide</a>
-        </div>
-        <div class="content">
-            <div class="breadcrumb">
-                <a href="index.html">Home</a> / Startup Shutdown
-            </div>
-            <h1 class="page-title">Startup Shutdown</h1>
-            <div class="info-box">
-                <strong>📝 Coming Soon:</strong> This page is under construction. Content will be added soon.
-            </div>
-        </div>
-    </div>
-</body>
-</html>
+<html><head><meta charset="UTF-8"><title>Startup/Shutdown - Nexus</title>
+<style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f4f5f7;color:#172b4d}.header{background:linear-gradient(135deg,#0052cc 0%,#2684ff 100%);color:white;padding:1rem 2rem}.header h1{font-size:1.5rem;font-weight:600}.container{display:flex;min-height:calc(100vh - 80px)}.sidebar{width:280px;background:white;border-right:1px solid #dfe1e6;padding:1.5rem 1rem;overflow-y:auto}.sidebar h3{font-size:.75rem;text-transform:uppercase;color:#5e6c84;font-weight:700;margin:1.5rem 0 .75rem}.nav-item{display:block;padding:.5rem .75rem;color:#172b4d;text-decoration:none;border-radius:4px;margin-bottom:2px;font-size:.9rem}.nav-item:hover{background:#f4f5f7}.nav-item.active{background:#deebff;color:#0052cc;font-weight:500}.content{flex:1;padding:2rem 3rem;max-width:1200px}.breadcrumb{font-size:.85rem;color:#5e6c84;margin-bottom:1rem}.breadcrumb a{color:#0052cc;text-decoration:none}.page-title{font-size:2rem;font-weight:600;margin-bottom:.5rem}.page-meta{font-size:.85rem;color:#5e6c84;margin-bottom:2rem;padding-bottom:1rem;border-bottom:2px solid #dfe1e6}.content h2{font-size:1.5rem;margin:2rem 0 1rem}.content h3{font-size:1.25rem;margin:1.5rem 0 .75rem}.content p{line-height:1.6;margin-bottom:1rem}.content ol,.content ul{margin:1rem 0 1rem 2rem;line-height:1.8}.step-box{background:#e3fcef;border-left:4px solid #006644;padding:1rem;margin:1rem 0;border-radius:4px}.warning-box{background:#ffebe6;border-left:4px solid #de350b;padding:1rem;margin:1.5rem 0;border-radius:4px}</style>
+</head><body>
+<div class="header"><h1>🎢 Project Nexus - Internal Wiki</h1></div>
+<div class="container">
+<div class="sidebar"><h3>📚 Overview</h3>
+<a href="index.html" class="nav-item">Project Home</a>
+<h3>⚙️ Operations</h3>
+<a href="operator-manual.html" class="nav-item">Operator Manual</a>
+<a href="startup-shutdown.html" class="nav-item active">Startup/Shutdown</a>
+<a href="troubleshooting.html" class="nav-item">Troubleshooting Guide</a>
+</div>
+<div class="content">
+<div class="breadcrumb"><a href="index.html">Home</a> / Operations / Startup & Shutdown</div>
+<h1 class="page-title">Startup & Shutdown Procedures</h1>
+<div class="page-meta">Last updated: November 1, 2025 | Owner: Operations Team | Version: 2.2</div>
+
+<h2>Daily Startup Procedure</h2>
+<div class="step-box"><strong>Step 1: Physical Inspection (15 min)</strong>
+<ol><li>Walk entire track looking for debris or damage</li>
+<li>Check vehicle restraints and sensors</li>
+<li>Verify all emergency exits clear</li>
+<li>Inspect safety gates operation</li>
+<li>Check warning signage visible</li></ol>
+</div>
+
+<div class="step-box"><strong>Step 2: Power-Up Sequence (5 min)</strong>
+<ol><li>Turn on main breakers in electrical room</li>
+<li>Power on control cabinet</li>
+<li>Wait for all 3 PLC green lights</li>
+<li>Verify HMI shows "SYSTEM READY"</li>
+<li>Check Multi-PLC Status all green</li></ol>
+</div>
+
+<div class="step-box"><strong>Step 3: Safety System Test (10 min)</strong>
+<ol><li>Press E-STOP - verify immediate shutdown</li>
+<li>Reset E-Stop, confirm return to ready</li>
+<li>Test safety gate - should prevent start when open</li>
+<li>Verify all 9 events enabled</li>
+<li>Check brake pressure 1150-1250 PSI</li></ol>
+</div>
+
+<div class="step-box"><strong>Step 4: Test Cycle (5 min)</strong>
+<ol><li>Run empty vehicle test</li>
+<li>Observe smooth acceleration & braking</li>
+<li>Listen for unusual noises</li>
+<li>Verify all effects trigger correctly</li>
+<li>Confirm vehicle returns to station</li></ol>
+</div>
+
+<div class="warning-box"><strong>⚠️ Do Not Proceed If:</strong> Any test fails, unusual noises heard, safety systems not functioning, or if you're unsure about any reading. Contact maintenance immediately.</div>
+
+<h2>Normal Shutdown Procedure</h2>
+<ol><li>Complete all rides in progress</li>
+<li>Click RESET RIDE to return to IDLE</li>
+<li>Turn Master Enable to OFF</li>
+<li>Document any issues in operations log</li>
+<li>Lock control cabinet</li>
+<li>Turn off main breakers</li>
+<li>Complete end-of-day checklist</li></ol>
+
+<h2>Emergency Shutdown</h2>
+<div class="warning-box"><strong>Press Emergency Stop If:</strong>
+<ul><li>Guest attempting to exit moving vehicle</li>
+<li>Loose article on track</li>
+<li>Unusual mechanical sounds</li>
+<li>Any safety concern</li></ul>
+</div>
+
+<ol><li>Press red E-STOP button</li>
+<li>System halts within 2 seconds</li>
+<li>Make PA announcement to guests</li>
+<li>Assess situation</li>
+<li>Contact maintenance if needed</li>
+<li>Document incident</li></ol>
+
+</div></div></body></html>
