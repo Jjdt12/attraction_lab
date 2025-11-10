@@ -457,9 +457,16 @@ async def poll_plc_coils():
                         # Write to EFFECTS PLC holding register
                         if position['success']:
                             result = modbus_clients['EFFECTS'].write_register(10, position['value'])  # %MW10
+
+                            # Verify write by reading back
+                            readback = read_register_from_plc('EFFECTS', 10, 1)
+                            if readback['success']:
+                                if readback['value'] != position['value']:
+                                    print(f"⚠️ [BRIDGE] MISMATCH! Wrote {position['value']} but read {readback['value']} from EFFECTS MW10")
+
                             # Log position changes for event debugging
                             if position['value'] != previous_register_states.get('effects_position'):
-                                print(f"🔗 [BRIDGE] position {position['value']} -> EFFECTS MW10")
+                                print(f"🔗 [BRIDGE] position {position['value']} -> EFFECTS MW10 (verified: {readback.get('value', '?')})")
                                 previous_register_states['effects_position'] = position['value']
                     except Exception as e:
                         print(f"⚠️ [BRIDGE] Error in Bridge 5: {e}")
@@ -657,7 +664,12 @@ async def poll_plc_coils():
                         value = previous_coil_states.get(state_key, False)
                         event_num = addr - EVENT_COIL_START + 1
                         event_states.append(f"E{event_num}={'T' if value else 'F'}")
-                    print(f"📊 [EFFECTS DEBUG] Events: {' '.join(event_states)}")
+
+                    # Also read EFFECTS MW10 to see position value
+                    effects_pos = read_register_from_plc('EFFECTS', 10, 1)
+                    pos_value = effects_pos.get('value', '?') if effects_pos.get('success') else 'ERR'
+
+                    print(f"📊 [EFFECTS DEBUG] Events: {' '.join(event_states)} | MW10={pos_value}")
 
             # Inter-PLC Communication: Copy position from MAIN to EFFECTS
             if modbus_client and is_plc_connected and 'EFFECTS' in modbus_clients and plc_connected_status.get('EFFECTS'):
