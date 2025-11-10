@@ -43,6 +43,7 @@ function App() {
     lastErrorCode,
     trackLength,
     activeEvents: plcActiveEvents,
+    multiPLCStatus,
     startRide,
     stopRide,
     resetRide,
@@ -52,6 +53,13 @@ function App() {
   } = useWebSocketSimulation();
 
   const multiPLC = useMultiPLCConnection();
+
+  // Convert multiPLCStatus to format expected by MultiPLCStatus component
+  const plcsForDisplay = [
+    { name: 'MAIN' as const, ...multiPLCStatus.MAIN, error: null, lastHeartbeat: Date.now() },
+    { name: 'SAFETY' as const, ...multiPLCStatus.SAFETY, error: null, lastHeartbeat: Date.now() },
+    { name: 'EFFECTS' as const, ...multiPLCStatus.EFFECTS, error: null, lastHeartbeat: Date.now() },
+  ];
   const alarmSystem = useAlarmSystem();
 
   const positionTrend = useTrendData(60);
@@ -194,11 +202,11 @@ function App() {
         {activeTab === 'diagnostics' && (
           <div className="space-y-6">
             <MultiPLCStatus
-              plcs={multiPLC.plcs}
-              onConnect={multiPLC.connectToPLC}
-              onDisconnect={multiPLC.disconnectFromPLC}
-              onConnectAll={multiPLC.connectToAllPLCs}
-              onDisconnectAll={multiPLC.disconnectAllPLCs}
+              plcs={plcsForDisplay}
+              onConnect={() => {/* Auto-connect handles this */}}
+              onDisconnect={() => {/* Not implemented yet */}}
+              onConnectAll={() => {/* Auto-connect handles this */}}
+              onDisconnectAll={() => {/* Not implemented yet */}}
             />
             <SystemHealthDashboard
               processVars={processVars}

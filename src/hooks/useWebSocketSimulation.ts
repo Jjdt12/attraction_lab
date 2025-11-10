@@ -5,6 +5,13 @@ const TRACK_LENGTH = 27;
 const TICK_INTERVAL = 33;
 const WS_URL = import.meta.env.VITE_WS_URL || 'ws://localhost:8765';
 
+interface PLCStatus {
+  connected: boolean;
+  host: string;
+  port: number;
+  name: string;
+}
+
 interface SimulationState {
   carPosition: number;
   rideRunning: boolean;
@@ -23,6 +30,11 @@ interface SimulationState {
   maintenanceFlag: boolean;
   lastErrorCode: number;
   activeEvents: Set<number>;  // Event numbers 1-9 from Safety PLC
+  multiPLCStatus: {
+    MAIN: PLCStatus;
+    SAFETY: PLCStatus;
+    EFFECTS: PLCStatus;
+  };
 }
 
 export function useWebSocketSimulation() {
@@ -44,6 +56,11 @@ export function useWebSocketSimulation() {
     runtimeHours: 0,
     maintenanceFlag: false,
     lastErrorCode: 0,
+    multiPLCStatus: {
+      MAIN: { connected: false, host: 'localhost', port: 502, name: 'Main Control' },
+      SAFETY: { connected: false, host: 'localhost', port: 503, name: 'Safety Systems' },
+      EFFECTS: { connected: false, host: 'localhost', port: 504, name: 'Show Effects' },
+    },
   });
 
   const wsRef = useRef<WebSocket | null>(null);
@@ -99,6 +116,31 @@ export function useWebSocketSimulation() {
               console.warn('[Multi-PLC] ⚠ Some PLCs failed to connect:',
                 Object.entries(data.results).filter(([_, success]) => !success).map(([id]) => id));
             }
+
+            // Update multi-PLC connection status in state
+            setState(prev => ({
+              ...prev,
+              multiPLCStatus: {
+                MAIN: {
+                  connected: data.plc_status.MAIN?.connected || false,
+                  host: data.plc_status.MAIN?.config?.host || 'localhost',
+                  port: data.plc_status.MAIN?.config?.port || 502,
+                  name: data.plc_status.MAIN?.config?.name || 'Main Control',
+                },
+                SAFETY: {
+                  connected: data.plc_status.SAFETY?.connected || false,
+                  host: data.plc_status.SAFETY?.config?.host || 'localhost',
+                  port: data.plc_status.SAFETY?.config?.port || 503,
+                  name: data.plc_status.SAFETY?.config?.name || 'Safety Systems',
+                },
+                EFFECTS: {
+                  connected: data.plc_status.EFFECTS?.connected || false,
+                  host: data.plc_status.EFFECTS?.config?.host || 'localhost',
+                  port: data.plc_status.EFFECTS?.config?.port || 504,
+                  name: data.plc_status.EFFECTS?.config?.name || 'Show Effects',
+                },
+              },
+            }));
 
             // Trigger auto-reset if Main PLC is connected
             if (mainConnected) {
