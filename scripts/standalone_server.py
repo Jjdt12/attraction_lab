@@ -677,11 +677,11 @@ async def poll_plc_coils():
                     else:
                         pos_value = 'ERR'
 
-                    # Read event_enable bits from EFFECTS inputs 32-40 (%IX4.0-IX5.0)
+                    # Read event_enable bits - coils 32-40 map to %IX4.0-IX5.0 in PLC
                     enable_states = []
                     for i in range(1, 10):
-                        input_addr = 31 + i  # event_1 = input 32, event_9 = input 40
-                        enable_bit = read_discrete_input_from_plc('EFFECTS', input_addr)
+                        coil_addr = 31 + i  # event_1 = coil 32, event_9 = coil 40
+                        enable_bit = read_coil_from_plc('EFFECTS', coil_addr)
                         if enable_bit and enable_bit.get('success'):
                             enable_states.append(f"EN{i}={'T' if enable_bit['value'] else 'F'}")
 
