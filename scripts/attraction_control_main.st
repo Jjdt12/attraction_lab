@@ -75,11 +75,16 @@ IF scan_counter = 0 THEN
     target_speed := 50;
     speed_ramp_rate := 2;
 
-    safety_plc_ready := FALSE;
-    effects_plc_ready := FALSE;
+    (* For lab demo: simulate other PLCs being ready *)
+    safety_plc_ready := TRUE;
+    effects_plc_ready := TRUE;
 END_IF;
 
 scan_counter := scan_counter + 1;
+
+(* For lab demo: simulate other PLCs being ready - set every scan *)
+safety_plc_ready := TRUE;
+effects_plc_ready := TRUE;
 
 zone_1_position := 0;
 zone_2_position := 0;
