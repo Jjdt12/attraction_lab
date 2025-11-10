@@ -1,4 +1,56 @@
 PROGRAM attraction_control_effects
+VAR_EXTERNAL
+    flash_light AT %QX3.4 : BOOL;
+    show_lighting_on AT %QX7.4 : BOOL;
+    audio_trigger_1 AT %QX7.5 : BOOL;
+    audio_trigger_2 AT %QX7.6 : BOOL;
+    audio_trigger_3 AT %QX7.7 : BOOL;
+    fog_machine_on AT %QX8.0 : BOOL;
+    strobe_active AT %QX8.1 : BOOL;
+    laser_effect_on AT %QX8.2 : BOOL;
+
+    event_1_enable AT %MX100.0 : BOOL;
+    event_2_enable AT %MX100.1 : BOOL;
+    event_3_enable AT %MX100.2 : BOOL;
+    event_4_enable AT %MX100.3 : BOOL;
+    event_5_enable AT %MX100.4 : BOOL;
+    event_6_enable AT %MX100.5 : BOOL;
+    event_7_enable AT %MX100.6 : BOOL;
+    event_8_enable AT %MX100.7 : BOOL;
+    event_9_enable AT %MX101.0 : BOOL;
+
+    event_1_active AT %QX2.1 : BOOL;
+    event_2_active AT %QX2.2 : BOOL;
+    event_3_active AT %QX2.3 : BOOL;
+    event_4_active AT %QX2.4 : BOOL;
+    event_5_active AT %QX2.5 : BOOL;
+    event_6_active AT %QX2.6 : BOOL;
+    event_7_active AT %QX2.7 : BOOL;
+    event_8_active AT %QX3.0 : BOOL;
+    event_9_active AT %QX3.1 : BOOL;
+
+    current_position_from_main AT %MW10 : INT;
+    event_1_active_from_safety AT %MX70 : BOOL;
+    event_4_active_from_safety AT %MX71 : BOOL;
+
+    lighting_scene AT %MW60 : INT;
+    audio_volume AT %MW61 : INT;
+    effect_intensity AT %MW62 : INT;
+
+    show_trigger_count AT %MW63 : INT;
+    effect_runtime_minutes AT %MW64 : INT;
+
+    event_1_counter AT %MW1044 : INT;
+    event_2_counter AT %MW1045 : INT;
+    event_3_counter AT %MW1046 : INT;
+    event_4_counter AT %MW1047 : INT;
+    event_5_counter AT %MW1048 : INT;
+    event_6_counter AT %MW1049 : INT;
+    event_7_counter AT %MW1050 : INT;
+    event_8_counter AT %MW1051 : INT;
+    event_9_counter AT %MW1052 : INT;
+END_VAR
+
 VAR
     scan_counter : DINT;
     flash_timer : INT;
