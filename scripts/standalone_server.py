@@ -207,6 +207,24 @@ def read_register_from_plc(plc_id: str, address: int, count: int = 1) -> dict:
         return {"success": False, "error": str(e), "value": 0, "values": [], "plc": plc_id}
 
 
+def read_input_register(address: int, count: int = 1) -> dict:
+    """Read from Modbus input registers"""
+    if not modbus_client:
+        return {"success": False, "error": "PLC not connected", "value": 0, "values": []}
+
+    try:
+        result = modbus_client.read_input_registers(address=address, count=count)
+        if result and not result.isError():
+            if count == 1:
+                return {"success": True, "address": address, "value": result.registers[0]}
+            else:
+                return {"success": True, "address": address, "values": result.registers[:count]}
+        else:
+            return {"success": False, "error": "Read failed", "value": 0, "values": []}
+    except Exception as e:
+        return {"success": False, "error": str(e), "value": 0, "values": []}
+
+
 async def log_modbus_operation(plc: str, operation: str, address: int, value=None, count=None):
     """Broadcast Modbus operation to connected clients for network monitoring"""
     await broadcast({
