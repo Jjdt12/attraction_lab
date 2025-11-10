@@ -204,17 +204,33 @@ def write_input_register_to_plc(plc_id: str, address: int, value: int) -> dict:
 
 
 def write_coil(address: int, value: bool) -> dict:
-    """Write to Modbus coil"""
+    """Write to Modbus coil - writes to MAIN and SAFETY PLCs for safety-related coils"""
     if not modbus_client:
         return {"success": False, "error": "PLC not connected"}
+
+    # Safety-related coils that need to be mirrored to SAFETY PLC
+    safety_coils = [0, 3, 4]  # master_enable, emergency_stop, safety_gate_closed
 
     try:
         coil_name = COIL_NAMES.get(address, f"coil_{address}")
         print(f"✍️  [WRITE] Writing {coil_name} (coil {address}) = {value}")
+
+        # Always write to MAIN PLC
         result = modbus_client.write_coil(address=address, value=value)
         if result and not result.isError():
             print(f"✅ [WRITE] Success: {coil_name} = {value}")
             asyncio.create_task(log_modbus_operation("MAIN", "WRITE_COIL", address, value))
+
+            # Also write safety coils to SAFETY PLC
+            if address in safety_coils and 'SAFETY' in modbus_clients and plc_connected_status.get('SAFETY'):
+                try:
+                    safety_result = modbus_clients['SAFETY'].write_coil(address=address, value=value)
+                    if safety_result and not safety_result.isError():
+                        print(f"✅ [WRITE] Mirrored to SAFETY PLC: {coil_name} = {value}")
+                        asyncio.create_task(log_modbus_operation("SAFETY", "WRITE_COIL", address, value))
+                except Exception as e:
+                    print(f"⚠️  [WRITE] Failed to mirror to SAFETY PLC: {e}")
+
             return {"success": True, "address": address, "value": value}
         else:
             print(f"❌ [WRITE] Failed: {coil_name}")

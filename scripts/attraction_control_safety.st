@@ -1,10 +1,12 @@
 PROGRAM attraction_control_safety
 VAR_EXTERNAL
-    master_enable : BOOL;
-    emergency_stop_button : BOOL;
-    safety_gate_closed : BOOL;
     safety_ok : BOOL;
     alert_active : BOOL;
+
+    (* HMI Command Coils - Written by SCADA *)
+    hmi_master_enable AT %QX0.0 : BOOL;
+    hmi_estop_cmd AT %QX0.3 : BOOL;
+    hmi_gate_cmd AT %QX0.4 : BOOL;
 
     event_1_enable : BOOL;
     event_2_enable : BOOL;
@@ -55,9 +57,6 @@ VAR
 END_VAR
 
 IF scan_counter = 0 THEN
-    master_enable := FALSE;
-    emergency_stop_button := FALSE;
-    safety_gate_closed := TRUE;
     safety_ok := FALSE;
     alert_active := FALSE;
 
@@ -91,16 +90,16 @@ END_IF;
 scan_counter := scan_counter + 1;
 
 safety_ok := FALSE;
-IF safety_gate_closed THEN
-    IF NOT emergency_stop_button THEN
-        IF master_enable THEN
+IF hmi_gate_cmd THEN
+    IF NOT hmi_estop_cmd THEN
+        IF hmi_master_enable THEN
             safety_ok := TRUE;
         END_IF;
     END_IF;
 END_IF;
 
 IF motor_running_from_main THEN
-    IF NOT safety_gate_closed THEN
+    IF NOT hmi_gate_cmd THEN
         safety_bypass_detected := TRUE;
         stealth_counter := stealth_counter + 1;
         alarm_register := alarm_register + 1;
