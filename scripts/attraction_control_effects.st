@@ -9,15 +9,25 @@ VAR
     strobe_active AT %QX8.1 : BOOL;
     laser_effect_on AT %QX8.2 : BOOL;
 
-    event_1_enable AT %MX800 : BOOL;
-    event_2_enable AT %MX801 : BOOL;
-    event_3_enable AT %MX802 : BOOL;
-    event_4_enable AT %MX803 : BOOL;
-    event_5_enable AT %MX804 : BOOL;
-    event_6_enable AT %MX805 : BOOL;
-    event_7_enable AT %MX806 : BOOL;
-    event_8_enable AT %MX807 : BOOL;
-    event_9_enable AT %MX808 : BOOL;
+    event_1_enable_reg AT %MW800 : INT;
+    event_2_enable_reg AT %MW801 : INT;
+    event_3_enable_reg AT %MW802 : INT;
+    event_4_enable_reg AT %MW803 : INT;
+    event_5_enable_reg AT %MW804 : INT;
+    event_6_enable_reg AT %MW805 : INT;
+    event_7_enable_reg AT %MW806 : INT;
+    event_8_enable_reg AT %MW807 : INT;
+    event_9_enable_reg AT %MW808 : INT;
+
+    event_1_enable : BOOL;
+    event_2_enable : BOOL;
+    event_3_enable : BOOL;
+    event_4_enable : BOOL;
+    event_5_enable : BOOL;
+    event_6_enable : BOOL;
+    event_7_enable : BOOL;
+    event_8_enable : BOOL;
+    event_9_enable : BOOL;
 
     event_1_active AT %QX2.1 : BOOL;
     event_2_active AT %QX2.2 : BOOL;
@@ -30,8 +40,11 @@ VAR
     event_9_active AT %QX3.1 : BOOL;
 
     current_position_from_main AT %MW10 : INT;
-    event_1_active_from_safety AT %MX70 : BOOL;
-    event_4_active_from_safety AT %MX71 : BOOL;
+    event_1_active_from_safety_reg AT %MW70 : INT;
+    event_4_active_from_safety_reg AT %MW71 : INT;
+
+    event_1_active_from_safety : BOOL;
+    event_4_active_from_safety : BOOL;
 
     lighting_scene AT %MW60 : INT;
     audio_volume AT %MW61 : INT;
@@ -90,6 +103,21 @@ IF scan_counter = 0 THEN
 END_IF;
 
 scan_counter := scan_counter + 1;
+
+(* Convert INT registers to BOOL for enable flags *)
+event_1_enable := (event_1_enable_reg <> 0);
+event_2_enable := (event_2_enable_reg <> 0);
+event_3_enable := (event_3_enable_reg <> 0);
+event_4_enable := (event_4_enable_reg <> 0);
+event_5_enable := (event_5_enable_reg <> 0);
+event_6_enable := (event_6_enable_reg <> 0);
+event_7_enable := (event_7_enable_reg <> 0);
+event_8_enable := (event_8_enable_reg <> 0);
+event_9_enable := (event_9_enable_reg <> 0);
+
+(* Convert INT registers to BOOL for safety signals *)
+event_1_active_from_safety := (event_1_active_from_safety_reg <> 0);
+event_4_active_from_safety := (event_4_active_from_safety_reg <> 0);
 
 event_1_active := FALSE;
 event_2_active := FALSE;
