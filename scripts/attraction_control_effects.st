@@ -9,15 +9,15 @@ VAR
     strobe_active AT %QX8.1 : BOOL;
     laser_effect_on AT %QX8.2 : BOOL;
 
-    event_1_enable_reg AT %MW800 : INT;
-    event_2_enable_reg AT %MW801 : INT;
-    event_3_enable_reg AT %MW802 : INT;
-    event_4_enable_reg AT %MW803 : INT;
-    event_5_enable_reg AT %MW804 : INT;
-    event_6_enable_reg AT %MW805 : INT;
-    event_7_enable_reg AT %MW806 : INT;
-    event_8_enable_reg AT %MW807 : INT;
-    event_9_enable_reg AT %MW808 : INT;
+    event_1_enable_reg AT %MW100 : INT;
+    event_2_enable_reg AT %MW101 : INT;
+    event_3_enable_reg AT %MW102 : INT;
+    event_4_enable_reg AT %MW103 : INT;
+    event_5_enable_reg AT %MW104 : INT;
+    event_6_enable_reg AT %MW105 : INT;
+    event_7_enable_reg AT %MW106 : INT;
+    event_8_enable_reg AT %MW107 : INT;
+    event_9_enable_reg AT %MW108 : INT;
 
     event_1_active AT %QX2.1 : BOOL;
     event_2_active AT %QX2.2 : BOOL;

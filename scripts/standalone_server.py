@@ -498,8 +498,8 @@ async def poll_plc_coils():
                             coil_addr = 7 + i  # event_1_enable = coil 8, etc.
                             enable = read_coil_from_plc('MAIN', coil_addr)
                             if enable['success']:
-                                # Write to EFFECTS PLC holding registers 800-808 (%MW800-%MW808)
-                                reg_addr = 799 + i  # event_1 = MW800, event_9 = MW808
+                                # Write to EFFECTS PLC holding registers 100-108 (%MW100-%MW108)
+                                reg_addr = 99 + i  # event_1 = MW100, event_9 = MW108
                                 val = 1 if enable['value'] else 0
                                 modbus_clients['EFFECTS'].write_register(reg_addr, val)
                     except Exception as e:
@@ -679,11 +679,11 @@ async def poll_plc_coils():
                     else:
                         pos_value = 'ERR'
 
-                    # Read event_enable registers from holding registers 800-808 (%MW800-%MW808)
+                    # Read event_enable registers from holding registers 100-108 (%MW100-%MW108)
                     enable_states = []
                     enable_reg_values = []
                     for i in range(1, 10):
-                        reg_addr = 799 + i  # event_1 = MW800, event_9 = MW808
+                        reg_addr = 99 + i  # event_1 = MW100, event_9 = MW108
                         enable_reg = read_register_from_plc('EFFECTS', reg_addr)
                         if enable_reg and enable_reg.get('success'):
                             enable_states.append(f"EN{i}={'T' if enable_reg['value'] != 0 else 'F'}")
