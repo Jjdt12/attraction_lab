@@ -324,6 +324,35 @@ async def poll_plc_coils():
 
     while True:
         try:
+            # Inter-PLC Communication Bridge: Run FIRST before reads
+            if modbus_client and is_plc_connected:
+                # Bridge 1: Read safety_ok from SAFETY PLC, write to MAIN PLC
+                if 'SAFETY' in modbus_clients and plc_connected_status.get('SAFETY'):
+                    try:
+                        safety_result = read_coil_from_plc('SAFETY', 30)
+                        if safety_result["success"]:
+                            safety_ok_value = safety_result["value"]
+                            try:
+                                result = modbus_client.write_coil(address=31, value=safety_ok_value)
+                                if result and not result.isError():
+                                    if safety_ok_value != previous_coil_states.get(31):
+                                        print(f"🔗 [BRIDGE] safety_ok from SAFETY -> safety_plc_ready on MAIN: {safety_ok_value}")
+                                        previous_coil_states[31] = safety_ok_value
+                            except Exception as e:
+                                pass
+                    except Exception as e:
+                        pass
+
+                # Bridge 2: Set effects_plc_ready to TRUE (EFFECTS PLC always ready)
+                try:
+                    result = modbus_client.write_coil(address=32, value=True)
+                    if result and not result.isError():
+                        if previous_coil_states.get(32) != True:
+                            print(f"🔗 [BRIDGE] effects_plc_ready on MAIN: True (default)")
+                            previous_coil_states[32] = True
+                except Exception as e:
+                    pass
+
             # Continuous diagnostic every poll cycle (more verbose debugging)
             if modbus_client and is_plc_connected:
                 if first_poll:
@@ -349,42 +378,11 @@ async def poll_plc_coils():
                       f"master_en={master_en.get('value', '?')} | "
                       f"gate={safety_gate.get('value', '?')} | "
                       f"estop={estop.get('value', '?')} | "
-                      f"safety_ok={safety_ok.get('value', '?')} | "
+                      f"safety_plc_ready={safety_ready.get('value', '?')} | "
+                      f"effects_plc_ready={effects_ready.get('value', '?')} | "
                       f"motor={motor_run.get('value', '?')} | "
                       f"brake={brake.get('value', '?')} | "
                       f"error={error_reg.get('value', '?')}")
-
-                # Inter-PLC Communication Bridge: Read safety_ok from SAFETY PLC, write to MAIN PLC
-                if 'SAFETY' in modbus_clients and plc_connected_status.get('SAFETY'):
-                    try:
-                        # Read safety_ok from SAFETY PLC (coil 30 based on original monolithic code)
-                        safety_result = read_coil_from_plc('SAFETY', 30)
-                        if safety_result["success"]:
-                            safety_ok_value = safety_result["value"]
-                            # Write to MAIN PLC's safety_plc_ready (coil 31)
-                            if modbus_client:
-                                try:
-                                    result = modbus_client.write_coil(address=31, value=safety_ok_value)
-                                    if result and not result.isError():
-                                        if safety_ok_value != previous_coil_states.get(31):
-                                            print(f"🔗 [BRIDGE] safety_ok from SAFETY -> safety_plc_ready on MAIN: {safety_ok_value}")
-                                            previous_coil_states[31] = safety_ok_value
-                                except Exception as e:
-                                    pass  # Fail silently to avoid spam
-                    except Exception as e:
-                        pass  # Fail silently
-
-                # Inter-PLC Communication: Set effects_plc_ready to TRUE (EFFECTS PLC always ready)
-                if modbus_client:
-                    try:
-                        # EFFECTS PLC doesn't have a ready signal, so just set to TRUE
-                        if previous_coil_states.get(32) != True:
-                            result = modbus_client.write_coil(address=32, value=True)
-                            if result and not result.isError():
-                                print(f"🔗 [BRIDGE] effects_plc_ready on MAIN: True (default)")
-                                previous_coil_states[32] = True
-                    except Exception as e:
-                        pass  # Fail silently
 
             # Poll Main PLC (backward compatibility)
             if modbus_client and is_plc_connected:
