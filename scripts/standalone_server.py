@@ -154,6 +154,18 @@ def connect_to_all_plcs() -> dict:
     results = {}
     for plc_id in PLC_CONFIGS.keys():
         results[plc_id] = connect_to_plc(plc_id)
+
+        # Initialize safety ready registers after MAIN PLC connects
+        if plc_id == 'MAIN' and results[plc_id] and modbus_clients.get('MAIN'):
+            try:
+                # Set safety_plc_ready_reg (MW100) = 1
+                modbus_clients['MAIN'].write_register(address=100, value=1)
+                # Set effects_plc_ready_reg (MW101) = 1
+                modbus_clients['MAIN'].write_register(address=101, value=1)
+                print("✓ [INIT] Initialized safety and effects ready registers on MAIN PLC")
+            except Exception as e:
+                print(f"✗ [INIT] Failed to initialize ready registers: {e}")
+
     return results
 
 
