@@ -85,6 +85,14 @@ export function useWebSocketSimulation() {
         console.log('WebSocket connected');
         setState(prev => ({ ...prev, wsConnected: true }));
 
+        supabase.from('system_events').insert({
+          event_type: 'CONNECTION',
+          severity: 'INFO',
+          plc_name: 'SYSTEM',
+          message: 'WebSocket connection established',
+          details: { url: WS_URL }
+        });
+
         // Auto-connect to all three PLCs on WebSocket connection (only once)
         if (!autoConnectAttemptedRef.current) {
           autoConnectAttemptedRef.current = true;
@@ -117,9 +125,24 @@ export function useWebSocketSimulation() {
 
             if (allConnected) {
               console.log('[Multi-PLC] ✓ All three PLCs connected successfully!');
+              supabase.from('system_events').insert({
+                event_type: 'PLC_CONNECTION',
+                severity: 'INFO',
+                plc_name: 'SYSTEM',
+                message: 'All three PLCs connected successfully',
+                details: { main: true, safety: true, effects: true }
+              });
             } else {
               console.warn('[Multi-PLC] ⚠ Some PLCs failed to connect:',
                 Object.entries(data.results).filter(([_, success]) => !success).map(([id]) => id));
+              const failedPLCs = Object.entries(data.results).filter(([_, success]) => !success).map(([id]) => id);
+              supabase.from('system_events').insert({
+                event_type: 'PLC_CONNECTION',
+                severity: 'WARNING',
+                plc_name: 'SYSTEM',
+                message: `Some PLCs failed to connect: ${failedPLCs.join(', ')}`,
+                details: data.results
+              });
             }
 
             // Update multi-PLC connection status in state
@@ -248,6 +271,21 @@ export function useWebSocketSimulation() {
             // Only log important coil changes
             if (name === 'motor_running' || name === 'emergency_stop_button' || name === 'master_enable') {
               console.log(`[PLC] ${name} = ${value}`);
+
+              let severity: 'CRITICAL' | 'WARNING' | 'INFO' = 'INFO';
+              if (name === 'emergency_stop_button' && value) {
+                severity = 'CRITICAL';
+              } else if (name === 'motor_running') {
+                severity = 'INFO';
+              }
+
+              supabase.from('system_events').insert({
+                event_type: 'COIL_CHANGE',
+                severity,
+                plc_name: 'MAIN',
+                message: `${name} changed to ${value ? 'TRUE' : 'FALSE'}`,
+                details: { address, name, value }
+              });
             }
 
             setState(prev => {
@@ -296,12 +334,40 @@ export function useWebSocketSimulation() {
                   break;
                 case 'state':
                   updates.state = value;
+                  if (prev.state !== value) {
+                    const stateNames = ['IDLE', 'STARTING', 'RUNNING', 'STOPPING', 'STOPPED', 'ERROR', 'MAINTENANCE'];
+                    supabase.from('system_events').insert({
+                      event_type: 'STATE_CHANGE',
+                      severity: value === 5 ? 'WARNING' : 'INFO',
+                      plc_name: 'MAIN',
+                      message: `PLC state changed: ${stateNames[prev.state] || prev.state} → ${stateNames[value] || value}`,
+                      details: { from: prev.state, to: value }
+                    });
+                  }
                   break;
                 case 'last_error_code':
                   updates.lastErrorCode = value;
+                  if (value !== 0) {
+                    supabase.from('system_events').insert({
+                      event_type: 'ERROR',
+                      severity: 'WARNING',
+                      plc_name: 'MAIN',
+                      message: `Error code reported: ${value}`,
+                      details: { error_code: value }
+                    });
+                  }
                   break;
                 case 'maintenance_flag':
                   updates.maintenanceFlag = value === 1;
+                  if (prev.maintenanceFlag !== (value === 1)) {
+                    supabase.from('system_events').insert({
+                      event_type: 'MAINTENANCE',
+                      severity: 'WARNING',
+                      plc_name: 'MAIN',
+                      message: value === 1 ? 'Maintenance mode activated' : 'Maintenance mode cleared',
+                      details: { maintenance_flag: value === 1 }
+                    });
+                  }
                   break;
               }
 
@@ -326,6 +392,16 @@ export function useWebSocketSimulation() {
             // Handle ride event changes from Safety PLC
             const { event_num, value, name } = data;
             console.log(`🎪 [Ride Event] ${name} = ${value ? 'ACTIVE' : 'inactive'}`);
+
+            if (value) {
+              supabase.from('system_events').insert({
+                event_type: 'RIDE_EVENT',
+                severity: 'INFO',
+                plc_name: 'SAFETY',
+                message: `Ride event triggered: ${name}`,
+                details: { event_num, name }
+              });
+            }
 
             setState(prev => {
               const newActiveEvents = new Set(prev.activeEvents);
@@ -493,6 +569,15 @@ export function useWebSocketSimulation() {
   const triggerEmergencyStop = useCallback(async () => {
     try {
       console.log('[HMI] Emergency stop triggered via UI button');
+
+      await supabase.from('system_events').insert({
+        event_type: 'EMERGENCY',
+        severity: 'CRITICAL',
+        plc_name: 'MAIN',
+        message: 'Emergency stop activated by operator',
+        details: { source: 'hmi_button' }
+      });
+
       await writeCoil(3, true);  // emergency_stop_button = TRUE (coil 3)
 
       // Mark as UI action for challenge detection
@@ -549,6 +634,14 @@ export function useWebSocketSimulation() {
           .from('lab_sessions')
           .update({ status: 'completed', ended_at: new Date().toISOString() })
           .eq('id', state.sessionId);
+
+        await supabase.from('system_events').insert({
+          event_type: 'RIDE_CONTROL',
+          severity: 'INFO',
+          plc_name: 'MAIN',
+          message: 'Ride stop command issued',
+          details: { session_id: state.sessionId }
+        });
 
         // Clear start_command first to prevent auto-restart
         await writeCoil(1, false);
