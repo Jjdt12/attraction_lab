@@ -56,33 +56,38 @@ if not exist "..\dist" (
     exit /b 1
 )
 
-REM Start OpenPLC in Docker
-echo Starting OpenPLC Runtime...
+REM Start all three PLCs in Docker
+echo Starting Multi-PLC Runtime (Main, Safety, Effects)...
 cd ..
-%COMPOSE_CMD% up -d openplc
+%COMPOSE_CMD% up -d plc-main plc-safety plc-effects
 cd scripts
 
-REM Wait for OpenPLC and upload program
-echo Initializing OpenPLC with attraction control program...
-python upload_st_to_openplc.py
+REM Wait for OpenPLC and upload programs to all three PLCs
+echo Initializing all three PLCs with control programs...
+python upload_multi_plc.py
 
 if errorlevel 1 (
     echo.
-    echo Error: Failed to initialize OpenPLC
-    echo Stopping containers...
-    cd ..
-    %COMPOSE_CMD% down
-    pause
-    exit /b 1
+    echo Warning: Some PLCs may not have initialized properly
+    echo Continuing anyway - system may work in degraded mode
 )
 
 echo.
 echo Starting Attraction Technology Lab...
 echo.
-echo    Web Interface: http://localhost:8080
-echo    OpenPLC UI:    http://localhost:8080 (user: openplc / pass: openplc)
+echo    Web Interface:  http://localhost:3000
+echo.
+echo    PLC Interfaces:
+echo      * Main PLC:    http://localhost:8080 (openplc/openplc)
+echo      * Safety PLC:  http://localhost:8081 (openplc/openplc)
+echo      * Effects PLC: http://localhost:8082 (openplc/openplc)
+echo.
+echo    Modbus TCP:
+echo      * Main:    localhost:502
+echo      * Safety:  localhost:503
+echo      * Effects: localhost:504
+echo.
 echo    WebSocket:     ws://localhost:8765
-echo    Modbus TCP:    localhost:502
 echo.
 echo Press Ctrl+C to stop
 echo.
