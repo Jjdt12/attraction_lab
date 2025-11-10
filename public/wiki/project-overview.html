@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Overview - Project Nexus Wiki</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f4f5f7; color: #172b4d; }
+        .header { background: linear-gradient(135deg, #0052cc 0%, #2684ff 100%); color: white; padding: 1rem 2rem; }
+        .header h1 { font-size: 1.5rem; font-weight: 600; }
+        .container { display: flex; min-height: calc(100vh - 80px); }
+        .sidebar { width: 280px; background: white; border-right: 1px solid #dfe1e6; padding: 1.5rem 1rem; overflow-y: auto; }
+        .sidebar h3 { font-size: 0.75rem; text-transform: uppercase; color: #5e6c84; font-weight: 700; margin: 1.5rem 0 0.75rem; }
+        .nav-item { display: block; padding: 0.5rem 0.75rem; color: #172b4d; text-decoration: none; border-radius: 4px; margin-bottom: 2px; font-size: 0.9rem; }
+        .nav-item:hover { background: #f4f5f7; }
+        .nav-item.active { background: #deebff; color: #0052cc; font-weight: 500; }
+        .content { flex: 1; padding: 2rem 3rem; max-width: 1200px; }
+        .breadcrumb { font-size: 0.85rem; color: #5e6c84; margin-bottom: 1rem; }
+        .breadcrumb a { color: #0052cc; text-decoration: none; }
+        .page-title { font-size: 2rem; font-weight: 600; margin-bottom: 0.5rem; }
+        .page-meta { font-size: 0.85rem; color: #5e6c84; margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 2px solid #dfe1e6; }
+        .content h2 { font-size: 1.5rem; margin: 2rem 0 1rem; }
+        .content p { line-height: 1.6; margin-bottom: 1rem; }
+        .content ul { margin: 1rem 0 1rem 2rem; line-height: 1.8; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎢 Project Nexus - Internal Wiki</h1>
+    </div>
+    <div class="container">
+        <div class="sidebar">
+            <h3>📚 Overview</h3>
+            <a href="index.html" class="nav-item">Project Home</a>
+            <a href="project-overview.html" class="nav-item active">Project Overview</a>
+            <h3>🔧 Engineering</h3>
+            <a href="system-architecture.html" class="nav-item">System Architecture</a>
+            <h3>⚙️ Operations</h3>
+            <a href="operator-manual.html" class="nav-item">Operator Manual</a>
+            <a href="troubleshooting.html" class="nav-item">Troubleshooting Guide</a>
+        </div>
+        <div class="content">
+            <div class="breadcrumb">
+                <a href="index.html">Home</a> / Project Overview
+            </div>
+            <h1 class="page-title">Project Nexus Overview</h1>
+            <div class="page-meta">
+                Last updated: November 10, 2025 | Owner: Project Management
+            </div>
+            <h2>Executive Summary</h2>
+            <p>Project Nexus represents a groundbreaking advancement in theme park attraction control systems. This dark ride combines cutting-edge automation with traditional storytelling to create an immersive guest experience.</p>
+
+            <h2>Key Features</h2>
+            <ul>
+                <li>Three-PLC distributed architecture for enhanced reliability</li>
+                <li>27-position track with 9 show scenes</li>
+                <li>Advanced safety systems with SIL-2 certification target</li>
+                <li>Real-time show synchronization across all effects</li>
+                <li>Modern web-based HMI for operator control</li>
+            </ul>
+
+            <p><em>More documentation coming soon...</em></p>
+        </div>
+    </div>
+</body>
+</html>
