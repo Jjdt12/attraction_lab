@@ -126,12 +126,16 @@ def compile_program(plc):
 
     success, stdout, stderr = run_docker_command(compile_cmd, check=False)
 
+    # Always show compilation output for debugging
+    if stdout:
+        print(f"📋 Compilation output for {plc['name']}:")
+        print(stdout)
+    if stderr:
+        print(f"📋 Compilation stderr for {plc['name']}:")
+        print(stderr)
+
     if not success or "error" in stderr.lower():
         print(f"✗ Compilation failed for {plc['name']}")
-        if stderr:
-            print(f"Stderr: {stderr}")
-        if stdout:
-            print(f"Stdout: {stdout}")
         return False
 
     print(f"✓ Program compiled successfully for {plc['name']}")

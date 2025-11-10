@@ -288,8 +288,8 @@ async def poll_plc_coils():
                 effects_ready = read_coil(COILS['effects_plc_ready'])
                 motor_run = read_coil(COILS['motor_running'])
                 brake = read_coil(COILS['brake_engaged'])
-                state_reg = read_register(REGISTERS['state'], 1)
-                error_reg = read_register(REGISTERS['last_error_code'], 1)
+                state_reg = read_register(HOLDING_REGISTERS['state'], 1)
+                error_reg = read_register(HOLDING_REGISTERS['last_error_code'], 1)
 
                 # Print state machine status every cycle
                 print(f"📊 [STATE] state={state_reg.get('value', '?')} | "
