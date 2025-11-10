@@ -117,10 +117,15 @@ def compile_program(plc):
     """Compile program and add to database"""
     print(f"⚙️  Compiling program for {plc['name']}...")
 
+    # Compile and add to database in one operation (like the working single-PLC version)
     compile_cmd = (
         f"docker exec {plc['container']} /bin/bash -c '"
         f"cd {WEBSERVER_DIR}/scripts/ && "
-        f"./compile_program.sh {plc['st_file']}'"
+        f"./compile_program.sh {plc['st_file']} && "
+        f"TIMESTAMP=$(date +%s) && "
+        f"sqlite3 {WEBSERVER_DIR}/openplc.db \"INSERT OR REPLACE INTO Programs (Name, File, Description, Date_upload) "
+        f"VALUES (\\\"{plc['name']}_control\\\", \\\"{plc['st_file']}\\\", \\\"{plc['name']} control system\\\", $TIMESTAMP);\" "
+        f"'"
     )
 
     success, stdout, stderr = run_docker_command(compile_cmd, check=False)
