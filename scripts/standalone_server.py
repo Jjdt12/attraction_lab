@@ -178,12 +178,17 @@ def write_coil(address: int, value: bool) -> dict:
         return {"success": False, "error": "PLC not connected"}
 
     try:
+        coil_name = COIL_NAMES.get(address, f"coil_{address}")
+        print(f"✍️  [WRITE] Writing {coil_name} (coil {address}) = {value}")
         result = modbus_client.write_coil(address=address, value=value)
         if result and not result.isError():
+            print(f"✅ [WRITE] Success: {coil_name} = {value}")
             return {"success": True, "address": address, "value": value}
         else:
+            print(f"❌ [WRITE] Failed: {coil_name}")
             return {"success": False, "error": "Write failed"}
     except Exception as e:
+        print(f"❌ [WRITE] Exception writing {coil_name}: {e}")
         return {"success": False, "error": str(e)}
 
 
@@ -270,30 +275,31 @@ async def poll_plc_coils():
 
     while True:
         try:
-            # One-time diagnostic on first poll
-            if first_poll and modbus_client and is_plc_connected:
-                print("🔍 [DEBUG] Reading critical coils and registers:")
-                # Check start_command (coil 1)
-                result1 = read_coil(1)
-                if result1["success"]:
-                    print(f"  - Coil 1 (start_command): {result1['value']}")
-                # Check safety_plc_ready (coil 31)
-                result31 = read_coil(31)
-                if result31["success"]:
-                    print(f"  - Coil 31 (safety_plc_ready): {result31['value']}")
-                # Check effects_plc_ready (coil 32)
-                result32 = read_coil(32)
-                if result32["success"]:
-                    print(f"  - Coil 32 (effects_plc_ready): {result32['value']}")
-                # Check state register (4096)
-                state_result = read_register(4096, 1)
-                if state_result["success"]:
-                    print(f"  - Register 4096 (state): {state_result['value']}")
-                # Check last_error_code (register 1029)
-                error_result = read_register(1029, 1)
-                if error_result["success"]:
-                    print(f"  - Register 1029 (last_error_code): {error_result['value']}")
-                first_poll = False
+            # Continuous diagnostic every poll cycle (more verbose debugging)
+            if modbus_client and is_plc_connected:
+                if first_poll:
+                    print("🔍 [DEBUG] === PLC STATE MACHINE DIAGNOSTIC ===")
+                    first_poll = False
+
+                # Read all critical values
+                start_cmd = read_coil(1)
+                master_en = read_coil(0)
+                safety_ready = read_coil(31)
+                effects_ready = read_coil(32)
+                motor_run = read_coil(26)
+                brake = read_coil(27)
+                state_reg = read_register(4096, 1)
+                error_reg = read_register(1029, 1)
+
+                # Print state machine status every cycle
+                print(f"📊 [STATE] state={state_reg.get('value', '?')} | "
+                      f"start_cmd={start_cmd.get('value', '?')} | "
+                      f"master_en={master_en.get('value', '?')} | "
+                      f"safety_ready={safety_ready.get('value', '?')} | "
+                      f"effects_ready={effects_ready.get('value', '?')} | "
+                      f"motor={motor_run.get('value', '?')} | "
+                      f"brake={brake.get('value', '?')} | "
+                      f"error={error_reg.get('value', '?')}")
 
             # Poll Main PLC (backward compatibility)
             if modbus_client and is_plc_connected:
