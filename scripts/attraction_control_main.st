@@ -278,3 +278,10 @@ proximity_sensor_8 := (current_position >= 20 AND current_position <= 24);
 proximity_sensor_9 := (current_position >= 23 AND current_position <= 26);
 
 END_PROGRAM
+
+CONFIGURATION Config0
+    RESOURCE Res0 ON PLC
+        TASK task0(INTERVAL := T#20ms, PRIORITY := 0);
+        PROGRAM instance0 WITH task0 : attraction_control_main;
+    END_RESOURCE
+END_CONFIGURATION

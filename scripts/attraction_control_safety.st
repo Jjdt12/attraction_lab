@@ -238,3 +238,10 @@ IF watchdog_counter >= 1500 THEN
 END_IF;
 
 END_PROGRAM
+
+CONFIGURATION Config0
+    RESOURCE Res0 ON PLC
+        TASK task0(INTERVAL := T#20ms, PRIORITY := 0);
+        PROGRAM instance0 WITH task0 : attraction_control_safety;
+    END_RESOURCE
+END_CONFIGURATION
