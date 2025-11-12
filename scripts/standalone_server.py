@@ -506,6 +506,45 @@ async def poll_plc_coils():
                     except Exception as e:
                         print(f"⚠️ [BRIDGE] Error in Bridge 8: {e}")
 
+                # Bridge 9: Copy proximity sensors from MAIN to SAFETY PLC
+                if 'SAFETY' in modbus_clients and plc_connected_status.get('SAFETY'):
+                    try:
+                        # Read proximity sensors from MAIN PLC (coils 32-40)
+                        for i in range(1, 10):  # Sensors 1-9
+                            coil_addr = 31 + i  # proximity_sensor_1 = coil 32, etc.
+                            sensor = read_coil_from_plc('MAIN', coil_addr)
+                            if sensor['success']:
+                                # Write to SAFETY PLC %MW80-%MW88 (Modbus addresses 1104-1112)
+                                mw_addr = 79 + i  # sensor_1 = MW80, sensor_9 = MW88
+                                modbus_addr = 1024 + mw_addr  # MW registers start at Modbus address 1024
+                                val = 1 if sensor['value'] else 0
+                                modbus_clients['SAFETY'].write_register(modbus_addr, val)
+                    except Exception as e:
+                        print(f"⚠️ [BRIDGE] Error in Bridge 9 (SAFETY proximity): {e}")
+
+                # Bridge 10: Copy proximity sensors from MAIN to EFFECTS PLC
+                if 'EFFECTS' in modbus_clients and plc_connected_status.get('EFFECTS'):
+                    try:
+                        # Read proximity sensors from MAIN PLC (coils 32-40)
+                        for i in range(1, 10):  # Sensors 1-9
+                            coil_addr = 31 + i  # proximity_sensor_1 = coil 32, etc.
+                            sensor = read_coil_from_plc('MAIN', coil_addr)
+                            if sensor['success']:
+                                # Write to EFFECTS PLC %MW80-%MW88 (Modbus addresses 1104-1112)
+                                mw_addr = 79 + i  # sensor_1 = MW80, sensor_9 = MW88
+                                modbus_addr = 1024 + mw_addr  # MW registers start at Modbus address 1024
+                                val = 1 if sensor['value'] else 0
+                                modbus_clients['EFFECTS'].write_register(modbus_addr, val)
+
+                                # Log sensor changes for debugging
+                                bridge_key = f'bridge_sensor_{i}'
+                                if val != previous_register_states.get(bridge_key):
+                                    if val == 1:
+                                        print(f"🔗 [BRIDGE] proximity_sensor_{i} ACTIVE -> EFFECTS MW{79+i}")
+                                    previous_register_states[bridge_key] = val
+                    except Exception as e:
+                        print(f"⚠️ [BRIDGE] Error in Bridge 10 (EFFECTS proximity): {e}")
+
             # Continuous diagnostic every poll cycle (more verbose debugging)
             if modbus_client and is_plc_connected:
                 if first_poll:
