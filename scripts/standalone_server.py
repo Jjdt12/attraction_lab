@@ -269,17 +269,37 @@ def write_coil(address: int, value: bool) -> dict:
 
         # Always write to MAIN PLC
         result = modbus_client.write_coil(address=address, value=value)
-        if result and not result.isError():
-            print(f"✅ [WRITE] Success: {coil_name} = {value}")
-            asyncio.create_task(log_modbus_operation("MAIN", "WRITE_COIL", address, value))
-
-            # Safety coils are now mirrored via Bridge 3 as holding registers
-            # No need to mirror here anymore
-
-            return {"success": True, "address": address, "value": value}
-        else:
+        if not result or result.isError():
             print(f"❌ [WRITE] Failed: {coil_name}")
-            return {"success": False, "error": "Write failed"}
+            return {"success": False, "error": "Write to MAIN PLC failed"}
+
+        print(f"✅ [WRITE] Success: {coil_name} = {value} (on MAIN)")
+        asyncio.create_task(log_modbus_operation("MAIN", "WRITE_COIL", address, value))
+
+        # --- FIX: Immediately mirror safety coils to SAFETY PLC ---
+        if address in safety_coils and 'SAFETY' in modbus_clients:
+            try:
+                # Map MAIN coil address to SAFETY coil address
+                safety_addr = -1
+                if address == 0:  # master_enable
+                    safety_addr = 0
+                elif address == 3: # emergency_stop_button
+                    safety_addr = 1
+                elif address == 4: # safety_gate_closed
+                    safety_addr = 2
+
+                if safety_addr != -1:
+                    safety_client = modbus_clients['SAFETY']
+                    safety_result = safety_client.write_coil(safety_addr, value)
+                    if safety_result and not safety_result.isError():
+                        print(f"✅ [MIRROR] Mirrored {coil_name} -> SAFETY Coil {safety_addr}")
+                    else:
+                        print(f"❌ [MIRROR] Failed to mirror {coil_name} to SAFETY")
+            except Exception as e:
+                print(f"❌ [MIRROR] Exception mirroring to SAFETY: {e}")
+        # --- End of Fix ---
+
+        return {"success": True, "address": address, "value": value}
     except Exception as e:
         print(f"❌ [WRITE] Exception writing {coil_name}: {e}")
         return {"success": False, "error": str(e)}
