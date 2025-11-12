@@ -1,10 +1,10 @@
 PROGRAM attraction_control_safety
-VAR_EXTERNAL
-    (* Reference to global variables declared in CONFIGURATION section *)
-    master_enable : BOOL;
-    emergency_stop_button : BOOL;
-    safety_gate_closed : BOOL;
-    safety_ok_reg : INT;
+VAR
+    (* Direct memory access to match CONFIGURATION VAR_GLOBAL *)
+    master_enable AT %MX0.0 : BOOL;
+    emergency_stop_button AT %MX0.1 : BOOL;
+    safety_gate_closed AT %MX0.2 : BOOL;
+    safety_ok_reg AT %MW100 : INT;
 
     event_1_enable : BOOL;
     event_2_enable : BOOL;
@@ -54,9 +54,7 @@ VAR_EXTERNAL
     alarm_register : INT;
     stealth_counter : INT;
     watchdog_timeout_seconds : INT;
-END_VAR
 
-VAR
     (* Local-only variables - not mapped to Modbus *)
     scan_counter : DINT;
     last_event_1 : BOOL;
