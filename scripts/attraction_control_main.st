@@ -28,9 +28,6 @@ VAR_EXTERNAL
     brake_wear_percent : INT;
     vibration_level : INT;
 
-    (* NOTE: safety_plc_ready_reg and effects_plc_ready_reg removed from VAR_EXTERNAL *)
-    (* These must use the VAR_GLOBAL declarations to read bridge-written values *)
-
     proximity_sensor_1 : BOOL;
     proximity_sensor_2 : BOOL;
     proximity_sensor_3 : BOOL;
@@ -43,10 +40,6 @@ VAR_EXTERNAL
 END_VAR
 
 VAR
-    (* Bridge-written registers - must access memory directly *)
-    safety_plc_ready_reg AT %MW102 : INT;
-    effects_plc_ready_reg AT %MW103 : INT;
-
     scan_counter : DINT;
     position_accumulator : INT;
     safety_plc_ready : BOOL;
