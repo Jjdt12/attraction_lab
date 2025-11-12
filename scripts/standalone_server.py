@@ -437,10 +437,8 @@ async def poll_plc_coils():
                         # Write to SAFETY PLC %MW10 and %MW11 (Modbus addresses 1034, 1035)
                         if position['success']:
                             result = modbus_clients['SAFETY'].write_register(1034, position['value'])  # %MW10
-                            # Log position changes
-                            if position['value'] != previous_register_states.get('bridge_position'):
-                                print(f"🔗 [BRIDGE] position {position['value']} -> SAFETY MW10")
-                                previous_register_states['bridge_position'] = position['value']
+                            # Log all position writes (no lag checking)
+                            print(f"🔗 [BRIDGE] position {position['value']} -> SAFETY MW10")
                         if speed['success']:
                             modbus_clients['SAFETY'].write_register(1035, speed['value'])  # %MW11
                         if motor['success']:
@@ -458,18 +456,8 @@ async def poll_plc_coils():
                         if position['success']:
                             result = modbus_clients['EFFECTS'].write_register(1034, position['value'])  # %MW10
 
-                            # Verify write by reading back
-                            readback = read_register_from_plc('EFFECTS', 10, 1)
-                            verified_value = '?'
-                            if readback and readback.get('success'):
-                                verified_value = readback['value']
-                                if readback['value'] != position['value']:
-                                    print(f"⚠️ [BRIDGE] MISMATCH! Wrote {position['value']} but read {readback['value']} from EFFECTS MW10")
-
-                            # Log position changes for event debugging
-                            if position['value'] != previous_register_states.get('effects_position'):
-                                print(f"🔗 [BRIDGE] position {position['value']} -> EFFECTS MW10 (verified: {verified_value})")
-                                previous_register_states['effects_position'] = position['value']
+                            # Log all position writes (no lag checking)
+                            print(f"🔗 [BRIDGE] position {position['value']} -> EFFECTS MW10")
                     except Exception as e:
                         print(f"⚠️ [BRIDGE] Error in Bridge 5: {e}")
 
@@ -536,12 +524,9 @@ async def poll_plc_coils():
                                 val = 1 if sensor['value'] else 0
                                 modbus_clients['EFFECTS'].write_register(modbus_addr, val)
 
-                                # Log sensor changes for debugging
-                                bridge_key = f'bridge_sensor_{i}'
-                                if val != previous_register_states.get(bridge_key):
-                                    if val == 1:
-                                        print(f"🔗 [BRIDGE] proximity_sensor_{i} ACTIVE -> EFFECTS MW{79+i}")
-                                    previous_register_states[bridge_key] = val
+                                # Log active sensors (no lag checking)
+                                if val == 1:
+                                    print(f"🔗 [BRIDGE] proximity_sensor_{i} ACTIVE -> EFFECTS MW{79+i}")
                     except Exception as e:
                         print(f"⚠️ [BRIDGE] Error in Bridge 10 (EFFECTS proximity): {e}")
 
