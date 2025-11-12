@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thunder Rapids Roller Coaster - Technical Operations Manual</title>
+    <title>Project Nexus Dark Ride - Technical Operations Manual</title>
     <style>
         * {
             margin: 0;
@@ -20,7 +20,7 @@
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
             background: white;
             box-shadow: 0 10px 40px rgba(0,0,0,0.1);
@@ -29,30 +29,30 @@
         }
 
         .header {
-            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+            background: linear-gradient(135deg, #0052cc 0%, #2684ff 100%);
             color: white;
             padding: 40px;
             border-bottom: 4px solid #fbbf24;
         }
 
         .header h1 {
-            font-size: 2.5em;
+            font-size: 2.8em;
             margin-bottom: 10px;
             font-weight: 700;
         }
 
         .header .subtitle {
-            font-size: 1.3em;
+            font-size: 1.4em;
             opacity: 0.95;
             font-weight: 500;
         }
 
         .meta {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
             gap: 15px;
             background: #f8fafc;
-            padding: 20px;
+            padding: 25px;
             border-bottom: 1px solid #e2e8f0;
         }
 
@@ -82,39 +82,39 @@
         .warning-box {
             background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
             color: white;
-            padding: 20px;
+            padding: 25px;
             border-radius: 8px;
             margin-bottom: 30px;
             border-left: 5px solid #fbbf24;
         }
 
         .warning-box h2 {
-            margin-bottom: 10px;
-            font-size: 1.3em;
+            margin-bottom: 12px;
+            font-size: 1.4em;
             color: white;
         }
 
         h2 {
-            color: #1e40af;
+            color: #0052cc;
             margin-top: 40px;
             margin-bottom: 20px;
-            font-size: 1.8em;
+            font-size: 1.9em;
             padding-bottom: 10px;
-            border-bottom: 3px solid #3b82f6;
+            border-bottom: 3px solid #2684ff;
         }
 
         h3 {
             color: #0f172a;
             margin-top: 30px;
             margin-bottom: 15px;
-            font-size: 1.3em;
+            font-size: 1.4em;
         }
 
         h4 {
             color: #334155;
             margin-top: 20px;
             margin-bottom: 10px;
-            font-size: 1.1em;
+            font-size: 1.15em;
         }
 
         p {
@@ -133,7 +133,7 @@
         }
 
         thead {
-            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+            background: linear-gradient(135deg, #0052cc 0%, #2684ff 100%);
             color: white;
         }
 
@@ -159,13 +159,13 @@
             border-bottom: none;
         }
 
-        .coil-address {
+        .address {
             font-weight: 700;
-            color: #1e40af;
+            color: #0052cc;
             font-size: 1.1em;
         }
 
-        .coil-name {
+        .var-name {
             font-family: 'Courier New', monospace;
             background: #f1f5f9;
             padding: 3px 8px;
@@ -195,8 +195,8 @@
 
         .info-box {
             background: #dbeafe;
-            border-left: 4px solid #3b82f6;
-            padding: 15px;
+            border-left: 4px solid #2684ff;
+            padding: 18px;
             margin: 20px 0;
             border-radius: 4px;
         }
@@ -214,29 +214,6 @@
             margin-top: 0;
         }
 
-        .checklist {
-            background: #f0fdf4;
-            padding: 20px;
-            border-radius: 8px;
-            border-left: 4px solid #10b981;
-            margin: 20px 0;
-        }
-
-        .checklist li {
-            list-style: none;
-            padding-left: 30px;
-            position: relative;
-        }
-
-        .checklist li:before {
-            content: "✓";
-            position: absolute;
-            left: 0;
-            color: #10b981;
-            font-weight: bold;
-            font-size: 1.2em;
-        }
-
         .code-block {
             background: #1e293b;
             color: #e2e8f0;
@@ -250,6 +227,19 @@
             line-height: 1.5;
         }
 
+        .plc-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 0.85em;
+            margin-right: 8px;
+        }
+
+        .plc-main { background: #dbeafe; color: #0052cc; }
+        .plc-safety { background: #fee2e2; color: #dc2626; }
+        .plc-effects { background: #d1fae5; color: #059669; }
+
         .footer {
             background: #f8fafc;
             padding: 30px;
@@ -259,961 +249,367 @@
             font-size: 0.9em;
         }
 
-        .event-table {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-        }
-
         .highlight {
             background: #fef3c7;
             padding: 2px 6px;
             border-radius: 3px;
             font-weight: 600;
         }
+
+        .scene-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .scene-card {
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 18px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .scene-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .scene-card h4 {
+            margin: 0 0 10px 0;
+            color: #0052cc;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>Thunder Rapids Roller Coaster</h1>
-            <div class="subtitle">Comprehensive Technical Operations Manual v3.0</div>
+            <h1>🎢 Project Nexus Dark Ride</h1>
+            <div class="subtitle">Comprehensive Technical Operations Manual v4.0</div>
         </div>
 
         <div class="meta">
             <div class="meta-item">
-                <span class="meta-label">Model</span>
-                <span class="meta-value">TR-9000 Advanced Series</span>
+                <span class="meta-label">Attraction Type</span>
+                <span class="meta-value">Indoor Dark Ride Experience</span>
             </div>
             <div class="meta-item">
-                <span class="meta-label">Manufacturer</span>
-                <span class="meta-value">VectorDyne Attractions</span>
+                <span class="meta-label">Control Architecture</span>
+                <span class="meta-value">Three-PLC Distributed System</span>
             </div>
             <div class="meta-item">
-                <span class="meta-label">Installation Date</span>
-                <span class="meta-value">March 2019</span>
+                <span class="meta-label">Commissioning Date</span>
+                <span class="meta-value">February 2026 (Planned)</span>
             </div>
             <div class="meta-item">
                 <span class="meta-label">Document Version</span>
-                <span class="meta-value">3.0.0 (Updated Nov 2024)</span>
+                <span class="meta-value">4.0.0 (Updated Nov 2025)</span>
             </div>
             <div class="meta-item">
                 <span class="meta-label">Classification</span>
-                <span class="meta-value">Internal Use Only</span>
+                <span class="meta-value">Internal Use Only - Confidential</span>
             </div>
             <div class="meta-item">
-                <span class="meta-label">PLC Firmware</span>
-                <span class="meta-value">OpenPLC v1.2.7</span>
+                <span class="meta-label">Safety Certification</span>
+                <span class="meta-value">SIL-2 Target (Pending Dec 2025)</span>
             </div>
         </div>
 
         <div class="content">
             <div class="warning-box">
                 <h2>⚠️ CRITICAL SAFETY NOTICE ⚠️</h2>
-                <p><strong>AUTHORIZED PERSONNEL ONLY.</strong> This document contains sensitive technical information for Thunder Rapids maintenance and engineering staff. Unauthorized access, modification, or manipulation of control systems may result in equipment damage, serious injury, or death. All operations must comply with ASTM F24 standards, local safety regulations, and VectorDyne operational guidelines.</p>
-                <p style="margin-top: 10px;"><strong>WARNING:</strong> The Modbus TCP interface is unauthenticated by design (legacy industrial standard). Network segmentation and monitoring are CRITICAL. Unauthorized network access can compromise ride safety.</p>
+                <p><strong>AUTHORIZED PERSONNEL ONLY.</strong> This document contains sensitive technical information for Project Nexus maintenance and engineering staff. Unauthorized access, modification, or manipulation of control systems may result in equipment damage, serious injury, or death.</p>
+                <p style="margin-top: 10px;"><strong>WARNING:</strong> The three-PLC Modbus TCP architecture is unauthenticated by design (legacy industrial standard). Network segmentation and monitoring are MANDATORY.</p>
             </div>
 
-            <h2>📋 1. System Overview</h2>
-            <p>Welcome to Thunder Rapids! This isn't your average theme park ride - it's a sophisticated piece of industrial automation engineering. The Thunder Rapids attraction features a state-of-the-art VectorDyne PLC-based control system communicating via Modbus TCP/IP protocol. The ride vehicle travels along a circular track through <strong>3 operational zones</strong>, triggering <strong>9 theatrical show events</strong> at specific positions. The system implements advanced sequential control logic, multi-layered safety interlocks, real-time monitoring, and event tracking.</p>
+            <h2>📋 1. Attraction Overview</h2>
+            <p>Project Nexus represents the cutting edge of themed entertainment control systems. This immersive dark ride combines physical theming, advanced automation, and theatrical show effects to create a 4-5 minute guest journey through nine distinct show scenes.</p>
 
-            <h3>🎯 Key Technical Specifications</h3>
+            <h3>🎯 Key Specifications</h3>
             <ul>
-                <li><strong>Track Layout:</strong> Circular track with 27 discrete positions (0-26)</li>
-                <li><strong>Zone Configuration:</strong> 3 operational zones
+                <li><strong>Type:</strong> Tracked dark ride with automated vehicle</li>
+                <li><strong>Track:</strong> Continuous circuit, 27 positions (0-26)</li>
+                <li><strong>Duration:</strong> 4-5 minutes per cycle</li>
+                <li><strong>Scenes:</strong> 9 distinct themed environments</li>
+                <li><strong>Zones:</strong> 3 operational zones
                     <ul>
-                        <li>Zone 1: Positions 0-8 (Launch & Loading Area)</li>
-                        <li>Zone 2: Positions 9-17 (Show Effects Section)</li>
+                        <li>Zone 1: Positions 0-8 (Loading & Launch)</li>
+                        <li>Zone 2: Positions 9-17 (Main Show)</li>
                         <li>Zone 3: Positions 18-26 (Finale & Return)</li>
                     </ul>
                 </li>
-                <li><strong>Show Events:</strong> 9 independently triggered theatrical effects</li>
-                <li><strong>Position Tracking:</strong> Real-time vehicle position monitoring (0-26)</li>
-                <li><strong>Speed Control:</strong> Variable speed 0-100% with intelligent ramping</li>
-                <li><strong>Cycle Time:</strong> ~27-54 seconds (depending on speed setting)</li>
-                <li><strong>Communication:</strong> Modbus TCP on port 502</li>
-                <li><strong>PLC Model:</strong> VectorDyne VD-M500 with OpenPLC Runtime</li>
-                <li><strong>Scan Cycle:</strong> 50ms (20Hz) - PLC logic executes 20 times per second</li>
-                <li><strong>Operating Voltage:</strong> 24VDC control circuits, 480VAC 3-phase motor drive</li>
+                <li><strong>Capacity:</strong> 6 passengers per vehicle</li>
+                <li><strong>Throughput:</strong> ~600 guests/hour</li>
+                <li><strong>Protocol:</strong> Modbus TCP/IP</li>
             </ul>
 
-            <div class="info-box">
-                <strong>🎬 What Makes Thunder Rapids Special:</strong> Unlike simple on/off rides, Thunder Rapids features position-aware show control. As the vehicle moves through the track, the PLC continuously monitors position and triggers events at exact locations - creating a synchronized theatrical experience. The system can also detect when the vehicle is in specific zones, allowing for zone-based safety lockouts during maintenance.
+            <h2>🏗️ 2. Three-PLC Architecture</h2>
+            <div class="code-block">┌─────────────────────────────────────────────────────┐
+│              HMI / SCADA System                  │
+│           (WebSocket Port 8765)                  │
+└───────┬─────────────────┬──────────────┬─────────┘
+        │                 │              │
+┌───────▼────────┐ ┌──────▼──────┐ ┌────▼──────────┐
+│   MAIN PLC     │ │ SAFETY PLC  │ │ EFFECTS PLC   │
+│   Port 502     │◄►│  Port 503   │ │  Port 504     │
+│                │ │             │ │               │
+│ • Ride Logic   │ │ • E-Stops   │ │ • Lighting    │
+│ • State Mgmt   │ │ • Interlocks│ │ • Audio       │
+│ • Position     │ │ • Zone Safe │ │ • Show FX     │
+└────────────────┘ └─────────────┘ └───────────────┘</div>
+
+            <h3><span class="plc-badge plc-main">MAIN PLC</span> Port 502</h3>
+            <p><strong>Responsibilities:</strong> Master coordinator, state machine, position tracking, speed control, event sequencing</p>
+            <p><strong>Key Signals:</strong> Coil 31 (Safety Ready), Coil 32 (Effects Ready)</p>
+
+            <h3><span class="plc-badge plc-safety">SAFETY PLC</span> Port 503</h3>
+            <p><strong>Responsibilities:</strong> E-stop monitoring, gate interlocks, zone occupancy, event validation</p>
+            <p><strong>Safety Level:</strong> SIL-2 target (Dec 2025)</p>
+
+            <h3><span class="plc-badge plc-effects">EFFECTS PLC</span> Port 504</h3>
+            <p><strong>Responsibilities:</strong> DMX lighting, audio triggers, special effects, projection mapping</p>
+
+            <h2>🎭 3. Show Scenes</h2>
+            <div class="scene-grid">
+                <div class="scene-card">
+                    <h4>Scene 1: Loading (Pos 0)</h4>
+                    <p><strong>Event 1:</strong> Gate system, safety announcements</p>
+                </div>
+                <div class="scene-card">
+                    <h4>Scene 2: Safety Check (Pos 3)</h4>
+                    <p><strong>Event 2:</strong> Final verification, dispatch clearance</p>
+                </div>
+                <div class="scene-card">
+                    <h4>Scene 3: Launch (Pos 6)</h4>
+                    <p><strong>Event 3:</strong> Acceleration with dynamic lighting</p>
+                </div>
+                <div class="scene-card">
+                    <h4>Scene 4: Portal (Pos 9)</h4>
+                    <p><strong>Event 4:</strong> Photo flash, projection mapping</p>
+                </div>
+                <div class="scene-card">
+                    <h4>Scene 5: Nexus Core (Pos 12)</h4>
+                    <p><strong>Event 5:</strong> Brake effect, fog, lasers</p>
+                </div>
+                <div class="scene-card">
+                    <h4>Scene 6: Junction (Pos 15)</h4>
+                    <p><strong>Event 6:</strong> Track switch animation</p>
+                </div>
+                <div class="scene-card">
+                    <h4>Scene 7: Convergence (Pos 18)</h4>
+                    <p><strong>Event 7:</strong> Climax with full effects</p>
+                </div>
+                <div class="scene-card">
+                    <h4>Scene 8: Return (Pos 21)</h4>
+                    <p><strong>Event 8:</strong> Deceleration, station approach</p>
+                </div>
+                <div class="scene-card">
+                    <h4>Scene 9: Unload (Pos 24)</h4>
+                    <p><strong>Event 9:</strong> Platform prep, exit gates</p>
+                </div>
             </div>
 
-            <h2>🔌 2. Modbus Communication Architecture</h2>
-            <p>Thunder Rapids uses <strong>Modbus TCP</strong>, an industrial communication protocol originally designed for manufacturing environments. Think of it as the "language" the HMI (Human-Machine Interface) uses to talk to the PLC (Programmable Logic Controller). The PLC exposes two main types of memory:</p>
-
-            <h3>📊 Memory Types Explained</h3>
-            <ul>
-                <li><strong>COILS (Digital Bits):</strong> Think of these as light switches - they're either ON (TRUE/1) or OFF (FALSE/0). Used for commands, status indicators, and enable/disable flags.</li>
-                <li><strong>REGISTERS (16-bit Numbers):</strong> These store numeric values like speed (0-100), position (0-26), error codes, counters, etc.</li>
-            </ul>
-
-            <div class="code-block">Modbus TCP Connection Details:
-Protocol: Modbus TCP/IP
-IP Address: 127.0.0.1 (localhost for simulator) or PLC IP
-Port: 502 (standard Modbus port)
-Unit ID: 1
-Scan Rate: 100ms (HMI polls PLC 10 times per second)</div>
-
-            <h2>🎛️ 3. Complete Coil Address Map (Modbus Function Codes 01 & 05)</h2>
-            <p>The PLC exposes 31 coils for monitoring and control. These are arranged logically by function:</p>
-
-            <h3>🚦 Core Control Coils (0-4)</h3>
+            <h2>🔌 4. Main PLC Coil Map (Port 502)</h2>
             <table>
                 <thead>
                     <tr>
                         <th>Address</th>
-                        <th>Variable Name</th>
-                        <th>Direction</th>
-                        <th>Description & Behavior</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td class="coil-address">0</td>
-                        <td><span class="coil-name">master_enable</span></td>
-                        <td>INPUT</td>
-                        <td><strong>Master System Enable</strong> - Main power control. Must be TRUE for any ride operation. Think of this as the "key switch" that operators turn to enable the ride. When FALSE, prevents all state transitions except emergency stop.</td>
-                    </tr>
-                    <tr>
-                        <td class="coil-address">1</td>
-                        <td><span class="coil-name">start_command</span></td>
-                        <td>INPUT</td>
-                        <td><strong>Start Command</strong> - Momentary pulse to begin ride cycle. Requires all safety interlocks satisfied. Best practice: pulse TRUE for 100-200ms then FALSE. PLC will reject if safety conditions not met.</td>
-                    </tr>
-                    <tr>
-                        <td class="coil-address">2</td>
-                        <td><span class="coil-name">stop_command</span></td>
-                        <td>INPUT</td>
-                        <td><strong>Normal Stop</strong> - Controlled shutdown. Vehicle stops immediately, brake engages, returns to IDLE state. This is the "normal" way to stop the ride (not emergency).</td>
-                    </tr>
-                    <tr>
-                        <td class="coil-address">3</td>
-                        <td><span class="coil-name">emergency_stop_button</span></td>
-                        <td>INPUT</td>
-                        <td><strong>E-Stop Circuit</strong> - TRUE = EMERGENCY CONDITION. Immediately halts all motion, engages brakes, triggers alarms. PLC enters State 4 (EMERGENCY). Must be manually cleared (set FALSE) to resume operations.</td>
-                    </tr>
-                    <tr>
-                        <td class="coil-address">4</td>
-                        <td><span class="coil-name">safety_gate_closed</span></td>
-                        <td>INPUT</td>
-                        <td><strong>Operator Gate Interlock</strong> - Safety gate closed sensor. Must be TRUE (gate closed) before ride can start. This prevents starting the ride while operators or guests are in unsafe positions.</td>
-                    </tr>
-                </tbody>
-            </table>
-
-            <h3>🗺️ Zone Control Coils (5-7)</h3>
-            <p>The track is divided into 3 zones for maintenance isolation. During normal operation, ALL zones must be enabled (TRUE). You can disable a zone for maintenance, which will trigger alerts if the vehicle tries to enter that zone while running.</p>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Address</th>
-                        <th>Variable Name</th>
-                        <th>Direction</th>
-                        <th>Coverage & Description</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td class="coil-address">5</td>
-                        <td><span class="coil-name">zone_1_enable</span></td>
-                        <td>INPUT</td>
-                        <td><strong>Zone 1 Enable</strong> (Positions 0-8) - Launch and loading area. Covers station, dispatch, and initial acceleration. If disabled during operation and vehicle enters this zone, triggers error 230.</td>
-                    </tr>
-                    <tr>
-                        <td class="coil-address">6</td>
-                        <td><span class="coil-name">zone_2_enable</span></td>
-                        <td>INPUT</td>
-                        <td><strong>Zone 2 Enable</strong> (Positions 9-17) - Main show effects section. Contains majority of theatrical elements. If disabled during operation and vehicle in zone, triggers error 231.</td>
-                    </tr>
-                    <tr>
-                        <td class="coil-address">7</td>
-                        <td><span class="coil-name">zone_3_enable</span></td>
-                        <td>INPUT</td>
-                        <td><strong>Zone 3 Enable</strong> (Positions 18-26) - Finale and return to station. Includes final brake zone and return sequence. If disabled during operation and vehicle in zone, triggers error 232.</td>
-                    </tr>
-                </tbody>
-            </table>
-
-            <div class="info-box">
-                <strong>💡 Zone Disable Strategy:</strong> Zones allow maintenance crews to safely lock out portions of the track. For example, if you need to work on show effects in Zone 2, you can disable <code>zone_2_enable</code> and the ride will alert if anyone tries to run it through that area. This is a safety feature to prevent accidents during maintenance.
-            </div>
-
-            <h3>🎭 Event Enable Coils (8-16)</h3>
-            <p>Thunder Rapids features <strong>9 theatrical show events</strong> that trigger at specific track positions. Each event can be individually enabled or disabled. When enabled and the vehicle reaches the event's position, the event activates!</p>
-            <table>
-                <thead class="event-table">
-                    <tr>
-                        <th>Address</th>
-                        <th>Variable Name</th>
-                        <th>Event Name</th>
-                        <th>Trigger Position</th>
-                        <th>Description</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td class="coil-address">8</td>
-                        <td><span class="coil-name">event_1_enable</span></td>
-                        <td>Loading Gate</td>
-                        <td>Position 0</td>
-                        <td>Station gate sequence - opens/closes as vehicle arrives and departs</td>
-                    </tr>
-                    <tr>
-                        <td class="coil-address">9</td>
-                        <td><span class="coil-name">event_2_enable</span></td>
-                        <td>Safety Interlock</td>
-                        <td>Position 3</td>
-                        <td>Final safety check before launch - verifies all systems green</td>
-                    </tr>
-                    <tr>
-                        <td class="coil-address">10</td>
-                        <td><span class="coil-name">event_3_enable</span></td>
-                        <td>Launch Accelerator</td>
-                        <td>Position 6</td>
-                        <td>Launch sequence activates - dramatic acceleration effect with lighting</td>
-                    </tr>
-                    <tr>
-                        <td class="coil-address">11</td>
-                        <td><span class="coil-name">event_4_enable</span></td>
-                        <td>Photo Flash</td>
-                        <td>Position 9</td>
-                        <td>On-ride photo capture - strobe flash and camera trigger</td>
-                    </tr>
-                    <tr>
-                        <td class="coil-address">12</td>
-                        <td><span class="coil-name">event_5_enable</span></td>
-                        <td>Mid-Course Brake</td>
-                        <td>Position 12</td>
-                        <td>Theatrical "near miss" brake effect (simulation only, no real braking)</td>
-                    </tr>
-                    <tr>
-                        <td class="coil-address">13</td>
-                        <td><span class="coil-name">event_6_enable</span></td>
-                        <td>Track Switch</td>
-                        <td>Position 15</td>
-                        <td>Dramatic track switch animation with sound effects</td>
-                    </tr>
-                    <tr>
-                        <td class="coil-address">14</td>
-                        <td><span class="coil-name">event_7_enable</span></td>
-                        <td>Final Brake</td>
-                        <td>Position 18</td>
-                        <td>Approach to finale sequence - begins deceleration effects</td>
-                    </tr>
-                    <tr>
-                        <td class="coil-address">15</td>
-                        <td><span class="coil-name">event_8_enable</span></td>
-                        <td>Station Approach</td>
-                        <td>Position 21</td>
-                        <td>Return to station announcement and platform preparation</td>
-                    </tr>
-                    <tr>
-                        <td class="coil-address">16</td>
-                        <td><span class="coil-name">event_9_enable</span></td>
-                        <td>Unload Platform</td>
-                        <td>Position 24</td>
-                        <td>Final position before station - prepares for guest unload</td>
-                    </tr>
-                </tbody>
-            </table>
-
-            <div class="info-box">
-                <strong>🎪 How Events Work:</strong> Events are "position-triggered". When <code>current_position</code> equals the event's trigger position AND the event is enabled AND the ride is in RUNNING state, the PLC sets the corresponding <code>event_X_active</code> output coil to TRUE. The HMI or show controller reads this and activates lighting, sound, effects, etc. Events automatically deactivate when the vehicle moves to the next position.
-            </div>
-
-            <h3>🚨 Event Active Status Coils (17-25) - READ ONLY</h3>
-            <p>These are OUTPUT coils that the PLC writes to indicate which events are currently active. You should READ these, not write to them.</p>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Address</th>
-                        <th>Variable Name</th>
+                        <th>Name</th>
                         <th>Direction</th>
                         <th>Description</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
-                        <td class="coil-address">17</td>
-                        <td><span class="coil-name">event_1_active</span></td>
-                        <td>OUTPUT</td>
-                        <td>TRUE when Loading Gate event is currently active</td>
+                        <td class="address">0</td>
+                        <td><span class="var-name">master_enable</span></td>
+                        <td>INPUT</td>
+                        <td>Master system enable</td>
                     </tr>
                     <tr>
-                        <td class="coil-address">18</td>
-                        <td><span class="coil-name">event_2_active</span></td>
-                        <td>OUTPUT</td>
-                        <td>TRUE when Safety Interlock event is currently active</td>
+                        <td class="address">1</td>
+                        <td><span class="var-name">start_command</span></td>
+                        <td>INPUT</td>
+                        <td>Start ride (pulse)</td>
                     </tr>
                     <tr>
-                        <td class="coil-address">19</td>
-                        <td><span class="coil-name">event_3_active</span></td>
-                        <td>OUTPUT</td>
-                        <td>TRUE when Launch Accelerator event is currently active</td>
+                        <td class="address">2</td>
+                        <td><span class="var-name">stop_command</span></td>
+                        <td>INPUT</td>
+                        <td>Normal stop</td>
                     </tr>
                     <tr>
-                        <td class="coil-address">20</td>
-                        <td><span class="coil-name">event_4_active</span></td>
-                        <td>OUTPUT</td>
-                        <td>TRUE when Photo Flash event is currently active</td>
+                        <td class="address">3</td>
+                        <td><span class="var-name">emergency_stop</span></td>
+                        <td>INPUT</td>
+                        <td>Emergency stop</td>
                     </tr>
                     <tr>
-                        <td class="coil-address">21</td>
-                        <td><span class="coil-name">event_5_active</span></td>
-                        <td>OUTPUT</td>
-                        <td>TRUE when Mid-Course Brake event is currently active</td>
+                        <td class="address">4</td>
+                        <td><span class="var-name">safety_gate_closed</span></td>
+                        <td>INPUT</td>
+                        <td>Loading gate interlock</td>
                     </tr>
                     <tr>
-                        <td class="coil-address">22</td>
-                        <td><span class="coil-name">event_6_active</span></td>
-                        <td>OUTPUT</td>
-                        <td>TRUE when Track Switch event is currently active</td>
+                        <td class="address">5-7</td>
+                        <td><span class="var-name">zone_X_enable</span></td>
+                        <td>INPUT</td>
+                        <td>Zone enables (1-3)</td>
                     </tr>
                     <tr>
-                        <td class="coil-address">23</td>
-                        <td><span class="coil-name">event_7_active</span></td>
-                        <td>OUTPUT</td>
-                    <td>TRUE when Final Brake event is currently active</td>
+                        <td class="address">8-16</td>
+                        <td><span class="var-name">event_X_enable</span></td>
+                        <td>INPUT</td>
+                        <td>Event enables (1-9)</td>
                     </tr>
                     <tr>
-                        <td class="coil-address">24</td>
-                        <td><span class="coil-name">event_8_active</span></td>
+                        <td class="address">17-25</td>
+                        <td><span class="var-name">event_X_active</span></td>
                         <td>OUTPUT</td>
-                        <td>TRUE when Station Approach event is currently active</td>
+                        <td>Event status (1-9)</td>
                     </tr>
                     <tr>
-                        <td class="coil-address">25</td>
-                        <td><span class="coil-name">event_9_active</span></td>
+                        <td class="address">26</td>
+                        <td><span class="var-name">motor_running</span></td>
                         <td>OUTPUT</td>
-                        <td>TRUE when Unload Platform event is currently active</td>
+                        <td>Vehicle in motion</td>
+                    </tr>
+                    <tr>
+                        <td class="address">27</td>
+                        <td><span class="var-name">brake_engaged</span></td>
+                        <td>OUTPUT</td>
+                        <td>Parking brake status</td>
+                    </tr>
+                    <tr>
+                        <td class="address">30</td>
+                        <td><span class="var-name">safety_ok</span></td>
+                        <td>OUTPUT</td>
+                        <td>All interlocks satisfied</td>
+                    </tr>
+                    <tr>
+                        <td class="address">31</td>
+                        <td><span class="var-name">safety_plc_ready</span></td>
+                        <td>OUTPUT</td>
+                        <td>Safety PLC heartbeat</td>
+                    </tr>
+                    <tr>
+                        <td class="address">32</td>
+                        <td><span class="var-name">effects_plc_ready</span></td>
+                        <td>OUTPUT</td>
+                        <td>Effects PLC heartbeat</td>
                     </tr>
                 </tbody>
             </table>
 
-            <h3>⚙️ System Status Coils (26-30) - READ ONLY</h3>
-            <p>These critical status coils tell you what the PLC is doing right now:</p>
+            <h2>📊 5. Register Map</h2>
             <table>
                 <thead>
                     <tr>
                         <th>Address</th>
-                        <th>Variable Name</th>
-                        <th>Direction</th>
-                        <th>Description & Behavior</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td class="coil-address">26</td>
-                        <td><span class="coil-name">motor_running</span></td>
-                        <td>OUTPUT</td>
-                        <td><strong>Motor Drive Active</strong> - TRUE when vehicle is in motion (States 1, 2). FALSE when stopped (States 0, 3, 4). Your primary indicator of "is the ride moving?"</td>
-                    </tr>
-                    <tr>
-                        <td class="coil-address">27</td>
-                        <td><span class="coil-name">brake_engaged</span></td>
-                        <td>OUTPUT</td>
-                        <td><strong>Parking Brake Status</strong> - TRUE when brake is engaged (safe/stopped state). FALSE when brake released (ride can move). Should be inverse of motor_running in most states.</td>
-                    </tr>
-                    <tr>
-                        <td class="coil-address">28</td>
-                        <td><span class="coil-name">flash_light</span></td>
-                        <td>OUTPUT</td>
-                        <td><strong>Warning Strobe</strong> - Flashes during state transitions (STARTING/EMERGENCY). Used for visual alerts to operators and guests.</td>
-                    </tr>
-                    <tr>
-                        <td class="coil-address">29</td>
-                        <td><span class="coil-name">alert_active</span></td>
-                        <td>OUTPUT</td>
-                        <td><strong>Fault/Alert Indicator</strong> - TRUE when an error condition exists. Check <code>last_error_code</code> register (address 1029) for details. Typically accompanied by ride stopping.</td>
-                    </tr>
-                    <tr>
-                        <td class="coil-address">30</td>
-                        <td><span class="coil-name">safety_ok</span></td>
-                        <td>OUTPUT</td>
-                        <td><strong>Safety System Status</strong> - TRUE when all safety interlocks satisfied. FALSE indicates safety fault (check gates, e-stop, master enable, etc). Must be TRUE to start ride.</td>
-                    </tr>
-                </tbody>
-            </table>
-
-            <h2>📊 4. Holding Register Map (Modbus Function Codes 03 & 06)</h2>
-            <p>Registers store numeric values. These are 16-bit signed integers (-32768 to +32767), though most values are 0-100 for percentages or 0-26 for positions.</p>
-
-            <h3>Core System Registers</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Address</th>
-                        <th>Variable Name</th>
-                        <th>Type</th>
+                        <th>Name</th>
                         <th>Range</th>
                         <th>Description</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
-                        <td class="coil-address">0</td>
-                        <td><span class="coil-name">speed_setpoint</span></td>
-                        <td>INPUT</td>
+                        <td class="address">0</td>
+                        <td><span class="var-name">speed_setpoint</span></td>
                         <td>0-100</td>
-                        <td><strong>Target Speed</strong> - Desired speed percentage. PLC will ramp actual speed toward this value. Default: 50%. Note: Speed ramping prevents sudden changes (max 2% per scan). Writing extreme values won't bypass ramping.</td>
+                        <td>Target speed %</td>
                     </tr>
                     <tr>
-                        <td class="coil-address">1</td>
-                        <td><span class="coil-name">current_position</span></td>
-                        <td>OUTPUT</td>
+                        <td class="address">1</td>
+                        <td><span class="var-name">current_position</span></td>
                         <td>0-26</td>
-                        <td><strong>Vehicle Position</strong> - Current position on track (27 positions total). Updates in real-time as vehicle moves. Position 0 = Station/Start. Wraps around after position 26 back to 0.</td>
+                        <td>Vehicle position</td>
                     </tr>
                     <tr>
-                        <td class="coil-address">2</td>
-                        <td><span class="coil-name">current_speed</span></td>
-                        <td>OUTPUT</td>
+                        <td class="address">2</td>
+                        <td><span class="var-name">current_speed</span></td>
                         <td>0-100</td>
-                        <td><strong>Actual Speed</strong> - Real-time speed after ramping. May differ from speed_setpoint while ramping up/down. This is the speed the vehicle is ACTUALLY traveling at.</td>
+                        <td>Actual speed %</td>
                     </tr>
                     <tr>
-                        <td class="coil-address">10</td>
-                        <td><span class="coil-name">zone_1_position</span></td>
-                        <td>OUTPUT</td>
-                        <td>0 or 1</td>
-                        <td><strong>Zone 1 Indicator</strong> - 1 if vehicle in Zone 1 (positions 0-8), else 0</td>
+                        <td class="address">1029</td>
+                        <td><span class="var-name">last_error_code</span></td>
+                        <td>0-999</td>
+                        <td>Last fault code</td>
                     </tr>
                     <tr>
-                        <td class="coil-address">11</td>
-                        <td><span class="coil-name">zone_2_position</span></td>
-                        <td>OUTPUT</td>
-                        <td>0 or 1</td>
-                        <td><strong>Zone 2 Indicator</strong> - 1 if vehicle in Zone 2 (positions 9-17), else 0</td>
-                    </tr>
-                    <tr>
-                        <td class="coil-address">12</td>
-                        <td><span class="coil-name">zone_3_position</span></td>
-                        <td>OUTPUT</td>
-                        <td>0 or 1</td>
-                        <td><strong>Zone 3 Indicator</strong> - 1 if vehicle in Zone 3 (positions 18-26), else 0</td>
+                        <td class="address">1039</td>
+                        <td><span class="var-name">state</span></td>
+                        <td>0-5</td>
+                        <td>State machine (IDLE/RUNNING/etc)</td>
                     </tr>
                 </tbody>
             </table>
 
-            <h3>Event Counters (Addresses 1044-1052)</h3>
-            <p>The PLC tracks how many times each event has been triggered during operation. Useful for diagnostics and show performance tracking.</p>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Address</th>
-                        <th>Variable Name</th>
-                        <th>Description</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr><td class="coil-address">1044</td><td><span class="coil-name">event_1_counter</span></td><td>Loading Gate activation count</td></tr>
-                    <tr><td class="coil-address">1045</td><td><span class="coil-name">event_2_counter</span></td><td>Safety Interlock activation count</td></tr>
-                    <tr><td class="coil-address">1046</td><td><span class="coil-name">event_3_counter</span></td><td>Launch Accelerator activation count</td></tr>
-                    <tr><td class="coil-address">1047</td><td><span class="coil-name">event_4_counter</span></td><td>Photo Flash activation count</td></tr>
-                    <tr><td class="coil-address">1048</td><td><span class="coil-name">event_5_counter</span></td><td>Mid-Course Brake activation count</td></tr>
-                    <tr><td class="coil-address">1049</td><td><span class="coil-name">event_6_counter</span></td><td>Track Switch activation count</td></tr>
-                    <tr><td class="coil-address">1050</td><td><span class="coil-name">event_7_counter</span></td><td>Final Brake activation count</td></tr>
-                    <tr><td class="coil-address">1051</td><td><span class="coil-name">event_8_counter</span></td><td>Station Approach activation count</td></tr>
-                    <tr><td class="coil-address">1052</td><td><span class="coil-name">event_9_counter</span></td><td>Unload Platform activation count</td></tr>
-                </tbody>
-            </table>
+            <h2>🔒 6. Safety Systems</h2>
+            <ul>
+                <li><strong>Layer 1:</strong> Physical E-stop buttons (6 stations)</li>
+                <li><strong>Layer 2:</strong> Safety PLC interlocks</li>
+                <li><strong>Layer 3:</strong> Main PLC operational safety</li>
+                <li><strong>Layer 4:</strong> Watchdog monitoring</li>
+                <li><strong>Layer 5:</strong> Fail-safe design</li>
+            </ul>
 
-            <h3>Diagnostic & System Registers</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Address</th>
-                        <th>Variable Name</th>
-                        <th>Type</th>
-                        <th>Description</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td class="coil-address">1029</td>
-                        <td><span class="coil-name">last_error_code</span></td>
-                        <td>OUTPUT</td>
-                        <td><strong>Error Code</strong> - Most recent fault code. 0 = no error. See Error Code Reference section for details.</td>
-                    </tr>
-                    <tr>
-                        <td class="coil-address">1039</td>
-                        <td><span class="coil-name">state</span></td>
-                        <td>OUTPUT</td>
-                        <td><strong>State Machine</strong> - Current PLC state (0=IDLE, 1=STARTING, 2=RUNNING, 3=STOPPING, 4=EMERGENCY). Critical for understanding system status.</td>
-                    </tr>
-                    <tr>
-                        <td class="coil-address">1054</td>
-                        <td><span class="coil-name">alarm_register</span></td>
-                        <td>OUTPUT</td>
-                        <td><strong>Alarm Bitfield</strong> - Binary flags for active alarms (advanced diagnostics)</td>
-                    </tr>
-                    <tr>
-                        <td class="coil-address">1055</td>
-                        <td><span class="coil-name">stealth_counter</span></td>
-                        <td>OUTPUT</td>
-                        <td><strong>Anomaly Counter</strong> - Tracks unusual operations (for cybersecurity monitoring)</td>
-                    </tr>
-                    <tr>
-                        <td class="coil-address">2050</td>
-                        <td><span class="coil-name">runtime_hours</span></td>
-                        <td>OUTPUT</td>
-                        <td><strong>Total Runtime</strong> - Hours of operation (32-bit DINT value)</td>
-                    </tr>
-                    <tr>
-                        <td class="coil-address">2051</td>
-                        <td><span class="coil-name">cycle_counter</span></td>
-                        <td>OUTPUT</td>
-                        <td><strong>Lap Counter</strong> - Total completed laps since PLC startup (32-bit DINT)</td>
-                    </tr>
-                </tbody>
-            </table>
-
-            <h2>🔄 5. PLC State Machine Deep Dive</h2>
-            <p>The heart of Thunder Rapids is its state machine. Think of it as a flowchart that controls what the ride is doing at any moment. The PLC can be in one of 5 states:</p>
-
-            <table>
-                <thead>
-                    <tr>
-                        <th>State #</th>
-                        <th>State Name</th>
-                        <th>Motor</th>
-                        <th>Brake</th>
-                        <th>Flash</th>
-                        <th>Description & Behavior</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td class="coil-address">0</td>
-                        <td><span class="coil-name">IDLE</span></td>
-                        <td>OFF</td>
-                        <td>ON</td>
-                        <td>OFF</td>
-                        <td><strong>Ready State</strong> - System at rest, awaiting start command. All safety interlocks must be satisfied. Brake engaged for safety. This is the "default" safe state.</td>
-                    </tr>
-                    <tr>
-                        <td class="coil-address">1</td>
-                        <td><span class="coil-name">STARTING</span></td>
-                        <td>ON</td>
-                        <td>OFF</td>
-                        <td>FLASH</td>
-                        <td><strong>Warmup Phase</strong> - Brake releases, motor starts at 20% speed for ~2 seconds (warmup), light flashes to warn operators. After warmup timer completes, speed ramps up to setpoint and transitions to State 2.</td>
-                    </tr>
-                    <tr>
-                        <td class="coil-address">2</td>
-                        <td><span class="coil-name">RUNNING</span></td>
-                        <td>ON</td>
-                        <td>OFF</td>
-                        <td>OFF</td>
-                        <td><strong>Normal Operation</strong> - Vehicle in motion, position tracking active, events triggering, speed ramping active. Monitors zones and safety interlocks continuously. This is where the magic happens!</td>
-                    </tr>
-                    <tr>
-                        <td class="coil-address">3</td>
-                        <td><span class="coil-name">STOPPING</span></td>
-                        <td>OFF</td>
-                        <td>ON</td>
-                        <td>OFF</td>
-                        <td><strong>Normal Shutdown</strong> - Motor stops, brake engages, immediately transitions back to State 0 (IDLE). Quick and clean shutdown.</td>
-                    </tr>
-                    <tr>
-                        <td class="coil-address">4</td>
-                        <td><span class="coil-name">EMERGENCY</span></td>
-                        <td>OFF</td>
-                        <td>ON</td>
-                        <td>FLASH</td>
-                        <td><strong>Emergency Stop</strong> - All motion halted immediately, brake engaged, alert active, light flashing. Requires <code>emergency_stop_button</code> to be cleared (FALSE) before system can return to State 0.</td>
-                    </tr>
-                </tbody>
-            </table>
-
-            <div class="info-box">
-                <strong>🎯 Pro Tip:</strong> You can monitor <code>state</code> register (address 1039) to see exactly what the PLC is doing. Combined with <code>motor_running</code>, <code>brake_engaged</code>, and <code>current_position</code>, you have complete visibility into ride status!
-            </div>
-
-            <h3>State Transition Logic</h3>
-            <div class="code-block">State 0 (IDLE) → State 1 (STARTING)
-  Trigger: start_command = TRUE
-  Requirements:
-    - master_enable = TRUE
-    - emergency_stop_button = FALSE
-    - safety_gate_closed = TRUE
-    - safety_ok = TRUE
-
-State 1 (STARTING) → State 2 (RUNNING)
-  Trigger: warmup_timer > 100 scans (~2 seconds)
-  Automatic transition after warmup completes
-
-State 2 (RUNNING) → State 3 (STOPPING)
-  Trigger: stop_command = TRUE
-
-State 3 (STOPPING) → State 0 (IDLE)
-  Automatic immediate transition (single scan cycle)
-
-Any State → State 4 (EMERGENCY)
-  Trigger: emergency_stop_button = TRUE OR safety fault
-
-State 4 (EMERGENCY) → State 0 (IDLE)
-  Trigger: emergency_stop_button = FALSE (manual reset)</div>
-
-            <h2>🚀 6. Standard Operating Procedures</h2>
-
-            <h3>6.1 Pre-Operational Checklist</h3>
-            <div class="checklist">
-                <p><strong>Before powering on Thunder Rapids, verify:</strong></p>
-                <ul>
-                    <li>PLC is powered and connected (Modbus TCP responding on port 502)</li>
-                    <li>Vehicle is at or near position 0 (station)</li>
-                    <li>All emergency stops are reset (buttons released)</li>
-                    <li>Safety gates are closed and latched</li>
-                    <li>No maintenance personnel in ride envelope</li>
-                    <li>Show effect systems powered and ready</li>
-                    <li>Network connection stable (< 100ms ping to PLC)</li>
-                </ul>
-            </div>
-
-            <h3>6.2 Starting the Ride (Correct Sequence)</h3>
-            <ol>
-                <li><strong>Set Master Enable:</strong> Write TRUE to coil 0 (<code>master_enable</code>)</li>
-                <li><strong>Verify Safety:</strong> Confirm <code>safety_ok</code> (coil 30) reads TRUE</li>
-                <li><strong>Close Gate:</strong> Ensure <code>safety_gate_closed</code> (coil 4) = TRUE</li>
-                <li><strong>Enable All Zones:</strong> Set coils 5, 6, 7 to TRUE</li>
-                <li><strong>Enable Events:</strong> Set coils 8-16 to TRUE (or select which events you want)</li>
-                <li><strong>Set Speed:</strong> Write desired speed to register 0 (<code>speed_setpoint</code>), typically 50</li>
-                <li><strong>Issue Start Command:</strong> Write TRUE to coil 1 (<code>start_command</code>), wait 200ms, write FALSE</li>
-                <li><strong>Observe Startup:</strong> PLC enters State 1 (STARTING), light flashes, warmup begins</li>
-                <li><strong>Monitor Operation:</strong> After ~2 seconds, transitions to State 2 (RUNNING), vehicle begins moving</li>
-                <li><strong>Track Progress:</strong> Monitor <code>current_position</code> and event activations</li>
-            </ol>
-
-            <div class="info-box">
-                <strong>⏱️ Timing Note:</strong> The start command should be a "pulse" - TRUE for ~100-200ms, then FALSE. Holding it TRUE continuously may cause unexpected behavior. The PLC only needs to "see" the rising edge to trigger the start sequence.
-            </div>
-
-            <h3>6.3 Normal Shutdown</h3>
-            <ol>
-                <li><strong>Wait for Appropriate Position:</strong> Ideally, allow vehicle to return to station area (positions 0-2)</li>
-                <li><strong>Issue Stop Command:</strong> Write TRUE to coil 2 (<code>stop_command</code>), wait 200ms, write FALSE</li>
-                <li><strong>Verify Stop:</strong> PLC enters State 3 (STOPPING), then immediately State 0 (IDLE)</li>
-                <li><strong>Confirm Brake:</strong> Verify <code>brake_engaged</code> (coil 27) = TRUE</li>
-                <li><strong>Check Motor:</strong> Verify <code>motor_running</code> (coil 26) = FALSE</li>
-            </ol>
-
-            <h3>6.4 Emergency Stop Procedure</h3>
             <div class="warning-box">
-                <h2>🚨 EMERGENCY STOP PROTOCOL 🚨</h2>
+                <h2>🚨 Emergency Procedure</h2>
                 <ol>
-                    <li><strong>Activate E-Stop:</strong> Press physical E-stop button OR write TRUE to coil 3 (<code>emergency_stop_button</code>)</li>
-                    <li><strong>Immediate Response:</strong> PLC enters State 4 (EMERGENCY) - motor stops, brake engages, alerts activate</li>
-                    <li><strong>Verify Stop:</strong> Check <code>alert_active</code> (coil 29) = TRUE, <code>motor_running</code> = FALSE</li>
-                    <li><strong>Assess Situation:</strong> Determine cause of emergency, inspect ride system</li>
-                    <li><strong>Clear E-Stop:</strong> Once safe, write FALSE to coil 3 (<code>emergency_stop_button</code>)</li>
-                    <li><strong>Reset System:</strong> PLC returns to State 0 (IDLE), ready for restart</li>
-                    <li><strong>Log Incident:</strong> Document emergency stop event and resolution</li>
+                    <li>Press E-stop OR write TRUE to coil 3</li>
+                    <li>Verify motion stopped, brakes engaged</li>
+                    <li>Assess situation</li>
+                    <li>Clear E-stop (FALSE to coil 3)</li>
+                    <li>System returns to IDLE</li>
+                    <li>Document incident</li>
                 </ol>
             </div>
 
-            <h3>6.5 Reset to Zero (Start of Day Baseline)</h3>
-            <p>The HMI includes a "Reset to Zero" function that establishes baseline conditions:</p>
-            <ol>
-                <li>Triggers emergency stop to halt any motion</li>
-                <li>Releases emergency stop after 300ms</li>
-                <li>Sets all control coils to safe baseline (master enable TRUE, commands FALSE, gates closed, all zones/events enabled)</li>
-                <li>Resets vehicle position to 0</li>
-                <li>Clears local HMI state</li>
-            </ol>
-            <div class="info-box">
-                <strong>💡 When to Use:</strong> Use "Reset to Zero" when reconnecting to an already-running PLC, after a crash, or at start of day to establish known-good baseline conditions. This ensures the ride starts from a predictable state.
-            </div>
-
-            <h2>📍 7. Position & Zone Tracking</h2>
-
-            <h3>Track Layout Visualization</h3>
-            <div class="code-block">Position Map (27 positions, 0-26):
-
-         Zone 1 (0-8)          Zone 2 (9-17)         Zone 3 (18-26)
-    ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐
-    │ 0: Station      │  │ 9: Photo Flash  │  │ 18: Final Brake │
-    │ 1:              │  │ 10:             │  │ 19:             │
-    │ 2:              │  │ 11:             │  │ 20:             │
-    │ 3: Safety Check │  │ 12: Mid Brake   │  │ 21: Stn Approach│
-    │ 4:              │  │ 13:             │  │ 22:             │
-    │ 5:              │  │ 14:             │  │ 23:             │
-    │ 6: Launch       │  │ 15: Track Switch│  │ 24: Unload      │
-    │ 7:              │  │ 16:             │  │ 25:             │
-    │ 8:              │  │ 17:             │  │ 26:             │
-    └─────────────────┘  └─────────────────┘  └─────────────────┘
-            ↓                    ↓                     ↓
-      Event 1: 0           Event 4: 9            Event 7: 18
-      Event 2: 3           Event 5: 12           Event 8: 21
-      Event 3: 6           Event 6: 15           Event 9: 24</div>
-
-            <h3>Position Update Mechanics</h3>
-            <p>The PLC increments <code>current_position</code> based on vehicle speed. The position_accumulator tracks fractional progress:</p>
-            <ul>
-                <li><strong>Accumulation Rate:</strong> position_accumulator += actual_speed (each scan cycle)</li>
-                <li><strong>Position Increment:</strong> When accumulator >= 2500, position increments by 1</li>
-                <li><strong>At 50% Speed:</strong> ~500ms per position (about 1 position every 10 scans)</li>
-                <li><strong>Full Lap:</strong> 27 positions × ~500ms = ~13.5 seconds at 50% speed</li>
-                <li><strong>Wraparound:</strong> Position 26 → Position 0, cycle_counter increments</li>
-            </ul>
-
-            <h2>🎭 8. Event System Details</h2>
-
-            <h3>How Events Trigger</h3>
-            <p>Every scan cycle (50ms), the PLC checks:</p>
-            <div class="code-block">IF state = 2 (RUNNING) THEN
-    FOR each event 1-9:
-        IF current_position = event_trigger_position THEN
-            IF event_X_enable = TRUE THEN
-                event_X_active := TRUE
-                event_X_counter := event_X_counter + 1
-            END_IF
-        ELSE
-            event_X_active := FALSE
-        END_IF
-    END_FOR
-END_IF</div>
-
-            <h3>Event Timing & Duration</h3>
-            <ul>
-                <li>Events activate when position exactly matches trigger position</li>
-                <li>Events stay active for ONE position (until vehicle moves to next position)</li>
-                <li>At 50% speed, each event lasts ~500ms</li>
-                <li>At 100% speed, events are very brief (~250ms)</li>
-                <li>Counters increment once per activation (not continuously)</li>
-            </ul>
-
-            <h3>Disabling Events</h3>
-            <p>You can selectively disable events by writing FALSE to their enable coils:</p>
-            <ul>
-                <li>Disabled events won't trigger even when vehicle reaches their position</li>
-                <li>Use this for testing, maintenance, or show variations</li>
-                <li>Event counters won't increment for disabled events</li>
-                <li>No safety impact - events are theatrical, not safety-critical</li>
-            </ul>
-
-            <h2>🐛 9. Error Codes & Troubleshooting</h2>
-
-            <h3>Error Code Reference</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Code</th>
-                        <th>Name</th>
-                        <th>Trigger Condition</th>
-                        <th>Resolution</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td class="coil-address">0</td>
-                        <td>No Error</td>
-                        <td>Normal operation</td>
-                        <td>N/A - System healthy</td>
-                    </tr>
-                    <tr>
-                        <td class="coil-address">100</td>
-                        <td>E-Stop Activated</td>
-                        <td>emergency_stop_button = TRUE</td>
-                        <td>Clear emergency condition, reset E-stop (write FALSE to coil 3)</td>
-                    </tr>
-                    <tr>
-                        <td class="coil-address">201</td>
-                        <td>Master Not Enabled</td>
-                        <td>Start attempted without master_enable</td>
-                        <td>Set master_enable (coil 0) to TRUE</td>
-                    </tr>
-                    <tr>
-                        <td class="coil-address">202</td>
-                        <td>Safety Gate Open</td>
-                        <td>Start attempted with gate open</td>
-                        <td>Close safety gate (set coil 4 to TRUE)</td>
-                    </tr>
-                    <tr>
-                        <td class="coil-address">230</td>
-                        <td>Zone 1 Disabled</td>
-                        <td>Vehicle in Zone 1 while zone_1_enable = FALSE</td>
-                        <td>Re-enable Zone 1 (coil 5 = TRUE) or stop ride</td>
-                    </tr>
-                    <tr>
-                        <td class="coil-address">231</td>
-                        <td>Zone 2 Disabled</td>
-                        <td>Vehicle in Zone 2 while zone_2_enable = FALSE</td>
-                        <td>Re-enable Zone 2 (coil 6 = TRUE) or stop ride</td>
-                    </tr>
-                    <tr>
-                        <td class="coil-address">232</td>
-                        <td>Zone 3 Disabled</td>
-                        <td>Vehicle in Zone 3 while zone_3_enable = FALSE</td>
-                        <td>Re-enable Zone 3 (coil 7 = TRUE) or stop ride</td>
-                    </tr>
-                </tbody>
-            </table>
-
-            <h3>Common Troubleshooting Scenarios</h3>
-
-            <h4>❌ Problem: Ride Won't Start (Stuck in State 0)</h4>
-            <p><strong>Diagnosis Steps:</strong></p>
-            <ol>
-                <li>Read <code>last_error_code</code> (register 1029) for specific cause</li>
-                <li>Check <code>safety_ok</code> (coil 30) - should be TRUE</li>
-                <li>Verify <code>master_enable</code> (coil 0) = TRUE</li>
-                <li>Verify <code>emergency_stop_button</code> (coil 3) = FALSE</li>
-                <li>Verify <code>safety_gate_closed</code> (coil 4) = TRUE</li>
-                <li>Check all zone enables (coils 5-7) = TRUE</li>
-                <li>Ensure start command was pulsed correctly (momentary TRUE, then FALSE)</li>
-            </ol>
-
-            <h4>❌ Problem: Ride Stops Unexpectedly During Operation</h4>
-            <p><strong>Diagnosis Steps:</strong></p>
-            <ol>
-                <li>Check if <code>alert_active</code> (coil 29) = TRUE</li>
-                <li>Read <code>last_error_code</code> (register 1029)</li>
-                <li>Verify no zone disables occurred (coils 5-7 still TRUE)</li>
-                <li>Check if emergency stop was accidentally triggered</li>
-                <li>Review <code>stealth_counter</code> (register 1055) for anomalies</li>
-            </ol>
-
-            <h4>❌ Problem: Events Not Triggering</h4>
-            <p><strong>Diagnosis Steps:</strong></p>
-            <ol>
-                <li>Verify ride is in State 2 (RUNNING) - check <code>state</code> register (1039)</li>
-                <li>Confirm event enable coils (8-16) are TRUE for desired events</li>
-                <li>Watch <code>current_position</code> (register 1) to see if it matches event trigger positions</li>
-                <li>Monitor corresponding <code>event_X_active</code> coils (17-25) for activation</li>
-                <li>Check <code>event_X_counter</code> registers (1044-1052) to see if they increment</li>
-            </ol>
-
-            <h4>❌ Problem: Speed Won't Change</h4>
-            <p><strong>Diagnosis Steps:</strong></p>
-            <ol>
-                <li>Verify you're writing to correct register (register 0 = <code>speed_setpoint</code>)</li>
-                <li>Remember: Speed ramping is AUTOMATIC - changes are gradual (max 2% per scan)</li>
-                <li>Monitor <code>current_speed</code> (register 2) to see actual speed value</li>
-                <li>Large speed jumps take time: 20% to 80% = ~30 scans = ~1.5 seconds</li>
-                <li>During State 1 (STARTING), speed is locked to 20% for warmup</li>
-            </ol>
-
-            <h4>❌ Problem: Position Seems Wrong or Stuck</h4>
-            <p><strong>Diagnosis Steps:</strong></p>
-            <ol>
-                <li>Check if ride is actually running (<code>motor_running</code> coil 26 = TRUE)</li>
-                <li>Verify <code>current_speed</code> (register 2) is not 0</li>
-                <li>Position only updates during State 2 (RUNNING)</li>
-                <li>At very low speeds, position updates slowly (intentional)</li>
-                <li>Try using "Reset to Zero" to manually reset position</li>
-            </ol>
-
-            <h2>🔒 10. Security & Safety Considerations</h2>
-
+            <h2>🔐 7. Security</h2>
             <div class="security-advisory">
-                <h3>⚠️ CRITICAL SECURITY ADVISORY SA-2024-045</h3>
-                <p><strong>Unauthenticated Modbus Access:</strong> The VectorDyne VD-M500 PLC does NOT implement authentication on Modbus TCP connections. This is a <span class="highlight">known design limitation</span> in legacy industrial control systems. Any device with network access can read/write all coils and registers.</p>
-
-                <p><strong>Known Attack Vectors:</strong></p>
-                <ul style="margin-left: 20px;">
-                    <li><strong>Direct State Manipulation:</strong> Writing to state register (1039) to force state transitions</li>
-                    <li><strong>Speed Ramping Bypass:</strong> Rapid repeated writes to speed_setpoint to exploit ramping logic</li>
-                    <li><strong>Position Teleportation:</strong> Writing to current_position (register 1) to fake vehicle location</li>
-                    <li><strong>Zone Lockout:</strong> Disabling zones while vehicle is moving to trigger false alerts</li>
-                    <li><strong>Event Manipulation:</strong> Disabling/enabling events to disrupt show sequence</li>
-                    <li><strong>Safety Bypass:</strong> Manipulating safety_ok or safety interlock coils</li>
-                    <li><strong>Emergency Stop Abuse:</strong> Remotely triggering e-stop to cause service disruptions</li>
+                <h3>⚠️ SECURITY ADVISORY SA-2025-003</h3>
+                <p><strong>Unauthenticated Access:</strong> Modbus TCP has NO authentication. Network isolation is MANDATORY.</p>
+                <p><strong>Required Controls:</strong></p>
+                <ul>
+                    <li>Dedicated control VLAN</li>
+                    <li>Firewall rules (ports 502-504 restricted)</li>
+                    <li>Industrial IDS monitoring</li>
+                    <li>Physical network security</li>
+                    <li>HMI authentication</li>
+                    <li>Audit logging</li>
                 </ul>
-
-                <p><strong>Defense Strategy:</strong></p>
-                <ul style="margin-left: 20px;">
-                    <li>✅ Network Segmentation: Isolate PLC on dedicated VLAN</li>
-                    <li>✅ Firewall Rules: Restrict Modbus port 502 to authorized HMI only</li>
-                    <li>✅ IDS/IPS: Deploy industrial protocol monitoring (Modbus traffic analysis)</li>
-                    <li>✅ Audit Logging: Log all Modbus write operations with timestamps</li>
-                    <li>✅ Physical Security: Secure network equipment in locked rooms</li>
-                    <li>✅ HMI Authentication: Implement strong auth on HMI access</li>
-                    <li>✅ Anomaly Detection: Monitor stealth_counter for unusual patterns</li>
-                </ul>
-
-                <p><strong>Incident Response:</strong> If unauthorized access suspected, immediately trigger e-stop, isolate network, preserve logs, and contact VectorDyne Security Response Team at security@vectordyne-attractions.com</p>
             </div>
 
-            <h3>Safety System Architecture</h3>
-            <p>Thunder Rapids implements defense-in-depth safety:</p>
-            <ul>
-                <li><strong>Layer 1:</strong> Physical E-stop buttons (hardwired, independent of PLC)</li>
-                <li><strong>Layer 2:</strong> PLC safety interlocks (master enable, gate sensors)</li>
-                <li><strong>Layer 3:</strong> Zone-based lockouts (prevent operation in disabled zones)</li>
-                <li><strong>Layer 4:</strong> HMI monitoring and alerts</li>
-                <li><strong>Layer 5:</strong> Network security controls</li>
-            </ul>
-
-            <h2>📞 11. Technical Support & Resources</h2>
-
+            <h2>📞 8. Contacts</h2>
             <div class="info-box">
-                <p><strong>VectorDyne Technical Support</strong><br>
-                Phone: 1-800-VECTOR-9 (1-800-832-8679)<br>
-                Email: support@vectordyne-attractions.com<br>
-                Emergency Hotline: 1-800-VD-EMERGENCY<br>
-                Web: https://support.vectordyne-attractions.com</p>
-
-                <p style="margin-top: 15px;"><strong>Security Incidents:</strong><br>
-                Email: security@vectordyne-attractions.com<br>
-                Phone: 1-800-VD-SECURITY (24/7)</p>
-
-                <p style="margin-top: 15px;"><strong>Authorized Service Partners:</strong></p>
-                <ul style="margin-left: 20px;">
-                    <li>AttractionTech Solutions - (555) 0100</li>
-                    <li>RideWorks Engineering - (555) 0200</li>
-                    <li>Industrial Automation Services - (555) 0300</li>
-                    <li>Cyber-Physical Security Consultants - (555) 0400</li>
-                </ul>
+                <p><strong>Sarah Chen</strong> - Lead Engineer - ext. 4521<br>
+                <strong>Kwame Okonkwo</strong> - Safety Manager - ext. 4530<br>
+                <strong>Alex Rodriguez</strong> - Operations - ext. 4540<br>
+                <strong>Lily Zhang</strong> - Show Effects - ext. 4550</p>
             </div>
 
-            <h2>📖 12. Quick Reference Card</h2>
+            <h2>📖 9. Quick Reference</h2>
+            <div class="code-block">START:
+  1. master_enable (0) = TRUE
+  2. safety_gate_closed (4) = TRUE
+  3. All zones (5-7) = TRUE
+  4. All events (8-16) = TRUE
+  5. speed_setpoint (reg 0) = 50
+  6. start_command (1) = pulse
+  7. Check safety_plc_ready (31) = TRUE
+  8. Check effects_plc_ready (32) = TRUE
 
-            <h3>Essential Coils</h3>
-            <div class="code-block">Start Ride:    Coil 1  (start_command) = TRUE pulse
-Stop Ride:     Coil 2  (stop_command) = TRUE pulse
-E-Stop:        Coil 3  (emergency_stop_button) = TRUE
-Master Enable: Coil 0  (master_enable) = TRUE
-Safety Gate:   Coil 4  (safety_gate_closed) = TRUE
-
-Motor Status:  Coil 26 (motor_running) - READ
-Brake Status:  Coil 27 (brake_engaged) - READ
-Safety OK:     Coil 30 (safety_ok) - READ
-Alert:         Coil 29 (alert_active) - READ</div>
-
-            <h3>Essential Registers</h3>
-            <div class="code-block">Speed Control:    Reg 0    (speed_setpoint) = 0-100
-Vehicle Position: Reg 1    (current_position) - READ (0-26)
-Actual Speed:     Reg 2    (current_speed) - READ
-Error Code:       Reg 1029 (last_error_code) - READ
-State Machine:    Reg 1039 (state) - READ (0-4)</div>
-
-            <h3>State Machine Quick Ref</h3>
-            <div class="code-block">0 = IDLE       - Stopped, waiting
-1 = STARTING   - Warming up (~2 sec)
-2 = RUNNING    - In motion, events active
-3 = STOPPING   - Controlled stop
-4 = EMERGENCY  - E-stop engaged</div>
-
-            <h3>Zone & Event Quick Ref</h3>
-            <div class="code-block">Zones:        Coils 5-7 (zone_1/2/3_enable)
-  Zone 1: Positions 0-8
-  Zone 2: Positions 9-17
-  Zone 3: Positions 18-26
-
-Events:       Coils 8-16 (event_1-9_enable)
-Event Status: Coils 17-25 (event_1-9_active) - READ
-Event Counts: Regs 1044-1052 (event_1-9_counter) - READ</div>
-
+STOP: stop_command (2) = pulse
+E-STOP: emergency_stop (3) = TRUE</div>
         </div>
 
         <div class="footer">
-            <p><strong>Document Control & Revision History</strong></p>
-            <p>Version 3.0.0 | Last Updated: November 2024 | Approved By: Chief Engineer, VectorDyne Attractions</p>
-            <p>Next Review Date: May 2025 | Document ID: TR9000-OPS-MAN-v3.0</p>
-            <p style="margin-top: 10px; font-size: 0.85em;"><em>This document is proprietary and confidential. Unauthorized distribution, reproduction, or disclosure is prohibited. VectorDyne Attractions reserves the right to update specifications without notice.</em></p>
-            <p style="margin-top: 10px; font-size: 0.9em; color: #3b82f6;">🎢 Stay safe, operate smart, and keep the magic running! 🎢</p>
+            <p><strong>Document Control</strong></p>
+            <p>Version 4.0.0 | November 2025 | Dr. James Patterson, Chief Engineer</p>
+            <p>Document ID: NEXUS-OPS-MAN-v4.0</p>
+            <p style="margin-top: 10px; color: #2684ff;">🎢 Creating the future of themed entertainment! 🎢</p>
         </div>
     </div>
 </body>
