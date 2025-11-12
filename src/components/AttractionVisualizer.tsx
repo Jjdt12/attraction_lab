@@ -276,7 +276,7 @@ export default function AttractionVisualizer({
             <div className="space-y-2">
               {EFFECTS_CONFIG.filter(effect => {
                 const isActive = coilStates[effect.coil] || false;
-                const isInRange = carPosition >= effect.positions[0] && carPosition <= effect.positions[1];
+                const isInRange = isEffectInRange(effect, carPosition);
                 return isActive && isInRange;
               }).map(effect => {
                 const EffectIcon = effect.icon;
