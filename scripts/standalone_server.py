@@ -398,9 +398,6 @@ async def poll_plc_coils():
                     except Exception as e:
                         pass
 
-                # Small delay to allow Safety PLC scan cycle to complete (typically 50-100ms)
-                await asyncio.sleep(0.1)
-
                 # Bridge 1: Read safety_ok_reg from SAFETY PLC holding register, write to MAIN PLC input register
                 if 'SAFETY' in modbus_clients and plc_connected_status.get('SAFETY'):
                     try:
@@ -782,7 +779,7 @@ async def poll_plc_coils():
                     write_result = write_input_register_to_plc('EFFECTS', 10, position_value)
                     # Note: OpenPLC maps input registers to holding registers internally
 
-            await asyncio.sleep(0.5)
+            await asyncio.sleep(0.1)
         except Exception as e:
             print(f"❌ Error in polling task: {e}")
             await asyncio.sleep(1)
