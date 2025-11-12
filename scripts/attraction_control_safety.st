@@ -145,7 +145,7 @@ event_7_active := FALSE;
 event_8_active := FALSE;
 event_9_active := FALSE;
 
-IF event_1_enable AND proximity_sensor_1_from_main THEN
+IF event_1_enable AND (proximity_sensor_1_from_main <> 0) THEN
     event_1_active := TRUE;
     IF NOT last_event_1 THEN
         event_1_counter := event_1_counter + 1;
@@ -153,7 +153,7 @@ IF event_1_enable AND proximity_sensor_1_from_main THEN
 END_IF;
 last_event_1 := event_1_active;
 
-IF event_2_enable AND proximity_sensor_2_from_main THEN
+IF event_2_enable AND (proximity_sensor_2_from_main <> 0) THEN
     event_2_active := TRUE;
     IF NOT last_event_1 THEN
         event_2_counter := event_2_counter + 1;
@@ -163,14 +163,14 @@ IF event_2_enable AND proximity_sensor_2_from_main THEN
     END_IF;
 END_IF;
 
-IF event_3_enable AND proximity_sensor_3_from_main THEN
+IF event_3_enable AND (proximity_sensor_3_from_main <> 0) THEN
     event_3_active := TRUE;
     IF NOT last_event_1 THEN
         event_3_counter := event_3_counter + 1;
     END_IF;
 END_IF;
 
-IF event_4_enable AND proximity_sensor_4_from_main THEN
+IF event_4_enable AND (proximity_sensor_4_from_main <> 0) THEN
     event_4_active := TRUE;
     IF NOT last_event_4 THEN
         event_4_counter := event_4_counter + 1;
@@ -178,7 +178,7 @@ IF event_4_enable AND proximity_sensor_4_from_main THEN
 END_IF;
 last_event_4 := event_4_active;
 
-IF event_5_enable AND proximity_sensor_5_from_main THEN
+IF event_5_enable AND (proximity_sensor_5_from_main <> 0) THEN
     event_5_active := TRUE;
     IF NOT last_event_4 THEN
         event_5_counter := event_5_counter + 1;
@@ -189,14 +189,14 @@ IF event_5_enable AND proximity_sensor_5_from_main THEN
     END_IF;
 END_IF;
 
-IF event_6_enable AND proximity_sensor_6_from_main THEN
+IF event_6_enable AND (proximity_sensor_6_from_main <> 0) THEN
     event_6_active := TRUE;
     IF NOT last_event_4 THEN
         event_6_counter := event_6_counter + 1;
     END_IF;
 END_IF;
 
-IF event_7_enable AND proximity_sensor_7_from_main THEN
+IF event_7_enable AND (proximity_sensor_7_from_main <> 0) THEN
     event_7_active := TRUE;
     IF NOT last_event_4 THEN
         event_7_counter := event_7_counter + 1;
@@ -207,7 +207,7 @@ IF event_7_enable AND proximity_sensor_7_from_main THEN
     END_IF;
 END_IF;
 
-IF event_8_enable AND proximity_sensor_8_from_main THEN
+IF event_8_enable AND (proximity_sensor_8_from_main <> 0) THEN
     event_8_active := TRUE;
     IF NOT last_event_4 THEN
         event_8_counter := event_8_counter + 1;
@@ -218,7 +218,7 @@ IF event_8_enable AND proximity_sensor_8_from_main THEN
     END_IF;
 END_IF;
 
-IF event_9_enable AND proximity_sensor_9_from_main THEN
+IF event_9_enable AND (proximity_sensor_9_from_main <> 0) THEN
     event_9_active := TRUE;
     IF NOT last_event_4 THEN
         event_9_counter := event_9_counter + 1;
