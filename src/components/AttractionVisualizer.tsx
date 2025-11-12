@@ -25,7 +25,7 @@ interface EffectConfig {
 // Zone 3 (pos 18-26): Audio 1, Show Lighting
 const EFFECTS_CONFIG: EffectConfig[] = [
   { name: 'Show Lighting', icon: Lightbulb, coil: 60, color: 'yellow', positions: [0, 26] },
-  { name: 'Audio 1', icon: Volume2, coil: 61, color: 'blue', positions: [0, 26] }, // Active in Zone 1 and Zone 3
+  { name: 'Audio 1', icon: Volume2, coil: 61, color: 'blue', positions: [0, 5] }, // Zone 1 and Zone 3 (handled specially)
   { name: 'Audio 2', icon: Volume2, coil: 62, color: 'purple', positions: [6, 11] },
   { name: 'Audio 3', icon: Volume2, coil: 63, color: 'cyan', positions: [12, 17] },
   { name: 'Fog Machine', icon: Wind, coil: 64, color: 'slate', positions: [6, 17] },
@@ -116,6 +116,16 @@ export default function AttractionVisualizer({
     return iconMap[iconName] || Shield;
   };
 
+  // Special check for effects with multiple ranges (like Audio 1 in Zone 1 and Zone 3)
+  const isEffectInRange = (effect: EffectConfig, pos: number) => {
+    // Audio 1 (coil 61) is active in Zone 1 (0-5) AND Zone 3 (18-26)
+    if (effect.coil === 61) {
+      return (pos >= 0 && pos <= 5) || (pos >= 18 && pos <= 26);
+    }
+    // All other effects use their defined range
+    return pos >= effect.positions[0] && pos <= effect.positions[1];
+  };
+
   // Get active effects - only show effects where the CAR currently is
   const getActiveEffectsAtPosition = (pos: number) => {
     // Effects are only active when the car is in their position range
@@ -125,7 +135,7 @@ export default function AttractionVisualizer({
     }
 
     return EFFECTS_CONFIG.filter(effect => {
-      const isInRange = pos >= effect.positions[0] && pos <= effect.positions[1];
+      const isInRange = isEffectInRange(effect, pos);
       const isActive = coilStates[effect.coil] || false;
       return isInRange && isActive;
     });
@@ -134,7 +144,7 @@ export default function AttractionVisualizer({
   // Get potential effects at position (even if not active)
   const getPotentialEffectsAtPosition = (pos: number) => {
     return EFFECTS_CONFIG.filter(effect =>
-      pos >= effect.positions[0] && pos <= effect.positions[1]
+      isEffectInRange(effect, pos)
     );
   };
 
