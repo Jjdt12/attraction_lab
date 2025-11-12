@@ -51,7 +51,7 @@ export function useWebSocketSimulation() {
     plcHost: null,
     plcPort: null,
     attackActive: false,
-    coilStates: Array(31).fill(false),
+    coilStates: Array(70).fill(false), // Increased to accommodate EFFECTS PLC coils (up to coil 66)
     registerStates: Array(100).fill(0),
     speedSetpoint: 50,
     activeEvents: new Set<number>(),
