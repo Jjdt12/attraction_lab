@@ -93,9 +93,20 @@ END_IF;
 
 scan_counter := scan_counter + 1;
 
-(* BYPASS: Force safety and effects ready to TRUE for testing *)
-safety_plc_ready := TRUE;
-effects_plc_ready := TRUE;
+(* Read safety status from Safety PLC via SCADA bridge *)
+(* Safety PLC writes to safety_ok_reg (MW100), we read via safety_plc_ready_reg *)
+(* Effects PLC writes to effects_ok_reg (MW200), we read via effects_plc_ready_reg *)
+IF safety_plc_ready_reg = 1 THEN
+    safety_plc_ready := TRUE;
+ELSE
+    safety_plc_ready := FALSE;
+END_IF;
+
+IF effects_plc_ready_reg = 1 THEN
+    effects_plc_ready := TRUE;
+ELSE
+    effects_plc_ready := FALSE;
+END_IF;
 
 zone_1_position := 0;
 zone_2_position := 0;
