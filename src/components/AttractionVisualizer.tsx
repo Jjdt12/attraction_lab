@@ -112,8 +112,14 @@ export default function AttractionVisualizer({
     return iconMap[iconName] || Shield;
   };
 
-  // Get active effects at current position
+  // Get active effects - only show effects where the CAR currently is
   const getActiveEffectsAtPosition = (pos: number) => {
+    // Effects are only active when the car is in their position range
+    // Not when just viewing that position on the track
+    if (pos !== carPosition) {
+      return [];
+    }
+
     return EFFECTS_CONFIG.filter(effect => {
       const isInRange = pos >= effect.positions[0] && pos <= effect.positions[1];
       const isActive = coilStates[effect.coil] || false;
