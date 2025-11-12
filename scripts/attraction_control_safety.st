@@ -40,15 +40,15 @@ VAR_EXTERNAL
     current_speed_from_main : INT;
     motor_running_from_main : BOOL;
 
-    proximity_sensor_1_from_main : BOOL;
-    proximity_sensor_2_from_main : BOOL;
-    proximity_sensor_3_from_main : BOOL;
-    proximity_sensor_4_from_main : BOOL;
-    proximity_sensor_5_from_main : BOOL;
-    proximity_sensor_6_from_main : BOOL;
-    proximity_sensor_7_from_main : BOOL;
-    proximity_sensor_8_from_main : BOOL;
-    proximity_sensor_9_from_main : BOOL;
+    proximity_sensor_1_from_main : INT;
+    proximity_sensor_2_from_main : INT;
+    proximity_sensor_3_from_main : INT;
+    proximity_sensor_4_from_main : INT;
+    proximity_sensor_5_from_main : INT;
+    proximity_sensor_6_from_main : INT;
+    proximity_sensor_7_from_main : INT;
+    proximity_sensor_8_from_main : INT;
+    proximity_sensor_9_from_main : INT;
 
     safety_violation_count : INT;
     alarm_register : INT;
@@ -274,15 +274,15 @@ CONFIGURATION Config0
             current_speed_from_main AT %MW11 : INT;
             motor_running_from_main AT %MX50 : BOOL;  (* bit 50 via bridge *)
 
-            proximity_sensor_1_from_main AT %MW80 : BOOL;
-            proximity_sensor_2_from_main AT %MW81 : BOOL;
-            proximity_sensor_3_from_main AT %MW82 : BOOL;
-            proximity_sensor_4_from_main AT %MW83 : BOOL;
-            proximity_sensor_5_from_main AT %MW84 : BOOL;
-            proximity_sensor_6_from_main AT %MW85 : BOOL;
-            proximity_sensor_7_from_main AT %MW86 : BOOL;
-            proximity_sensor_8_from_main AT %MW87 : BOOL;
-            proximity_sensor_9_from_main AT %MW88 : BOOL;
+            proximity_sensor_1_from_main AT %MW80 : INT;
+            proximity_sensor_2_from_main AT %MW81 : INT;
+            proximity_sensor_3_from_main AT %MW82 : INT;
+            proximity_sensor_4_from_main AT %MW83 : INT;
+            proximity_sensor_5_from_main AT %MW84 : INT;
+            proximity_sensor_6_from_main AT %MW85 : INT;
+            proximity_sensor_7_from_main AT %MW86 : INT;
+            proximity_sensor_8_from_main AT %MW87 : INT;
+            proximity_sensor_9_from_main AT %MW88 : INT;
 
             safety_violation_count AT %MW50 : INT;
             alarm_register AT %MW30 : INT;
