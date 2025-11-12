@@ -1,13 +1,298 @@
 <!DOCTYPE html>
-<html><head><meta charset="UTF-8"><title>Change Requests</title>
-<style>*{margin:0;padding:0}body{font-family:sans-serif;background:#f4f5f7;color:#172b4d}.header{background:linear-gradient(135deg,#0052cc,#2684ff);color:white;padding:1rem 2rem}.header h1{font-size:1.5rem}.container{display:flex}.sidebar{width:280px;background:white;border-right:1px solid #dfe1e6;padding:1.5rem 1rem}.sidebar h3{font-size:.75rem;text-transform:uppercase;color:#5e6c84;margin:1.5rem 0 .75rem}.nav-item{display:block;padding:.5rem .75rem;color:#172b4d;text-decoration:none;border-radius:4px;margin-bottom:2px}.nav-item:hover{background:#f4f5f7}.nav-item.active{background:#deebff;color:#0052cc}.content{flex:1;padding:2rem 3rem;max-width:1200px}.page-title{font-size:2rem;font-weight:600;margin-bottom:.5rem}.page-meta{font-size:.85rem;color:#5e6c84;margin-bottom:2rem;padding-bottom:1rem;border-bottom:2px solid #dfe1e6}.content p{line-height:1.6;margin-bottom:1rem}.info-box{background:#deebff;border-left:4px solid #0052cc;padding:1rem;margin:1.5rem 0}</style></head><body>
-<div class="header"><h1>🎢 Project Nexus Wiki</h1></div>
-<div class="container"><div class="sidebar">
-<a href="index.html" class="nav-item">Home</a>
-<a href="change-requests.html" class="nav-item active">Change Requests</a></div>
-<div class="content">
-<h1 class="page-title">Change Requests</h1>
-<div class="page-meta">Last updated: November 2025 | Owner: Project Management</div>
-<p>System modification requests</p>
-<div class="info-box"><strong>📝 Content:</strong> This page contains system modification requests. Documentation is updated regularly as new information becomes available.</div>
-</div></div></body></html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Change Requests - Project Nexus Wiki</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f4f5f7; color: #172b4d; }
+        .header { background: linear-gradient(135deg, #0052cc 0%, #2684ff 100%); color: white; padding: 1rem 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .header h1 { font-size: 1.5rem; font-weight: 600; }
+        .header .subtitle { font-size: 0.9rem; opacity: 0.9; margin-top: 0.25rem; }
+        .container { display: flex; min-height: calc(100vh - 80px); }
+        .sidebar { width: 280px; background: white; border-right: 1px solid #dfe1e6; padding: 1.5rem 1rem; overflow-y: auto; }
+        .sidebar h3 { font-size: 0.75rem; text-transform: uppercase; color: #5e6c84; font-weight: 700; margin: 1.5rem 0 0.75rem; letter-spacing: 0.5px; }
+        .sidebar h3:first-child { margin-top: 0; }
+        .nav-item { display: block; padding: 0.5rem 0.75rem; color: #172b4d; text-decoration: none; border-radius: 4px; margin-bottom: 2px; font-size: 0.9rem; transition: background 0.2s; }
+        .nav-item:hover { background: #f4f5f7; }
+        .nav-item.active { background: #deebff; color: #0052cc; font-weight: 500; }
+        .content { flex: 1; padding: 2rem 3rem; max-width: 1200px; }
+        .breadcrumb { font-size: 0.85rem; color: #5e6c84; margin-bottom: 1rem; }
+        .breadcrumb a { color: #0052cc; text-decoration: none; }
+        .page-title { font-size: 2rem; font-weight: 600; margin-bottom: 0.5rem; color: #172b4d; }
+        .page-meta { font-size: 0.85rem; color: #5e6c84; margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 2px solid #dfe1e6; }
+        .info-box { background: #deebff; border-left: 4px solid #0052cc; padding: 1rem; margin: 1.5rem 0; border-radius: 4px; }
+        .warning-box { background: #fffae6; border-left: 4px solid #ff991f; padding: 1rem; margin: 1.5rem 0; border-radius: 4px; }
+        .content h2 { font-size: 1.5rem; margin: 2rem 0 1rem; color: #172b4d; }
+        .content h3 { font-size: 1.25rem; margin: 1.5rem 0 0.75rem; color: #172b4d; }
+        .content p { line-height: 1.6; margin-bottom: 1rem; color: #172b4d; }
+        .content ul { margin: 1rem 0 1rem 2rem; line-height: 1.8; }
+        .content table { width: 100%; border-collapse: collapse; margin: 1.5rem 0; }
+        .content table th, .content table td { padding: 0.75rem; text-align: left; border: 1px solid #dfe1e6; }
+        .content table th { background: #f4f5f7; font-weight: 600; }
+        .content table tr:hover { background: #f4f5f7; }
+        .badge { display: inline-block; padding: 0.25rem 0.5rem; font-size: 0.75rem; font-weight: 600; border-radius: 3px; margin-right: 0.5rem; }
+        .badge-blue { background: #deebff; color: #0052cc; }
+        .badge-green { background: #e3fcef; color: #006644; }
+        .badge-orange { background: #fffae6; color: #ff991f; }
+        .badge-red { background: #ffebe6; color: #de350b; }
+        .badge-purple { background: #eae6ff; color: #5243aa; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎢 Project Nexus - Internal Wiki</h1>
+        <div class="subtitle">Attraction Control System Documentation & Knowledge Base</div>
+    </div>
+
+    <div class="container">
+        <div class="sidebar">
+            <h3>📚 Overview</h3>
+            <a href="index.html" class="nav-item">Project Home</a>
+            <a href="project-overview.html" class="nav-item">Project Overview</a>
+            <a href="team-directory.html" class="nav-item">Team Directory</a>
+
+            <h3>🔧 Engineering</h3>
+            <a href="system-architecture.html" class="nav-item">System Architecture</a>
+            <a href="plc-programming.html" class="nav-item">PLC Programming</a>
+            <a href="network-topology.html" class="nav-item">Network Topology</a>
+            <a href="control-logic.html" class="nav-item">Control Logic</a>
+
+            <h3>⚙️ Operations</h3>
+            <a href="operator-manual.html" class="nav-item">Operator Manual</a>
+            <a href="startup-shutdown.html" class="nav-item">Startup/Shutdown</a>
+            <a href="troubleshooting.html" class="nav-item">Troubleshooting Guide</a>
+
+            <h3>🛡️ Safety</h3>
+            <a href="safety-systems.html" class="nav-item">Safety Systems</a>
+            <a href="emergency-procedures.html" class="nav-item">Emergency Procedures</a>
+            <a href="safety-audits.html" class="nav-item">Safety Audits</a>
+
+            <h3>🔨 Maintenance</h3>
+            <a href="maintenance-schedule.html" class="nav-item">Maintenance Schedule</a>
+            <a href="parts-inventory.html" class="nav-item">Parts Inventory</a>
+            <a href="maintenance-logs.html" class="nav-item">Maintenance Logs</a>
+
+            <h3>📋 Project Management</h3>
+            <a href="project-timeline.html" class="nav-item">Project Timeline</a>
+            <a href="meeting-notes.html" class="nav-item">Meeting Notes</a>
+            <a href="change-requests.html" class="nav-item active">Change Requests</a>
+        </div>
+
+        <div class="content">
+            <div class="breadcrumb">
+                <a href="index.html">Home</a> / <a href="#">Project Management</a> / Change Requests
+            </div>
+
+            <h1 class="page-title">System Change Requests</h1>
+            <div class="page-meta">
+                Last updated: November 12, 2025 | Owner: Rachel Park, Project Manager | CR Process v2.1
+            </div>
+
+            <div class="info-box">
+                <strong>📋 Change Request Process:</strong> All modifications to the Nexus control system must be submitted through the formal CR process. This ensures proper review, testing, and documentation of all system changes.
+            </div>
+
+            <h2>Change Request Workflow</h2>
+            <p>
+                The Project Nexus change management process follows a structured workflow to ensure all modifications are properly evaluated for safety, functionality, and operational impact:
+            </p>
+
+            <ol style="margin: 1rem 0 1rem 2rem; line-height: 1.8;">
+                <li><strong>Submission:</strong> Requester completes CR form with detailed description and justification</li>
+                <li><strong>Initial Review:</strong> Project Manager reviews for completeness and assigns CR number</li>
+                <li><strong>Technical Assessment:</strong> Engineering team evaluates feasibility and impact</li>
+                <li><strong>Safety Review:</strong> Safety team assesses any safety implications</li>
+                <li><strong>Approval:</strong> Change Control Board reviews and approves/rejects</li>
+                <li><strong>Implementation:</strong> Approved changes scheduled and executed</li>
+                <li><strong>Verification:</strong> Testing confirms change works as intended</li>
+                <li><strong>Documentation:</strong> All documentation updated to reflect changes</li>
+                <li><strong>Closure:</strong> CR formally closed with lessons learned</li>
+            </ol>
+
+            <h2>Active Change Requests</h2>
+            <table>
+                <tr>
+                    <th>CR#</th>
+                    <th>Title</th>
+                    <th>Requestor</th>
+                    <th>Status</th>
+                    <th>Priority</th>
+                    <th>Target Date</th>
+                </tr>
+                <tr>
+                    <td>CR-2025-047</td>
+                    <td>Add vehicle position averaging for smoother speed transitions</td>
+                    <td>M. Torres</td>
+                    <td><span class="badge badge-blue">In Review</span></td>
+                    <td>Medium</td>
+                    <td>Dec 15, 2025</td>
+                </tr>
+                <tr>
+                    <td>CR-2025-046</td>
+                    <td>Implement redundant E-stop monitoring on Safety PLC</td>
+                    <td>K. Okonkwo</td>
+                    <td><span class="badge badge-orange">Pending Approval</span></td>
+                    <td>High</td>
+                    <td>Nov 30, 2025</td>
+                </tr>
+                <tr>
+                    <td>CR-2025-045</td>
+                    <td>Update HMI alarm acknowledgment workflow</td>
+                    <td>A. Rodriguez</td>
+                    <td><span class="badge badge-purple">Implementation</span></td>
+                    <td>Low</td>
+                    <td>Jan 10, 2026</td>
+                </tr>
+                <tr>
+                    <td>CR-2025-044</td>
+                    <td>Add audio effect trigger delays for scene synchronization</td>
+                    <td>L. Zhang</td>
+                    <td><span class="badge badge-blue">In Review</span></td>
+                    <td>Medium</td>
+                    <td>Dec 20, 2025</td>
+                </tr>
+            </table>
+
+            <h2>Recently Completed Changes</h2>
+            <table>
+                <tr>
+                    <th>CR#</th>
+                    <th>Title</th>
+                    <th>Completed</th>
+                    <th>Notes</th>
+                </tr>
+                <tr>
+                    <td>CR-2025-043</td>
+                    <td>Increase brake engagement time for smoother stops</td>
+                    <td>Nov 8, 2025</td>
+                    <td>Successfully tested, improved guest comfort</td>
+                </tr>
+                <tr>
+                    <td>CR-2025-042</td>
+                    <td>Add zone occupancy timeout warnings</td>
+                    <td>Nov 5, 2025</td>
+                    <td>Prevents vehicles from getting stuck in zones</td>
+                </tr>
+                <tr>
+                    <td>CR-2025-041</td>
+                    <td>Modify lighting sequence timing in Scene 5</td>
+                    <td>Oct 28, 2025</td>
+                    <td>Better synchronization with projection effects</td>
+                </tr>
+                <tr>
+                    <td>CR-2025-040</td>
+                    <td>Update network switch QoS configuration</td>
+                    <td>Oct 22, 2025</td>
+                    <td>Reduced PLC communication latency</td>
+                </tr>
+                <tr>
+                    <td>CR-2025-039</td>
+                    <td>Implement watchdog timer between Main and Safety PLCs</td>
+                    <td>Oct 15, 2025</td>
+                    <td>Critical safety enhancement, now monitoring continuously</td>
+                </tr>
+            </table>
+
+            <h2>Rejected/Deferred Changes</h2>
+            <table>
+                <tr>
+                    <th>CR#</th>
+                    <th>Title</th>
+                    <th>Decision</th>
+                    <th>Reason</th>
+                </tr>
+                <tr>
+                    <td>CR-2025-038</td>
+                    <td>Allow manual override of safety interlocks</td>
+                    <td>Rejected</td>
+                    <td>Violates safety certification requirements</td>
+                </tr>
+                <tr>
+                    <td>CR-2025-037</td>
+                    <td>Add remote diagnostic access from corporate network</td>
+                    <td>Rejected</td>
+                    <td>Security risk - control network must remain isolated</td>
+                </tr>
+                <tr>
+                    <td>CR-2025-036</td>
+                    <td>Implement variable speed control for energy savings</td>
+                    <td>Deferred</td>
+                    <td>Deferred to Phase 2 - focus on reliability first</td>
+                </tr>
+            </table>
+
+            <h2>Change Categories & Guidelines</h2>
+
+            <h3>Category 1: Critical Safety Changes</h3>
+            <p>
+                Any change affecting safety systems, emergency stops, interlocks, or failsafe behavior. Requires full Safety Team review and may require recertification. Typical approval time: 4-6 weeks.
+            </p>
+
+            <h3>Category 2: Control Logic Changes</h3>
+            <p>
+                Modifications to PLC ladder logic, state machines, or timing sequences. Requires engineering review, simulation testing, and operational approval. Typical approval time: 2-3 weeks.
+            </p>
+
+            <h3>Category 3: Effects & Show Changes</h3>
+            <p>
+                Updates to lighting, audio, or special effects timing and parameters. Requires creative approval and show director sign-off. Typical approval time: 1-2 weeks.
+            </p>
+
+            <h3>Category 4: Documentation & UI Changes</h3>
+            <p>
+                Updates to HMI displays, documentation, or operator procedures. Requires operations team review. Typical approval time: 3-5 days.
+            </p>
+
+            <div class="warning-box">
+                <strong>⚠️ Emergency Changes:</strong> In case of safety-critical issues or system failures, emergency changes may be implemented immediately with retrospective CR documentation. All emergency changes must be reported to the Safety Manager within 24 hours.
+            </div>
+
+            <h2>Submitting a Change Request</h2>
+            <p>
+                To submit a new change request:
+            </p>
+            <ol style="margin: 1rem 0 1rem 2rem; line-height: 1.8;">
+                <li>Complete the CR Form available from the Project Management Office</li>
+                <li>Include detailed description of proposed change and justification</li>
+                <li>Identify affected systems (Main PLC, Safety PLC, Effects PLC, HMI, etc.)</li>
+                <li>Estimate implementation effort and timeline</li>
+                <li>Attach any supporting documentation, diagrams, or test data</li>
+                <li>Email completed form to rachel.park@nexus-project.internal</li>
+            </ol>
+
+            <h2>Change Control Board</h2>
+            <p>
+                The Change Control Board meets every Tuesday at 2:00 PM to review pending change requests. Board members include:
+            </p>
+            <ul>
+                <li>Rachel Park - Project Manager (Chair)</li>
+                <li>Sarah Chen - Lead Control Systems Engineer</li>
+                <li>Kwame Okonkwo - Safety Manager</li>
+                <li>Michael Torres - Lead Programmer</li>
+                <li>Alex Rodriguez - Operations Manager</li>
+                <li>Dr. James Patterson - Chief Engineer (advisor)</li>
+            </ul>
+
+            <div class="info-box">
+                <strong>📞 Contact:</strong> For questions about the CR process or to check status of a pending change request, contact Rachel Park at rachel.park@nexus-project.internal or ext. 4102
+            </div>
+
+            <h2>Historical Statistics</h2>
+            <p>
+                Change request trends for 2025:
+            </p>
+            <ul>
+                <li><strong>Total CRs Submitted:</strong> 47</li>
+                <li><strong>Approved & Completed:</strong> 39 (83%)</li>
+                <li><strong>Rejected:</strong> 4 (8.5%)</li>
+                <li><strong>Deferred:</strong> 1 (2%)</li>
+                <li><strong>In Progress:</strong> 3 (6.5%)</li>
+                <li><strong>Average Time to Approval:</strong> 12 days</li>
+                <li><strong>Average Implementation Time:</strong> 18 days</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

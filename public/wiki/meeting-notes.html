@@ -1,13 +1,248 @@
 <!DOCTYPE html>
-<html><head><meta charset="UTF-8"><title>Meeting Notes</title>
-<style>*{margin:0;padding:0}body{font-family:sans-serif;background:#f4f5f7;color:#172b4d}.header{background:linear-gradient(135deg,#0052cc,#2684ff);color:white;padding:1rem 2rem}.header h1{font-size:1.5rem}.container{display:flex}.sidebar{width:280px;background:white;border-right:1px solid #dfe1e6;padding:1.5rem 1rem}.sidebar h3{font-size:.75rem;text-transform:uppercase;color:#5e6c84;margin:1.5rem 0 .75rem}.nav-item{display:block;padding:.5rem .75rem;color:#172b4d;text-decoration:none;border-radius:4px;margin-bottom:2px}.nav-item:hover{background:#f4f5f7}.nav-item.active{background:#deebff;color:#0052cc}.content{flex:1;padding:2rem 3rem;max-width:1200px}.page-title{font-size:2rem;font-weight:600;margin-bottom:.5rem}.page-meta{font-size:.85rem;color:#5e6c84;margin-bottom:2rem;padding-bottom:1rem;border-bottom:2px solid #dfe1e6}.content p{line-height:1.6;margin-bottom:1rem}.info-box{background:#deebff;border-left:4px solid #0052cc;padding:1rem;margin:1.5rem 0}</style></head><body>
-<div class="header"><h1>🎢 Project Nexus Wiki</h1></div>
-<div class="container"><div class="sidebar">
-<a href="index.html" class="nav-item">Home</a>
-<a href="meeting-notes.html" class="nav-item active">Meeting Notes</a></div>
-<div class="content">
-<h1 class="page-title">Meeting Notes</h1>
-<div class="page-meta">Last updated: November 2025 | Owner: Project Management</div>
-<p>Team meeting summaries</p>
-<div class="info-box"><strong>📝 Content:</strong> This page contains team meeting summaries. Documentation is updated regularly as new information becomes available.</div>
-</div></div></body></html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meeting Notes - Project Nexus Wiki</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f4f5f7; color: #172b4d; }
+        .header { background: linear-gradient(135deg, #0052cc 0%, #2684ff 100%); color: white; padding: 1rem 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .header h1 { font-size: 1.5rem; font-weight: 600; }
+        .header .subtitle { font-size: 0.9rem; opacity: 0.9; margin-top: 0.25rem; }
+        .container { display: flex; min-height: calc(100vh - 80px); }
+        .sidebar { width: 280px; background: white; border-right: 1px solid #dfe1e6; padding: 1.5rem 1rem; overflow-y: auto; }
+        .sidebar h3 { font-size: 0.75rem; text-transform: uppercase; color: #5e6c84; font-weight: 700; margin: 1.5rem 0 0.75rem; letter-spacing: 0.5px; }
+        .sidebar h3:first-child { margin-top: 0; }
+        .nav-item { display: block; padding: 0.5rem 0.75rem; color: #172b4d; text-decoration: none; border-radius: 4px; margin-bottom: 2px; font-size: 0.9rem; transition: background 0.2s; }
+        .nav-item:hover { background: #f4f5f7; }
+        .nav-item.active { background: #deebff; color: #0052cc; font-weight: 500; }
+        .content { flex: 1; padding: 2rem 3rem; max-width: 1200px; }
+        .breadcrumb { font-size: 0.85rem; color: #5e6c84; margin-bottom: 1rem; }
+        .breadcrumb a { color: #0052cc; text-decoration: none; }
+        .page-title { font-size: 2rem; font-weight: 600; margin-bottom: 0.5rem; color: #172b4d; }
+        .page-meta { font-size: 0.85rem; color: #5e6c84; margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 2px solid #dfe1e6; }
+        .info-box { background: #deebff; border-left: 4px solid #0052cc; padding: 1rem; margin: 1.5rem 0; border-radius: 4px; }
+        .meeting-box { background: white; border: 1px solid #dfe1e6; border-radius: 4px; padding: 1.5rem; margin: 1.5rem 0; }
+        .meeting-box h3 { font-size: 1.25rem; margin-bottom: 0.5rem; color: #172b4d; }
+        .meeting-meta { font-size: 0.85rem; color: #5e6c84; margin-bottom: 1rem; }
+        .content h2 { font-size: 1.5rem; margin: 2rem 0 1rem; color: #172b4d; }
+        .content p { line-height: 1.6; margin-bottom: 1rem; color: #172b4d; }
+        .content ul { margin: 0.5rem 0 1rem 2rem; line-height: 1.8; }
+        .badge { display: inline-block; padding: 0.25rem 0.5rem; font-size: 0.75rem; font-weight: 600; border-radius: 3px; margin-right: 0.5rem; }
+        .badge-green { background: #e3fcef; color: #006644; }
+        .badge-orange { background: #fffae6; color: #ff991f; }
+        .badge-red { background: #ffebe6; color: #de350b; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎢 Project Nexus - Internal Wiki</h1>
+        <div class="subtitle">Attraction Control System Documentation & Knowledge Base</div>
+    </div>
+
+    <div class="container">
+        <div class="sidebar">
+            <h3>📚 Overview</h3>
+            <a href="index.html" class="nav-item">Project Home</a>
+            <a href="project-overview.html" class="nav-item">Project Overview</a>
+            <a href="team-directory.html" class="nav-item">Team Directory</a>
+
+            <h3>🔧 Engineering</h3>
+            <a href="system-architecture.html" class="nav-item">System Architecture</a>
+            <a href="plc-programming.html" class="nav-item">PLC Programming</a>
+            <a href="network-topology.html" class="nav-item">Network Topology</a>
+            <a href="control-logic.html" class="nav-item">Control Logic</a>
+
+            <h3>⚙️ Operations</h3>
+            <a href="operator-manual.html" class="nav-item">Operator Manual</a>
+            <a href="startup-shutdown.html" class="nav-item">Startup/Shutdown</a>
+            <a href="troubleshooting.html" class="nav-item">Troubleshooting Guide</a>
+
+            <h3>🛡️ Safety</h3>
+            <a href="safety-systems.html" class="nav-item">Safety Systems</a>
+            <a href="emergency-procedures.html" class="nav-item">Emergency Procedures</a>
+            <a href="safety-audits.html" class="nav-item">Safety Audits</a>
+
+            <h3>🔨 Maintenance</h3>
+            <a href="maintenance-schedule.html" class="nav-item">Maintenance Schedule</a>
+            <a href="parts-inventory.html" class="nav-item">Parts Inventory</a>
+            <a href="maintenance-logs.html" class="nav-item">Maintenance Logs</a>
+
+            <h3>📋 Project Management</h3>
+            <a href="project-timeline.html" class="nav-item">Project Timeline</a>
+            <a href="meeting-notes.html" class="nav-item active">Meeting Notes</a>
+            <a href="change-requests.html" class="nav-item">Change Requests</a>
+        </div>
+
+        <div class="content">
+            <div class="breadcrumb">
+                <a href="index.html">Home</a> / <a href="#">Project Management</a> / Meeting Notes
+            </div>
+
+            <h1 class="page-title">Project Meeting Notes</h1>
+            <div class="page-meta">
+                Last updated: November 12, 2025 | Owner: Rachel Park, Project Manager
+            </div>
+
+            <div class="info-box">
+                <strong>📝 Meeting Documentation:</strong> This page archives notes from all major Project Nexus meetings including weekly stand-ups, design reviews, safety meetings, and milestone reviews. All team members are encouraged to review notes from meetings they were unable to attend.
+            </div>
+
+            <h2>Recent Meetings</h2>
+
+            <div class="meeting-box">
+                <h3>Weekly Project Stand-up - November 11, 2025</h3>
+                <div class="meeting-meta">
+                    Time: 9:00 AM - 10:00 AM | Location: Conference Room B | Attendees: 12
+                </div>
+                <p><strong>Key Discussion Points:</strong></p>
+                <ul>
+                    <li><strong>Testing Progress:</strong> Completed 200 hours of continuous operation testing. System performed well with only minor issues logged.</li>
+                    <li><strong>Safety Certification:</strong> Kwame reported that external auditors will visit Dec 2-4 for SIL-2 assessment. All documentation must be finalized by Nov 25.</li>
+                    <li><strong>Show Effects:</strong> Lily's team completed reprogramming of lighting sequences for Scenes 3 and 5. Significant improvement in synchronization with audio.</li>
+                    <li><strong>Network Issues:</strong> Resolved intermittent communication delays between Main and Effects PLCs by upgrading switch firmware.</li>
+                </ul>
+                <p><strong>Action Items:</strong></p>
+                <ul>
+                    <li>[Sarah Chen] Finalize system architecture documentation for safety audit by Nov 20</li>
+                    <li>[Michael Torres] Complete regression testing of updated ladder logic by Nov 15</li>
+                    <li>[Alex Rodriguez] Schedule operator training sessions for Week of Nov 18</li>
+                    <li>[Lily Zhang] Document all show effect timing changes in wiki by Nov 13</li>
+                </ul>
+                <p><strong>Blockers:</strong> None reported</p>
+            </div>
+
+            <div class="meeting-box">
+                <h3>Safety Review Meeting - November 8, 2025</h3>
+                <div class="meeting-meta">
+                    Time: 2:00 PM - 4:00 PM | Location: Engineering Lab | Attendees: 8
+                </div>
+                <p><strong>Agenda:</strong> Review of safety interlock testing results and preparation for certification audit</p>
+                <p><strong>Key Discussion Points:</strong></p>
+                <ul>
+                    <li><strong>E-Stop Testing:</strong> All 6 E-stop buttons tested under various conditions. Response time consistently under 100ms, well within spec of 200ms.</li>
+                    <li><strong>Zone Interlocks:</strong> Confirmed that multiple vehicle detection prevents collisions in all scenarios. Tested with deliberate attempts to bypass.</li>
+                    <li><strong>Gate Safety:</strong> Loading gate interlocks function correctly. Ride cannot start unless gate is fully closed and locked.</li>
+                    <li><strong>Failsafe Behavior:</strong> Simulated various failure modes (PLC fault, network loss, power interruption). System always defaults to safe state.</li>
+                </ul>
+                <p><strong>Findings:</strong></p>
+                <ul>
+                    <li><span class="badge badge-green">PASS</span> Emergency stop response time</li>
+                    <li><span class="badge badge-green">PASS</span> Zone collision prevention</li>
+                    <li><span class="badge badge-green">PASS</span> Safety gate interlocks</li>
+                    <li><span class="badge badge-orange">MINOR</span> Need to add additional documentation for watchdog timer logic</li>
+                </ul>
+                <p><strong>Next Steps:</strong> Kwame will prepare comprehensive safety documentation package for external auditors.</p>
+            </div>
+
+            <div class="meeting-box">
+                <h3>Design Review: HMI Enhancements - November 5, 2025</h3>
+                <div class="meeting-meta">
+                    Time: 10:00 AM - 11:30 AM | Location: Virtual (Zoom) | Attendees: 10
+                </div>
+                <p><strong>Purpose:</strong> Review proposed enhancements to operator HMI based on feedback from initial testing</p>
+                <p><strong>Proposals Reviewed:</strong></p>
+                <ul>
+                    <li><strong>Enhanced Alarm System:</strong> Add color-coded severity levels and audio alerts for critical alarms. <span class="badge badge-green">APPROVED</span></li>
+                    <li><strong>Trend Visualization:</strong> Real-time charts for speed, position, and system health metrics. <span class="badge badge-green">APPROVED</span></li>
+                    <li><strong>Quick Actions Panel:</strong> One-click access to common operations (zone enable/disable, effect control). <span class="badge badge-orange">APPROVED WITH CHANGES</span> - Must include confirmation dialogs for safety-critical actions</li>
+                    <li><strong>Multi-Monitor Support:</strong> Allow HMI to span multiple displays for better visibility. <span class="badge badge-red">DEFERRED</span> - Phase 2 feature</li>
+                </ul>
+                <p><strong>Operator Feedback:</strong> Alex reported that operators find the current interface intuitive but requested larger text for alarm messages and better contrast in dark mode.</p>
+                <p><strong>Implementation Timeline:</strong> Approved changes will be implemented in Sprint 8 (Nov 13-27)</p>
+            </div>
+
+            <div class="meeting-box">
+                <h3>Technical Deep Dive: Multi-PLC Communication - October 30, 2025</h3>
+                <div class="meeting-meta">
+                    Time: 1:00 PM - 3:00 PM | Location: Engineering Lab | Attendees: 6
+                </div>
+                <p><strong>Led by:</strong> Sarah Chen and Michael Torres</p>
+                <p><strong>Topics Covered:</strong></p>
+                <ul>
+                    <li><strong>Modbus TCP Architecture:</strong> Detailed walkthrough of how the three PLCs communicate via Modbus TCP protocol</li>
+                    <li><strong>Coil Mapping:</strong> Explanation of coil and register assignments for each PLC and how they coordinate</li>
+                    <li><strong>Heartbeat Mechanism:</strong> How Safety and Effects PLCs signal readiness to Main PLC via Coils 31 and 32</li>
+                    <li><strong>Event Handshaking:</strong> Process by which Main PLC requests events (Coils 8-16) and Safety PLC confirms (Coils 17-25)</li>
+                    <li><strong>Fault Handling:</strong> What happens when communication is lost or a PLC becomes unresponsive</li>
+                </ul>
+                <p><strong>Hands-on Lab:</strong> Team used Modbus diagnostic tools to observe real-time communication between PLCs during ride operation</p>
+                <p><strong>Documentation:</strong> Michael updated the PLC Programming wiki page with detailed communication examples</p>
+            </div>
+
+            <div class="meeting-box">
+                <h3>Monthly All-Hands Project Review - October 25, 2025</h3>
+                <div class="meeting-meta">
+                    Time: 3:00 PM - 4:30 PM | Location: Main Conference Hall | Attendees: 24
+                </div>
+                <p><strong>Presented by:</strong> Dr. James Patterson (Chief Engineer) and Rachel Park (Project Manager)</p>
+                <p><strong>Project Status Summary:</strong></p>
+                <ul>
+                    <li><strong>Overall Progress:</strong> Project is 87% complete, on track for Q1 2026 grand opening</li>
+                    <li><strong>Budget:</strong> Currently at 92% of allocated budget with sufficient contingency remaining</li>
+                    <li><strong>Schedule:</strong> Two weeks ahead of original timeline thanks to efficient PLC programming phase</li>
+                    <li><strong>Quality Metrics:</strong> System uptime during testing: 99.7%, defect rate: well below industry average</li>
+                </ul>
+                <p><strong>Team Recognition:</strong></p>
+                <ul>
+                    <li>Michael Torres recognized for exceptional PLC programming work that came in under budget and ahead of schedule</li>
+                    <li>Kwame Okonkwo praised for comprehensive safety documentation that has impressed early auditors</li>
+                    <li>Lily Zhang's show effects team commended for creating stunning visual sequences</li>
+                </ul>
+                <p><strong>Looking Ahead:</strong></p>
+                <ul>
+                    <li>Focus shifting from development to testing and certification</li>
+                    <li>Operator training program begins in November</li>
+                    <li>Final safety certification audit in December</li>
+                    <li>Soft opening with VIP guests planned for January 2026</li>
+                </ul>
+            </div>
+
+            <h2>Recurring Meetings Schedule</h2>
+            <table style="width: 100%; border-collapse: collapse; margin: 1.5rem 0;">
+                <tr>
+                    <th style="padding: 0.75rem; background: #f4f5f7; border: 1px solid #dfe1e6;">Meeting</th>
+                    <th style="padding: 0.75rem; background: #f4f5f7; border: 1px solid #dfe1e6;">Frequency</th>
+                    <th style="padding: 0.75rem; background: #f4f5f7; border: 1px solid #dfe1e6;">Day/Time</th>
+                    <th style="padding: 0.75rem; background: #f4f5f7; border: 1px solid #dfe1e6;">Attendees</th>
+                </tr>
+                <tr>
+                    <td style="padding: 0.75rem; border: 1px solid #dfe1e6;">Project Stand-up</td>
+                    <td style="padding: 0.75rem; border: 1px solid #dfe1e6;">Weekly</td>
+                    <td style="padding: 0.75rem; border: 1px solid #dfe1e6;">Monday 9:00 AM</td>
+                    <td style="padding: 0.75rem; border: 1px solid #dfe1e6;">All team leads</td>
+                </tr>
+                <tr>
+                    <td style="padding: 0.75rem; border: 1px solid #dfe1e6;">Safety Review</td>
+                    <td style="padding: 0.75rem; border: 1px solid #dfe1e6;">Bi-weekly</td>
+                    <td style="padding: 0.75rem; border: 1px solid #dfe1e6;">Friday 2:00 PM</td>
+                    <td style="padding: 0.75rem; border: 1px solid #dfe1e6;">Safety team + Engineering leads</td>
+                </tr>
+                <tr>
+                    <td style="padding: 0.75rem; border: 1px solid #dfe1e6;">Engineering Sync</td>
+                    <td style="padding: 0.75rem; border: 1px solid #dfe1e6;">Weekly</td>
+                    <td style="padding: 0.75rem; border: 1px solid #dfe1e6;">Wednesday 10:00 AM</td>
+                    <td style="padding: 0.75rem; border: 1px solid #dfe1e6;">Engineering team</td>
+                </tr>
+                <tr>
+                    <td style="padding: 0.75rem; border: 1px solid #dfe1e6;">Operations Planning</td>
+                    <td style="padding: 0.75rem; border: 1px solid #dfe1e6;">Weekly</td>
+                    <td style="padding: 0.75rem; border: 1px solid #dfe1e6;">Thursday 11:00 AM</td>
+                    <td style="padding: 0.75rem; border: 1px solid #dfe1e6;">Operations team</td>
+                </tr>
+                <tr>
+                    <td style="padding: 0.75rem; border: 1px solid #dfe1e6;">All-Hands Review</td>
+                    <td style="padding: 0.75rem; border: 1px solid #dfe1e6;">Monthly</td>
+                    <td style="padding: 0.75rem; border: 1px solid #dfe1e6;">Last Friday 3:00 PM</td>
+                    <td style="padding: 0.75rem; border: 1px solid #dfe1e6;">Entire project team</td>
+                </tr>
+            </table>
+
+            <div class="info-box">
+                <strong>📞 Contact:</strong> For meeting scheduling or to request notes from archived meetings, contact Rachel Park at rachel.park@nexus-project.internal or ext. 4102
+            </div>
+        </div>
+    </div>
+</body>
+</html>

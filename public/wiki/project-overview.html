@@ -49,18 +49,151 @@
                 Last updated: November 10, 2025 | Owner: Project Management
             </div>
             <h2>Executive Summary</h2>
-            <p>Project Nexus represents a groundbreaking advancement in theme park attraction control systems. This dark ride combines cutting-edge automation with traditional storytelling to create an immersive guest experience.</p>
+            <p>
+                Project Nexus represents a groundbreaking advancement in theme park attraction control systems. This dark ride combines cutting-edge automation with traditional storytelling to create an immersive guest experience that pushes the boundaries of what's possible in themed entertainment.
+            </p>
+            <p>
+                The attraction utilizes a sophisticated three-PLC distributed control architecture, separating safety-critical functions from operational control and show effects. This design philosophy ensures maximum reliability while allowing independent maintenance and updates to each subsystem without impacting the others.
+            </p>
+
+            <h2>Project Goals</h2>
+            <ul>
+                <li><strong>Safety First:</strong> Achieve SIL-2 (Safety Integrity Level 2) certification for all safety-critical systems</li>
+                <li><strong>Reliability:</strong> Target 99.5% uptime during operational hours with graceful degradation</li>
+                <li><strong>Guest Experience:</strong> Create seamless show experiences with precise timing and synchronization</li>
+                <li><strong>Operational Excellence:</strong> Provide intuitive operator controls and comprehensive diagnostics</li>
+                <li><strong>Maintainability:</strong> Design for easy troubleshooting and minimal downtime</li>
+                <li><strong>Scalability:</strong> Build a foundation that supports future enhancements and expansions</li>
+            </ul>
 
             <h2>Key Features</h2>
             <ul>
-                <li>Three-PLC distributed architecture for enhanced reliability</li>
-                <li>27-position track with 9 show scenes</li>
-                <li>Advanced safety systems with SIL-2 certification target</li>
-                <li>Real-time show synchronization across all effects</li>
-                <li>Modern web-based HMI for operator control</li>
+                <li><strong>Three-PLC Distributed Architecture:</strong> Separate PLCs for Main Control (Port 502), Safety Systems (Port 503), and Show Effects (Port 504)</li>
+                <li><strong>27-Position Track System:</strong> Continuous ride path with 9 distinct show scenes</li>
+                <li><strong>Advanced Safety Systems:</strong> Multiple layers of interlocks, emergency stops, and fail-safe behaviors targeting SIL-2 certification</li>
+                <li><strong>Real-Time Show Synchronization:</strong> Precision timing of lighting, audio, effects, and ride motion</li>
+                <li><strong>Modern Web-Based HMI:</strong> Responsive operator interface with real-time monitoring and control</li>
+                <li><strong>Modbus TCP Communication:</strong> Industry-standard protocol for reliable PLC-to-PLC and HMI communication</li>
+                <li><strong>Comprehensive Event System:</strong> 9 configurable ride events with enable/active handshaking</li>
+                <li><strong>Zone-Based Control:</strong> Three operational zones with independent speed and safety management</li>
             </ul>
 
-            <p><em>More documentation coming soon...</em></p>
+            <h2>Technical Specifications</h2>
+            <table style="width: 100%; border-collapse: collapse; margin: 1.5rem 0;">
+                <tr>
+                    <th style="padding: 0.75rem; background: #f4f5f7; border: 1px solid #dfe1e6;">Parameter</th>
+                    <th style="padding: 0.75rem; background: #f4f5f7; border: 1px solid #dfe1e6;">Specification</th>
+                </tr>
+                <tr>
+                    <td style="padding: 0.75rem; border: 1px solid #dfe1e6;">Track Length</td>
+                    <td style="padding: 0.75rem; border: 1px solid #dfe1e6;">~270 meters (27 positions × 10m spacing)</td>
+                </tr>
+                <tr>
+                    <td style="padding: 0.75rem; border: 1px solid #dfe1e6;">Ride Duration</td>
+                    <td style="padding: 0.75rem; border: 1px solid #dfe1e6;">Approximately 4-5 minutes</td>
+                </tr>
+                <tr>
+                    <td style="padding: 0.75rem; border: 1px solid #dfe1e6;">Vehicle Speed</td>
+                    <td style="padding: 0.75rem; border: 1px solid #dfe1e6;">0-100 units/cycle (variable by zone)</td>
+                </tr>
+                <tr>
+                    <td style="padding: 0.75rem; border: 1px solid #dfe1e6;">Vehicle Capacity</td>
+                    <td style="padding: 0.75rem; border: 1px solid #dfe1e6;">6 passengers per vehicle</td>
+                </tr>
+                <tr>
+                    <td style="padding: 0.75rem; border: 1px solid #dfe1e6;">Hourly Capacity</td>
+                    <td style="padding: 0.75rem; border: 1px solid #dfe1e6;">~600 guests per hour (target)</td>
+                </tr>
+                <tr>
+                    <td style="padding: 0.75rem; border: 1px solid #dfe1e6;">PLC Scan Time</td>
+                    <td style="padding: 0.75rem; border: 1px solid #dfe1e6;">10ms (Main/Effects), 5ms (Safety)</td>
+                </tr>
+                <tr>
+                    <td style="padding: 0.75rem; border: 1px solid #dfe1e6;">Network Latency</td>
+                    <td style="padding: 0.75rem; border: 1px solid #dfe1e6;">&lt;10ms typical (Modbus TCP)</td>
+                </tr>
+                <tr>
+                    <td style="padding: 0.75rem; border: 1px solid #dfe1e6;">E-Stop Response Time</td>
+                    <td style="padding: 0.75rem; border: 1px solid #dfe1e6;">&lt;100ms (target: &lt;200ms)</td>
+                </tr>
+            </table>
+
+            <h2>System Components</h2>
+
+            <h3>Main Control PLC (Port 502)</h3>
+            <p>
+                The Main PLC serves as the master coordinator for the entire ride system. It manages the ride state machine (IDLE, LOADING, RUNNING, STOPPING, FAULT, MAINTENANCE), tracks vehicle position through 27 positions, controls speed across three zones, and coordinates with Safety and Effects PLCs via heartbeat signals.
+            </p>
+
+            <h3>Safety PLC (Port 503)</h3>
+            <p>
+                The Safety PLC operates independently to monitor and enforce all safety-critical functions. It validates ride event requests from the Main PLC, monitors emergency stop buttons and safety gates, detects zone occupancy to prevent collisions, and generates safety faults when unsafe conditions are detected. The Safety PLC can stop the ride regardless of Main PLC status.
+            </p>
+
+            <h3>Effects PLC (Port 504)</h3>
+            <p>
+                The Effects PLC manages all show elements including lighting systems (DMX512), audio triggers and playback, special effects (smoke, water, wind, strobes), projection mapping, and themed show elements. It receives show cues from the Main PLC but can operate independently for effects testing.
+            </p>
+
+            <h3>HMI / SCADA System</h3>
+            <p>
+                The web-based HMI provides operators with comprehensive system visibility and control. Features include real-time status monitoring of all three PLCs, vehicle position and speed visualization, alarm management with prioritized alerts, trend charts for key parameters, manual control panel for ride operation, event log for troubleshooting, and dark mode support for operator comfort.
+            </p>
+
+            <h2>Show Scenes</h2>
+            <p>The attraction features 9 distinct show scenes, each with unique theming and effects:</p>
+            <ul>
+                <li><strong>Scene 1 (Loading):</strong> Guest boarding area with loading gate and safety announcements</li>
+                <li><strong>Scene 2 (Launch):</strong> Accelerator launch sequence with dramatic lighting and audio</li>
+                <li><strong>Scene 3:</strong> Immersive projection mapping environment with synchronized audio</li>
+                <li><strong>Scene 4 (Photo):</strong> On-ride photo capture with flash synchronization</li>
+                <li><strong>Scene 5:</strong> Mid-course brake zone with atmospheric effects</li>
+                <li><strong>Scene 6:</strong> Track switch and multi-path storytelling</li>
+                <li><strong>Scene 7:</strong> Climactic scene with maximum effects (pyro when certified)</li>
+                <li><strong>Scene 8:</strong> Final brake zone and deceleration</li>
+                <li><strong>Scene 9 (Unload):</strong> Guest exit and vehicle return to loading</li>
+            </ul>
+
+            <h2>Safety Systems</h2>
+            <p>
+                Safety is the paramount concern for Project Nexus. The system implements multiple layers of protection:
+            </p>
+            <ul>
+                <li><strong>E-Stop Network:</strong> 6 emergency stop buttons located throughout the ride path</li>
+                <li><strong>Zone Interlocks:</strong> Prevents multiple vehicles in the same zone</li>
+                <li><strong>Safety Gates:</strong> Loading gate must be closed and locked before ride start</li>
+                <li><strong>Watchdog Timers:</strong> Monitors communication between all PLCs</li>
+                <li><strong>Fail-Safe Outputs:</strong> All critical outputs default to safe state on failure</li>
+                <li><strong>Independent Safety PLC:</strong> Can override Main PLC and stop ride</li>
+                <li><strong>Redundant Sensors:</strong> Critical sensors are duplicated for verification</li>
+            </ul>
+
+            <h2>Project Team</h2>
+            <p>
+                Project Nexus is the result of collaboration between world-class engineers, technicians, and creative professionals:
+            </p>
+            <ul>
+                <li><strong>Dr. James Patterson:</strong> Chief Engineer - Overall technical leadership</li>
+                <li><strong>Rachel Park:</strong> Project Manager - Schedule, budget, coordination</li>
+                <li><strong>Sarah Chen:</strong> Lead Control Systems Engineer - Architecture and design</li>
+                <li><strong>Michael Torres:</strong> Lead PLC Programmer - Ladder logic development</li>
+                <li><strong>Kwame Okonkwo:</strong> Safety Manager - Safety systems and certification</li>
+                <li><strong>Alex Rodriguez:</strong> Operations Manager - Operator training and procedures</li>
+                <li><strong>Lily Zhang:</strong> Show Effects Lead - Lighting, audio, special effects</li>
+                <li><strong>Plus 15+ additional engineers, technicians, and support staff</strong></li>
+            </ul>
+
+            <h2>Project Status (November 2025)</h2>
+            <p>
+                Project Nexus is currently in the final testing and certification phase. The system has completed over 5,000 successful ride cycles with 99.7% uptime. External safety auditors will conduct the SIL-2 certification assessment in December 2025, with grand opening planned for February 2026.
+            </p>
+            <p>
+                All major technical milestones have been achieved on or ahead of schedule, and the project remains within budget. The team is now focused on fine-tuning show elements, completing documentation, and preparing for the certification process.
+            </p>
+
+            <div style="background: #e3fcef; border-left: 4px solid #006644; padding: 1rem; margin: 1.5rem 0; border-radius: 4px;">
+                <strong>🎯 Mission Statement:</strong> To create a world-class themed attraction that delights guests while maintaining the highest standards of safety, reliability, and operational excellence.
+            </div>
         </div>
     </div>
 </body>
