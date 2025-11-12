@@ -1,48 +1,55 @@
 PROGRAM attraction_control_main
-VAR_EXTERNAL
-    start_command : BOOL;
-    stop_command : BOOL;
-    motor_running : BOOL;
-    brake_engaged : BOOL;
+VAR
+    (* Modbus-mapped control inputs/outputs *)
+    start_command AT %QX0.1 : BOOL;
+    stop_command AT %QX0.2 : BOOL;
+    motor_running AT %QX3.2 : BOOL;
+    brake_engaged AT %QX3.3 : BOOL;
 
-    speed_setpoint : INT;
-    current_position : INT;
-    current_speed : INT;
-    state : INT;
+    zone_1_enable AT %QX0.5 : BOOL;
+    zone_2_enable AT %QX0.6 : BOOL;
+    zone_3_enable AT %QX0.7 : BOOL;
 
-    zone_1_enable : BOOL;
-    zone_2_enable : BOOL;
-    zone_3_enable : BOOL;
+    proximity_sensor_1 AT %QX5.0 : BOOL;
+    proximity_sensor_2 AT %QX5.1 : BOOL;
+    proximity_sensor_3 AT %QX5.2 : BOOL;
+    proximity_sensor_4 AT %QX5.3 : BOOL;
+    proximity_sensor_5 AT %QX5.4 : BOOL;
+    proximity_sensor_6 AT %QX5.5 : BOOL;
+    proximity_sensor_7 AT %QX5.6 : BOOL;
+    proximity_sensor_8 AT %QX5.7 : BOOL;
+    proximity_sensor_9 AT %QX6.0 : BOOL;
 
-    zone_1_position : INT;
-    zone_2_position : INT;
-    zone_3_position : INT;
+    (* Bridge-written registers from other PLCs *)
+    safety_plc_ready_reg AT %MW102 : INT;
+    effects_plc_ready_reg AT %MW103 : INT;
 
-    cycle_counter : DINT;
-    runtime_hours : DINT;
-    last_error_code : INT;
+    (* Input registers *)
+    speed_setpoint AT %IW0 : INT;
 
-    motor_current_amps : INT;
-    hydraulic_pressure_psi : INT;
-    bearing_temp_celsius : INT;
-    brake_wear_percent : INT;
-    vibration_level : INT;
+    (* Output registers *)
+    current_position AT %QW1 : INT;
+    current_speed AT %QW2 : INT;
+    zone_1_position AT %QW10 : INT;
+    zone_2_position AT %QW11 : INT;
+    zone_3_position AT %QW12 : INT;
 
-    safety_plc_ready_reg : INT;
-    effects_plc_ready_reg : INT;
+    (* State and diagnostics *)
+    state AT %MW15 : INT;
+    last_error_code AT %MW5 : INT;
+    motor_current_amps AT %MW40 : INT;
+    hydraulic_pressure_psi AT %MW41 : INT;
+    bearing_temp_celsius AT %MW42 : INT;
+    brake_wear_percent AT %MW43 : INT;
+    vibration_level AT %MW44 : INT;
 
-    proximity_sensor_1 : BOOL;
-    proximity_sensor_2 : BOOL;
-    proximity_sensor_3 : BOOL;
-    proximity_sensor_4 : BOOL;
-    proximity_sensor_5 : BOOL;
-    proximity_sensor_6 : BOOL;
-    proximity_sensor_7 : BOOL;
-    proximity_sensor_8 : BOOL;
-    proximity_sensor_9 : BOOL;
+    (* Counters *)
+    runtime_hours AT %MD2 : DINT;
+    cycle_counter AT %MD3 : DINT;
 END_VAR
 
 VAR
+    (* Local variables - not mapped to Modbus *)
     scan_counter : DINT;
     position_accumulator : INT;
     safety_plc_ready : BOOL;
@@ -271,54 +278,3 @@ proximity_sensor_8 := (current_position >= 20 AND current_position <= 24);
 proximity_sensor_9 := (current_position >= 23 AND current_position <= 26);
 
 END_PROGRAM
-
-CONFIGURATION Config0
-    RESOURCE Res0 ON PLC
-        VAR_GLOBAL
-            start_command AT %QX0.1 : BOOL;
-            stop_command AT %QX0.2 : BOOL;
-            motor_running AT %QX3.2 : BOOL;  (* bit 26 = byte 3, bit 2 *)
-            brake_engaged AT %QX3.3 : BOOL;  (* bit 27 = byte 3, bit 3 *)
-
-            zone_1_enable AT %QX0.5 : BOOL;
-            zone_2_enable AT %QX0.6 : BOOL;
-            zone_3_enable AT %QX0.7 : BOOL;
-
-            safety_plc_ready_reg AT %MW102 : INT;
-            effects_plc_ready_reg AT %MW103 : INT;
-
-            speed_setpoint AT %IW0 : INT;
-            current_position AT %QW1 : INT;
-            current_speed AT %QW2 : INT;
-
-            zone_1_position AT %QW10 : INT;
-            zone_2_position AT %QW11 : INT;
-            zone_3_position AT %QW12 : INT;
-
-            state AT %MW15 : INT;
-            last_error_code AT %MW5 : INT;
-
-            motor_current_amps AT %MW40 : INT;
-            hydraulic_pressure_psi AT %MW41 : INT;
-            bearing_temp_celsius AT %MW42 : INT;
-            brake_wear_percent AT %MW43 : INT;
-            vibration_level AT %MW44 : INT;
-
-            runtime_hours AT %MD2 : DINT;
-            cycle_counter AT %MD3 : DINT;
-
-            proximity_sensor_1 AT %QX5.0 : BOOL;
-            proximity_sensor_2 AT %QX5.1 : BOOL;
-            proximity_sensor_3 AT %QX5.2 : BOOL;
-            proximity_sensor_4 AT %QX5.3 : BOOL;
-            proximity_sensor_5 AT %QX5.4 : BOOL;
-            proximity_sensor_6 AT %QX5.5 : BOOL;
-            proximity_sensor_7 AT %QX5.6 : BOOL;
-            proximity_sensor_8 AT %QX5.7 : BOOL;
-            proximity_sensor_9 AT %QX6.0 : BOOL;
-        END_VAR
-
-        TASK task0(INTERVAL := T#20ms, PRIORITY := 0);
-        PROGRAM instance0 : attraction_control_main;
-    END_RESOURCE
-END_CONFIGURATION
