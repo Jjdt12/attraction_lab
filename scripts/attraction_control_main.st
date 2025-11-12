@@ -292,8 +292,8 @@ proximity_sensor_8 := (current_position >= 20 AND current_position <= 24);
 proximity_sensor_9 := (current_position >= 23 AND current_position <= 26);
 
 (* Write DINT values back to split registers *)
-runtime_hours_low := DINT_TO_INT(runtime_hours AND 16#FFFF);
-cycle_counter_low := DINT_TO_INT(cycle_counter AND 16#FFFF);
+runtime_hours_low := DINT_TO_INT(runtime_hours);
+cycle_counter_low := DINT_TO_INT(cycle_counter);
 
 END_PROGRAM
 
