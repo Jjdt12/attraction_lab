@@ -272,7 +272,7 @@ CONFIGURATION Config0
 
             current_position_from_main AT %MW10 : INT;
             current_speed_from_main AT %MW11 : INT;
-            motor_running_from_main AT %MX50 : BOOL;  (* bit 50 via bridge *)
+            motor_running_from_main AT %MX50.0 : BOOL;  (* bit 50 via bridge *)
 
             proximity_sensor_1_from_main AT %MW80 : INT;
             proximity_sensor_2_from_main AT %MW81 : INT;
