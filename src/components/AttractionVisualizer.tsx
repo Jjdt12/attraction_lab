@@ -131,9 +131,7 @@ export default function AttractionVisualizer({
   };
 
   const renderZoneRow = (zone: typeof RIDE_ZONES[0]) => {
-    const eventTrack = [];
-    const carTrack = [];
-
+    const positions = [];
     for (let pos = zone.start; pos <= zone.end; pos++) {
       const isCarHere = carPosition === pos;
 
@@ -147,23 +145,22 @@ export default function AttractionVisualizer({
       const activeEffects = getActiveEffectsAtPosition(pos);
       const hasEffects = potentialEffects.length > 0;
 
-      // Event track (top tier)
-      eventTrack.push(
-        <div key={`event-${pos}`} className="flex flex-col items-center gap-1 relative">
-          {/* Events row */}
+      positions.push(
+        <div key={pos} className="flex flex-col items-center gap-3 relative">
+          {/* Effects badges above position */}
           {showEffectBadges && hasEffects && (
-            <div className="flex gap-1 flex-wrap justify-center min-h-[28px] items-center">
+            <div className="absolute -top-20 left-1/2 -translate-x-1/2 flex gap-1 flex-wrap justify-center w-32">
               {potentialEffects.map(effect => {
                 const isActive = activeEffects.some(e => e.coil === effect.coil);
                 const EffectIcon = effect.icon;
                 return (
                   <div
                     key={effect.coil}
-                    className={`w-6 h-6 rounded-md flex items-center justify-center transition-all duration-300 ${getEffectColorClasses(effect.color, isActive)}`}
+                    className={`w-7 h-7 rounded-md flex items-center justify-center transition-all duration-300 ${getEffectColorClasses(effect.color, isActive)}`}
                     title={effect.name}
                   >
                     <EffectIcon
-                      className={`w-3.5 h-3.5 transition-all ${
+                      className={`w-4 h-4 transition-all ${
                         isActive ? 'text-white' : 'text-slate-500'
                       }`}
                     />
@@ -172,33 +169,29 @@ export default function AttractionVisualizer({
               })}
             </div>
           )}
-          {!showEffectBadges && hasEffects && (
-            <div className="min-h-[28px]" />
-          )}
-        </div>
-      );
 
-      // Car track (bottom tier)
-      carTrack.push(
-        <div key={`car-${pos}`} className="flex flex-col items-center gap-2">
           {/* Position indicator */}
           <div
-            className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 border-2 ${
+            className={`w-14 h-14 rounded-full flex items-center justify-center transition-all duration-300 border-2 ${
               isCarHere
                 ? 'bg-gradient-to-br from-white to-slate-200 border-slate-400 shadow-xl scale-110'
                 : isEventPosition
                 ? `bg-gradient-to-br from-slate-700 to-slate-800 border-slate-600 ${
                     isEventActive ? 'shadow-lg shadow-blue-500/50 ring-2 ring-blue-400' : ''
+                  } ${
+                    activeEffects.length > 0 ? 'ring-2 ring-yellow-400/50 shadow-yellow-500/30' : ''
                   }`
+                : activeEffects.length > 0
+                ? 'bg-gradient-to-br from-slate-700 to-slate-800 border-slate-600 ring-2 ring-yellow-400/30 shadow-lg shadow-yellow-500/20'
                 : 'bg-gradient-to-br from-slate-700 to-slate-800 border-slate-600'
             }`}
           >
             {isCarHere && (
-              <div className="w-5 h-5 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 shadow-lg animate-pulse" />
+              <div className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 shadow-lg animate-pulse" />
             )}
             {isEventPosition && !isCarHere && EventIcon && (
               <EventIcon
-                className={`w-4 h-4 transition-all ${
+                className={`w-6 h-6 transition-all ${
                   isEventActive ? 'text-blue-400 animate-pulse' : 'text-slate-400'
                 }`}
               />
@@ -208,14 +201,9 @@ export default function AttractionVisualizer({
       );
 
       if (pos < zone.end) {
-        eventTrack.push(
-          <div key={`event-line-${pos}`} className="flex items-center">
-            <div className="w-6 h-0.5 bg-transparent" />
-          </div>
-        );
-        carTrack.push(
-          <div key={`car-line-${pos}`} className="flex items-center">
-            <div className="w-6 h-0.5 bg-slate-600" />
+        positions.push(
+          <div key={`line-${pos}`} className="flex items-center">
+            <div className="w-10 h-0.5 bg-slate-600" />
           </div>
         );
       }
@@ -224,23 +212,13 @@ export default function AttractionVisualizer({
     return (
       <div
         key={zone.id}
-        className={`relative bg-gradient-to-r ${getZoneColor(zone.id)} rounded-xl p-4 border border-slate-700/50`}
+        className={`relative bg-gradient-to-r ${getZoneColor(zone.id)} rounded-xl p-8 pt-24 border border-slate-700/50`}
       >
-        <div className="absolute top-2 left-4 text-xs font-bold text-slate-300">
+        <div className="absolute top-3 left-6 text-sm font-bold text-slate-300">
           {zone.name}
         </div>
-
-        {/* Two-tier layout */}
-        <div className="space-y-2 pt-6">
-          {/* Top tier: Events */}
-          <div className="flex items-center justify-center gap-1">
-            {eventTrack}
-          </div>
-
-          {/* Bottom tier: Car position */}
-          <div className="flex items-center justify-center gap-1">
-            {carTrack}
-          </div>
+        <div className="flex items-center justify-center gap-1.5">
+          {positions}
         </div>
       </div>
     );
