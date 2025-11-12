@@ -554,8 +554,8 @@ async def poll_plc_coils():
                 state_reg = read_register(HOLDING_REGISTERS['state'], 1)
                 error_reg = read_register(HOLDING_REGISTERS['last_error_code'], 1)
                 # Read HOLDING registers (MW102, MW103)
-                safety_ready_reg = read_holding_register(102, 1)
-                effects_ready_reg = read_holding_register(103, 1)
+                safety_ready_reg = read_register(102, 1)
+                effects_ready_reg = read_register(103, 1)
 
                 # Print state machine status every cycle
                 print(f"📊 [STATE] state={state_reg.get('value', '?')} | "
