@@ -431,6 +431,14 @@ async def poll_plc_coils():
                             modbus_clients['SAFETY'].write_coil(3, estop['value'])
                         if gate['success']:
                             modbus_clients['SAFETY'].write_coil(4, gate['value'])
+
+                        # Diagnostic: Read back Safety PLC coils and MW100
+                        if first_poll:
+                            safety_master = read_coil_from_plc('SAFETY', 0)
+                            safety_estop = read_coil_from_plc('SAFETY', 3)
+                            safety_gate = read_coil_from_plc('SAFETY', 4)
+                            safety_mw100 = read_register_from_plc('SAFETY', 100, 1)
+                            print(f"🔍 [SAFETY DIAGNOSTIC] Coils: master={safety_master.get('value')}, estop={safety_estop.get('value')}, gate={safety_gate.get('value')} | MW100={safety_mw100.get('value')}")
                     except Exception as e:
                         pass
 
