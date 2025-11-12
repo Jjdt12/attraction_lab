@@ -370,8 +370,37 @@ async def poll_plc_coils():
     while True:
         try:
             # Inter-PLC Communication Bridge: Run FIRST before reads
-            # Use INPUT REGISTERS instead of coils (OpenPLC coil limit is 0-27)
+            # CRITICAL: Bridge 3 must run BEFORE Bridge 1 to avoid race condition
             if modbus_client and is_plc_connected:
+                # Bridge 3: Copy control signals from MAIN to SAFETY PLC (runs FIRST)
+                if 'SAFETY' in modbus_clients and plc_connected_status.get('SAFETY'):
+                    try:
+                        # Read control signals from MAIN PLC
+                        master_enable = read_coil_from_plc('MAIN', 0)
+                        estop = read_coil_from_plc('MAIN', 3)
+                        gate = read_coil_from_plc('MAIN', 4)
+
+                        # Write to SAFETY PLC memory coils (%MX0.0=1024, %MX0.1=1025, %MX0.2=1026)
+                        if master_enable['success']:
+                            modbus_clients['SAFETY'].write_coil(1024, master_enable['value'])
+                        if estop['success']:
+                            modbus_clients['SAFETY'].write_coil(1025, estop['value'])
+                        if gate['success']:
+                            modbus_clients['SAFETY'].write_coil(1026, gate['value'])
+
+                        # Diagnostic: Read back Safety PLC memory coils and MW100
+                        if first_poll:
+                            safety_master = read_coil_from_plc('SAFETY', 1024)
+                            safety_estop = read_coil_from_plc('SAFETY', 1025)
+                            safety_gate = read_coil_from_plc('SAFETY', 1026)
+                            safety_mw100 = read_register_from_plc('SAFETY', 100, 1)
+                            print(f"🔍 [SAFETY DIAGNOSTIC] Memory Coils: MX0.0={safety_master.get('value')}, MX0.1={safety_estop.get('value')}, MX0.2={safety_gate.get('value')} | MW100={safety_mw100.get('value')}")
+                    except Exception as e:
+                        pass
+
+                # Small delay to allow Safety PLC scan cycle to complete (typically 50-100ms)
+                await asyncio.sleep(0.1)
+
                 # Bridge 1: Read safety_ok_reg from SAFETY PLC holding register, write to MAIN PLC input register
                 if 'SAFETY' in modbus_clients and plc_connected_status.get('SAFETY'):
                     try:
@@ -408,32 +437,6 @@ async def poll_plc_coils():
                             previous_register_states['effects_ready_bridge'] = 1
                 except Exception as e:
                     pass
-
-                # Bridge 3: Copy control signals from MAIN to SAFETY PLC
-                if 'SAFETY' in modbus_clients and plc_connected_status.get('SAFETY'):
-                    try:
-                        # Read control signals from MAIN PLC
-                        master_enable = read_coil_from_plc('MAIN', 0)
-                        estop = read_coil_from_plc('MAIN', 3)
-                        gate = read_coil_from_plc('MAIN', 4)
-
-                        # Write to SAFETY PLC memory coils (%MX0.0=1024, %MX0.1=1025, %MX0.2=1026)
-                        if master_enable['success']:
-                            modbus_clients['SAFETY'].write_coil(1024, master_enable['value'])
-                        if estop['success']:
-                            modbus_clients['SAFETY'].write_coil(1025, estop['value'])
-                        if gate['success']:
-                            modbus_clients['SAFETY'].write_coil(1026, gate['value'])
-
-                        # Diagnostic: Read back Safety PLC memory coils and MW100
-                        if first_poll:
-                            safety_master = read_coil_from_plc('SAFETY', 1024)
-                            safety_estop = read_coil_from_plc('SAFETY', 1025)
-                            safety_gate = read_coil_from_plc('SAFETY', 1026)
-                            safety_mw100 = read_register_from_plc('SAFETY', 100, 1)
-                            print(f"🔍 [SAFETY DIAGNOSTIC] Memory Coils: MX0.0={safety_master.get('value')}, MX0.1={safety_estop.get('value')}, MX0.2={safety_gate.get('value')} | MW100={safety_mw100.get('value')}")
-                    except Exception as e:
-                        pass
 
                 # Bridge 4: Copy MAIN position/speed/motor to SAFETY PLC
                 if 'SAFETY' in modbus_clients and plc_connected_status.get('SAFETY'):
