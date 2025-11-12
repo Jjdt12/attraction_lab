@@ -703,7 +703,15 @@ async def poll_plc_coils():
                         previous_value = previous_coil_states.get(state_key)
 
                         if previous_value is None:
+                            # First time reading - broadcast initial state
                             previous_coil_states[state_key] = current_value
+                            await broadcast({
+                                "type": "coil_change",
+                                "address": address,
+                                "name": name,
+                                "value": current_value,
+                                "plc": "EFFECTS",
+                            })
                         elif previous_value != current_value:
                             print(f"💡 [EFFECTS] {name} (coil {address}): {previous_value} -> {current_value}")
                             previous_coil_states[state_key] = current_value
