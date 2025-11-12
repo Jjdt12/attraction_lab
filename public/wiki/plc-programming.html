@@ -82,19 +82,39 @@
             <h2>Main Program Structure</h2>
             <div class="code-block">
 (* MAIN CONTROL PROGRAM *)
-PROGRAM MainControl
+PROGRAM attraction_control_main
 VAR
-    ride_state : INT := 0;  (* 0=IDLE, 1=RUNNING *)
-    position : INT := 0;
-    motor_running AT %QX0.26 : BOOL;
+    (* Modbus-mapped variables *)
+    start_command AT %QX0.1 : BOOL;
+    stop_command AT %QX0.2 : BOOL;
+    motor_running AT %QX3.2 : BOOL;
+    brake_engaged AT %QX3.3 : BOOL;
+
+    (* Memory Words *)
+    speed_setpoint AT %MW0 : INT;
+    current_position AT %MW1 : INT;
+    current_speed AT %MW2 : INT;
+    state AT %MW15 : INT;  (* 0=IDLE, 1=STARTING, 2=RUNNING, 3=STOPPING *)
+
+    (* Bridge registers from other PLCs *)
+    safety_plc_ready_reg AT %MW102 : INT;
+    effects_plc_ready_reg AT %MW103 : INT;
 END_VAR
 
-IF master_enable THEN
-    IF start_command THEN
+(* State machine logic *)
+CASE state OF
+    0: (* IDLE *)
+        motor_running := FALSE;
+        brake_engaged := TRUE;
+        IF start_command AND (safety_plc_ready_reg = 1) THEN
+            state := 1;
+        END_IF;
+
+    2: (* RUNNING *)
         motor_running := TRUE;
-        position := position + 1;
-    END_IF;
-END_IF;
+        brake_engaged := FALSE;
+        (* Position updates automatically via accumulator *)
+END_CASE;
 
 END_PROGRAM
             </div>
@@ -102,11 +122,22 @@ END_PROGRAM
             <h2>Memory Map</h2>
             <table>
                 <tr><th>Address</th><th>Variable</th><th>Description</th></tr>
-                <tr><td>%QX0.0</td><td>master_enable</td><td>Master system enable</td></tr>
-                <tr><td>%QX0.1</td><td>start_command</td><td>Start ride</td></tr>
-                <tr><td>%QX0.26</td><td>motor_running</td><td>Motor status</td></tr>
-                <tr><td>%MW0</td><td>position</td><td>Vehicle position</td></tr>
+                <tr><td>%QX0.0</td><td>master_enable</td><td>Master system enable (Coil 0)</td></tr>
+                <tr><td>%QX0.1</td><td>start_command</td><td>Start ride command (Coil 1)</td></tr>
+                <tr><td>%QX0.2</td><td>stop_command</td><td>Stop ride command (Coil 2)</td></tr>
+                <tr><td>%QX0.3</td><td>emergency_stop_button</td><td>E-stop status (Coil 3)</td></tr>
+                <tr><td>%QX0.4</td><td>safety_gate_closed</td><td>Safety gate status (Coil 4)</td></tr>
+                <tr><td>%QX3.2</td><td>motor_running</td><td>Motor running status (Coil 26)</td></tr>
+                <tr><td>%QX3.3</td><td>brake_engaged</td><td>Brake status (Coil 27)</td></tr>
+                <tr><td>%MW0</td><td>speed_setpoint</td><td>Target speed (Modbus 1024)</td></tr>
+                <tr><td>%MW1</td><td>current_position</td><td>Vehicle position 0-26 (Modbus 1025)</td></tr>
+                <tr><td>%MW2</td><td>current_speed</td><td>Actual speed (Modbus 1026)</td></tr>
+                <tr><td>%MW15</td><td>state</td><td>State machine value (Modbus 1039)</td></tr>
+                <tr><td>%MW102</td><td>safety_plc_ready_reg</td><td>Safety PLC status (Modbus 1126)</td></tr>
+                <tr><td>%MW103</td><td>effects_plc_ready_reg</td><td>Effects PLC status (Modbus 1127)</td></tr>
             </table>
+
+            <div class="info-box"><strong>📝 Note:</strong> %MW addresses are offset by 1024 in Modbus. For example, %MW1 maps to Modbus holding register address 1025.</div>
 
             <h2>Uploading to OpenPLC</h2>
             <ol>

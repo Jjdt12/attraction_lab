@@ -164,11 +164,11 @@
                 </tr>
                 <tr>
                     <td>I/O Count</td>
-                    <td>33 Coils (Digital Outputs), 10 Registers (Analog I/O)</td>
+                    <td>49 Coils (Digital I/O), 45+ Memory Words (MW registers)</td>
                 </tr>
                 <tr>
                     <td>Scan Time</td>
-                    <td>~10ms typical</td>
+                    <td>20ms (configured as T#20ms)</td>
                 </tr>
                 <tr>
                     <td>Communication</td>
@@ -206,7 +206,7 @@
                 </tr>
                 <tr>
                     <td>Scan Time</td>
-                    <td>~5ms (prioritized for safety response)</td>
+                    <td>20ms (configured as T#20ms)</td>
                 </tr>
                 <tr>
                     <td>Certification</td>
@@ -269,35 +269,37 @@
                     <th>Purpose</th>
                 </tr>
                 <tr>
-                    <td>0-32</td>
+                    <td>0-48</td>
                     <td>Coils (R/W)</td>
-                    <td>Digital control signals (enable, commands, status)</td>
+                    <td>Digital control signals, proximity sensors, event states</td>
                 </tr>
                 <tr>
-                    <td>0-9</td>
+                    <td>1024-1069</td>
                     <td>Holding Registers (R/W)</td>
-                    <td>Analog values (position, speed, counters)</td>
+                    <td>%MW registers: position, speed, state, diagnostics, counters</td>
                 </tr>
                 <tr>
-                    <td>0-9</td>
-                    <td>Input Registers (RO)</td>
-                    <td>Read-only system data (sensors, diagnostics)</td>
+                    <td>Effects: 60-66</td>
+                    <td>Effect Coils</td>
+                    <td>Show lighting, audio triggers, fog, strobe, laser effects</td>
                 </tr>
             </table>
 
             <h2>Inter-PLC Communication</h2>
             <p>
-                The three PLCs exchange status and coordination signals via dedicated Modbus coils:
+                The three PLCs exchange status and coordination signals via a SCADA bridge server that reads from one PLC and writes to another:
             </p>
             <ul>
-                <li><strong>Coil 31:</strong> Safety PLC Ready - Heartbeat from Safety to Main</li>
-                <li><strong>Coil 32:</strong> Effects PLC Ready - Heartbeat from Effects to Main</li>
-                <li><strong>Coils 8-16:</strong> Event Enable signals from Main to Safety</li>
-                <li><strong>Coils 17-25:</strong> Event Active feedback from Safety to Main</li>
+                <li><strong>Safety Status:</strong> SAFETY PLC writes to %MW100, MAIN PLC reads from %MW102 (bridged)</li>
+                <li><strong>Effects Status:</strong> EFFECTS PLC writes to %MW200, MAIN PLC reads from %MW103 (bridged)</li>
+                <li><strong>Proximity Sensors:</strong> MAIN PLC coils 40-48 bridged to SAFETY/EFFECTS %MW80-88</li>
+                <li><strong>Event Enables:</strong> MAIN PLC coils 8-16 bridged to EFFECTS %MW100-108</li>
+                <li><strong>Event Active States:</strong> SAFETY PLC coils 17-25 read by EFFECTS PLC</li>
+                <li><strong>Position Data:</strong> MAIN PLC %MW1 (position) bridged to EFFECTS %MW10</li>
             </ul>
 
             <div class="warning-box">
-                <strong>⚠️ Critical Design Rule:</strong> The Main PLC will not start the ride unless both Safety PLC Ready (Coil 31) and Effects PLC Ready (Coil 32) are TRUE. This ensures all systems are online before operation.
+                <strong>⚠️ Critical Design Rule:</strong> The Main PLC will not start the ride unless both safety_plc_ready_reg (%MW102) and effects_plc_ready_reg (%MW103) equal 1. The SCADA bridge server continuously synchronizes these status values between PLCs.
             </div>
 
             <h2>Network Topology</h2>
