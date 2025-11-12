@@ -110,6 +110,13 @@ HOLDING_REGISTERS = {
     # System Registers
     'alarm_register': 1024 + 30,     # %MW30 (bitfield for alarms)
     'stealth_counter': 1024 + 31,    # %MW31 (counts unauthorized actions)
+
+    # Diagnostic Registers
+    'motor_current_amps': 1024 + 40,      # %MW40
+    'hydraulic_pressure_psi': 1024 + 41,  # %MW41
+    'bearing_temp_celsius': 1024 + 42,    # %MW42
+    'brake_wear_percent': 1024 + 43,      # %MW43
+    'vibration_level': 1024 + 44,         # %MW44
 }
 
 # ============================================
@@ -158,13 +165,14 @@ def get_all_addresses():
 COIL_RANGE = (0, 33)  # Read coils 0-32 (all coils including PLC ready signals)
 INPUT_REGISTER_RANGE = (0, 1)  # Read input register 0 (speed_setpoint)
 HOLDING_REGISTER_RANGES = [
-    (1, 2),  # %QW1-QW2 (current_position, current_speed)
-    (10, 3),  # %QW10-QW12 (zone_1_position, zone_2_position, zone_3_position)
-    (1024 + 5, 1),  # %MW5 (last_error_code)
+    (1024 + 0, 3),  # %MW0-MW2 (speed_setpoint, current_position, current_speed)
+    (1024 + 3, 2),  # %MW3-MW4 (runtime_hours_low, runtime_hours_high)
+    (1024 + 5, 3),  # %MW5-MW7 (last_error_code, cycle_counter_low, cycle_counter_high)
+    (1024 + 10, 3),  # %MW10-MW12 (zone_1_position, zone_2_position, zone_3_position)
     (1024 + 15, 1),  # %MW15 (STATE)
     (1024 + 20, 9),  # %MW20-MW28 (event counters)
     (1024 + 30, 2),  # %MW30-MW31 (alarm_register, stealth_counter)
-    (2048 + 2, 4),  # %MD2-MD3 (runtime_hours, cycle_counter - each is 2 registers)
+    (1024 + 40, 5),  # %MW40-MW44 (motor_current_amps, hydraulic_pressure_psi, bearing_temp_celsius, brake_wear_percent, vibration_level)
 ]
 
 # ============================================
