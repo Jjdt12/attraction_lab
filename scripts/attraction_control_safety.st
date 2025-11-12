@@ -54,7 +54,9 @@ VAR_EXTERNAL
     alarm_register : INT;
     stealth_counter : INT;
     watchdog_timeout_seconds : INT;
+END_VAR
 
+VAR
     (* Local-only variables - not mapped to Modbus *)
     scan_counter : DINT;
     last_event_1 : BOOL;

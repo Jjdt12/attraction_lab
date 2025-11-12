@@ -28,6 +28,9 @@ VAR_EXTERNAL
     brake_wear_percent : INT;
     vibration_level : INT;
 
+    safety_plc_ready_reg : INT;
+    effects_plc_ready_reg : INT;
+
     proximity_sensor_1 : BOOL;
     proximity_sensor_2 : BOOL;
     proximity_sensor_3 : BOOL;
