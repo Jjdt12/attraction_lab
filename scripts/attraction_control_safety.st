@@ -1,9 +1,9 @@
 PROGRAM attraction_control_safety
 VAR
-    (* Modbus-mapped control inputs from bridge *)
-    master_enable AT %MX0.0 : BOOL;
-    emergency_stop_button AT %MX0.1 : BOOL;
-    safety_gate_closed AT %MX0.2 : BOOL;
+    (* Modbus-mapped control inputs from bridge - converted to %QX *)
+    master_enable AT %QX0.0 : BOOL;
+    emergency_stop_button AT %QX0.1 : BOOL;
+    safety_gate_closed AT %QX0.2 : BOOL;
 
     (* Output register for MAIN PLC to read *)
     safety_ok_reg AT %MW100 : INT;
@@ -44,7 +44,7 @@ VAR
     (* Data from MAIN PLC via bridge *)
     current_position_from_main AT %MW10 : INT;
     current_speed_from_main AT %MW11 : INT;
-    motor_running_from_main AT %MX50.0 : BOOL;
+    motor_running_from_main AT %QX50.0 : BOOL;
 
     proximity_sensor_1_from_main AT %MW80 : INT;
     proximity_sensor_2_from_main AT %MW81 : INT;

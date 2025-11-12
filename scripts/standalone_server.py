@@ -380,21 +380,21 @@ async def poll_plc_coils():
                         estop = read_coil_from_plc('MAIN', 3)
                         gate = read_coil_from_plc('MAIN', 4)
 
-                        # Write to SAFETY PLC memory coils (%MX0.0=1024, %MX0.1=1025, %MX0.2=1026)
+                        # Write to SAFETY PLC coils (%QX0.0=0, %QX0.1=1, %QX0.2=2)
                         if master_enable['success']:
-                            modbus_clients['SAFETY'].write_coil(1024, master_enable['value'])
+                            modbus_clients['SAFETY'].write_coil(0, master_enable['value'])
                         if estop['success']:
-                            modbus_clients['SAFETY'].write_coil(1025, estop['value'])
+                            modbus_clients['SAFETY'].write_coil(1, estop['value'])
                         if gate['success']:
-                            modbus_clients['SAFETY'].write_coil(1026, gate['value'])
+                            modbus_clients['SAFETY'].write_coil(2, gate['value'])
 
-                        # Diagnostic: Read back Safety PLC memory coils and MW100
+                        # Diagnostic: Read back Safety PLC coils and MW100
                         if first_poll:
-                            safety_master = read_coil_from_plc('SAFETY', 1024)
-                            safety_estop = read_coil_from_plc('SAFETY', 1025)
-                            safety_gate = read_coil_from_plc('SAFETY', 1026)
+                            safety_master = read_coil_from_plc('SAFETY', 0)
+                            safety_estop = read_coil_from_plc('SAFETY', 1)
+                            safety_gate = read_coil_from_plc('SAFETY', 2)
                             safety_mw100 = read_register_from_plc('SAFETY', 100, 1)
-                            print(f"🔍 [SAFETY DIAGNOSTIC] Memory Coils: MX0.0={safety_master.get('value')}, MX0.1={safety_estop.get('value')}, MX0.2={safety_gate.get('value')} | MW100={safety_mw100.get('value')}")
+                            print(f"🔍 [SAFETY DIAGNOSTIC] Coils: QX0.0={safety_master.get('value')}, QX0.1={safety_estop.get('value')}, QX0.2={safety_gate.get('value')} | MW100={safety_mw100.get('value')}")
                     except Exception as e:
                         pass
 
@@ -439,8 +439,8 @@ async def poll_plc_coils():
                 if 'SAFETY' in modbus_clients and plc_connected_status.get('SAFETY'):
                     try:
                         # Read from MAIN PLC holding registers
-                        position = read_register_from_plc('MAIN', 1, 1)  # current_position at %QW1
-                        speed = read_register_from_plc('MAIN', 2, 1)  # current_speed at %QW2
+                        position = read_register_from_plc('MAIN', 1025, 1)  # current_position at %MW1 (1024+1)
+                        speed = read_register_from_plc('MAIN', 1026, 1)  # current_speed at %MW2 (1024+2)
                         motor = read_coil_from_plc('MAIN', 26)  # motor_running at %QX3.2 (bit 26)
 
                         # Write to SAFETY PLC %MW10 and %MW11 (Modbus addresses 1034, 1035)
@@ -451,7 +451,7 @@ async def poll_plc_coils():
                         if speed['success']:
                             modbus_clients['SAFETY'].write_register(1035, speed['value'])  # %MW11
                         if motor['success']:
-                            modbus_clients['SAFETY'].write_coil(50, motor['value'])  # %MX50 (memory bit)
+                            modbus_clients['SAFETY'].write_coil(400, motor['value'])  # %QX50.0 (coil 400)
                     except Exception as e:
                         print(f"⚠️ [BRIDGE] Error in Bridge 4: {e}")
 
@@ -459,7 +459,7 @@ async def poll_plc_coils():
                 if 'EFFECTS' in modbus_clients and plc_connected_status.get('EFFECTS'):
                     try:
                         # Read from MAIN PLC
-                        position = read_register_from_plc('MAIN', 1, 1)  # current_position
+                        position = read_register_from_plc('MAIN', 1025, 1)  # current_position at %MW1
 
                         # Write to EFFECTS PLC %MW10 (Modbus address 1034)
                         if position['success']:

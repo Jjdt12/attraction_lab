@@ -74,24 +74,27 @@ COILS = {
 # INPUT REGISTERS (%IW) - 16-bit inputs
 # ============================================
 INPUT_REGISTERS = {
-    'speed_setpoint': 0,             # %IW0 (0-100%)
+    # MAIN PLC now uses %MW instead of %IW
 }
 
 # ============================================
-# HOLDING REGISTERS (%QW) - 16-bit outputs
+# HOLDING REGISTERS - All converted to %MW
+# %MW addresses start at Modbus 1024
 # ============================================
 HOLDING_REGISTERS = {
-    'current_position': 1,           # %QW1 (0-360 degrees)
-    'current_speed': 2,              # %QW2 (actual speed after ramping)
+    # MAIN PLC - converted from %IW/%QW to %MW
+    'speed_setpoint': 1024 + 0,      # %MW0 (was %IW0)
+    'current_position': 1024 + 1,    # %MW1 (was %QW1)
+    'current_speed': 1024 + 2,       # %MW2 (was %QW2)
 
     # Zone Position Indicators
-    'zone_1_position': 10,           # %QW10 (1 if in zone, else 0)
-    'zone_2_position': 11,           # %QW11
-    'zone_3_position': 12,           # %QW12
+    'zone_1_position': 1024 + 10,    # %MW10 (was %QW10)
+    'zone_2_position': 1024 + 11,    # %MW11 (was %QW11)
+    'zone_3_position': 1024 + 12,    # %MW12 (was %QW12)
 
-    # Memory Words (%MW) - offset by 1024
-    'last_error_code': 1024 + 5,    # %MW5
-    'state': 1024 + 15,              # %MW15 - State machine
+    # State and diagnostics
+    'last_error_code': 1024 + 5,     # %MW5
+    'state': 1024 + 15,               # %MW15 - State machine
 
     # Event Counters
     'event_1_counter': 1024 + 20,    # %MW20
@@ -110,12 +113,14 @@ HOLDING_REGISTERS = {
 }
 
 # ============================================
-# DOUBLE-WORD REGISTERS (%MD) - 32-bit
-# Offset by 2048, uses 2 consecutive registers
+# DOUBLE-WORD REGISTERS - Converted to two %MW
+# (DINT split into low/high INT registers)
 # ============================================
 HOLDING_REGISTERS_DINT = {
-    'runtime_hours': 2048 + 2,       # %MD2
-    'cycle_counter': 2048 + 3,       # %MD3
+    'runtime_hours_low': 1024 + 3,   # %MW3 (was %MD2 low word)
+    'runtime_hours_high': 1024 + 4,  # %MW4 (was %MD2 high word)
+    'cycle_counter_low': 1024 + 6,   # %MW6 (was %MD3 low word)
+    'cycle_counter_high': 1024 + 7,  # %MW7 (was %MD3 high word)
 }
 
 # ============================================
