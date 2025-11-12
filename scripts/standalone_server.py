@@ -417,21 +417,21 @@ async def poll_plc_coils():
                         estop = read_coil_from_plc('MAIN', 3)
                         gate = read_coil_from_plc('MAIN', 4)
 
-                        # Write to SAFETY PLC as holding registers (MW0, MW3, MW4)
+                        # Write to SAFETY PLC memory coils (%MX0.0=1024, %MX0.1=1025, %MX0.2=1026)
                         if master_enable['success']:
-                            modbus_clients['SAFETY'].write_register(0, 1 if master_enable['value'] else 0)
+                            modbus_clients['SAFETY'].write_coil(1024, master_enable['value'])
                         if estop['success']:
-                            modbus_clients['SAFETY'].write_register(3, 1 if estop['value'] else 0)
+                            modbus_clients['SAFETY'].write_coil(1025, estop['value'])
                         if gate['success']:
-                            modbus_clients['SAFETY'].write_register(4, 1 if gate['value'] else 0)
+                            modbus_clients['SAFETY'].write_coil(1026, gate['value'])
 
-                        # Diagnostic: Read back Safety PLC registers and MW100
+                        # Diagnostic: Read back Safety PLC memory coils and MW100
                         if first_poll:
-                            safety_master = read_register_from_plc('SAFETY', 0, 1)
-                            safety_estop = read_register_from_plc('SAFETY', 3, 1)
-                            safety_gate = read_register_from_plc('SAFETY', 4, 1)
+                            safety_master = read_coil_from_plc('SAFETY', 1024)
+                            safety_estop = read_coil_from_plc('SAFETY', 1025)
+                            safety_gate = read_coil_from_plc('SAFETY', 1026)
                             safety_mw100 = read_register_from_plc('SAFETY', 100, 1)
-                            print(f"🔍 [SAFETY DIAGNOSTIC] Registers: MW0={safety_master.get('value')}, MW3={safety_estop.get('value')}, MW4={safety_gate.get('value')} | MW100={safety_mw100.get('value')}")
+                            print(f"🔍 [SAFETY DIAGNOSTIC] Memory Coils: MX0.0={safety_master.get('value')}, MX0.1={safety_estop.get('value')}, MX0.2={safety_gate.get('value')} | MW100={safety_mw100.get('value')}")
                     except Exception as e:
                         pass
 

@@ -101,9 +101,9 @@ END_IF;
 scan_counter := scan_counter + 1;
 
 safety_ok := FALSE;
-IF safety_gate_closed <> 0 THEN
-    IF emergency_stop_button = 0 THEN
-        IF master_enable <> 0 THEN
+IF safety_gate_closed THEN
+    IF NOT emergency_stop_button THEN
+        IF master_enable THEN
             safety_ok := TRUE;
         END_IF;
     END_IF;
@@ -235,9 +235,12 @@ END_PROGRAM
 CONFIGURATION Config0
     RESOURCE Res0 ON PLC
         VAR_GLOBAL
-            master_enable AT %MW0 : INT;
-            emergency_stop_button AT %MW3 : INT;
-            safety_gate_closed AT %MW4 : INT;
+            (* Control inputs from MAIN PLC via Modbus - using %MX for inter-PLC communication *)
+            master_enable AT %MX0.0 : BOOL;
+            emergency_stop_button AT %MX0.1 : BOOL;
+            safety_gate_closed AT %MX0.2 : BOOL;
+
+            (* Output register for MAIN PLC to read *)
             safety_ok_reg AT %MW100 : INT;
 
             event_1_enable AT %QX1.0 : BOOL;  (* bit 8 = byte 1, bit 0 *)
