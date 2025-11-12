@@ -30,6 +30,16 @@ VAR_EXTERNAL
 
     safety_plc_ready_reg : INT;
     effects_plc_ready_reg : INT;
+
+    proximity_sensor_1 : BOOL;
+    proximity_sensor_2 : BOOL;
+    proximity_sensor_3 : BOOL;
+    proximity_sensor_4 : BOOL;
+    proximity_sensor_5 : BOOL;
+    proximity_sensor_6 : BOOL;
+    proximity_sensor_7 : BOOL;
+    proximity_sensor_8 : BOOL;
+    proximity_sensor_9 : BOOL;
 END_VAR
 
 VAR
@@ -235,6 +245,20 @@ END_IF;
 
 last_position := current_position;
 
+(* ================================================ *)
+(* PROXIMITY SENSOR SIMULATION                      *)
+(* Each sensor detects when car is within ±1 pos   *)
+(* ================================================ *)
+proximity_sensor_1 := (current_position >= 0 AND current_position <= 2);
+proximity_sensor_2 := (current_position >= 3 AND current_position <= 5);
+proximity_sensor_3 := (current_position >= 6 AND current_position <= 8);
+proximity_sensor_4 := (current_position >= 9 AND current_position <= 11);
+proximity_sensor_5 := (current_position >= 12 AND current_position <= 14);
+proximity_sensor_6 := (current_position >= 15 AND current_position <= 17);
+proximity_sensor_7 := (current_position >= 18 AND current_position <= 20);
+proximity_sensor_8 := (current_position >= 21 AND current_position <= 23);
+proximity_sensor_9 := (current_position >= 24 AND current_position <= 26);
+
 END_PROGRAM
 
 CONFIGURATION Config0
@@ -271,6 +295,16 @@ CONFIGURATION Config0
 
             runtime_hours AT %MD2 : DINT;
             cycle_counter AT %MD3 : DINT;
+
+            proximity_sensor_1 AT %QX4.0 : BOOL;
+            proximity_sensor_2 AT %QX4.1 : BOOL;
+            proximity_sensor_3 AT %QX4.2 : BOOL;
+            proximity_sensor_4 AT %QX4.3 : BOOL;
+            proximity_sensor_5 AT %QX4.4 : BOOL;
+            proximity_sensor_6 AT %QX4.5 : BOOL;
+            proximity_sensor_7 AT %QX4.6 : BOOL;
+            proximity_sensor_8 AT %QX4.7 : BOOL;
+            proximity_sensor_9 AT %QX5.0 : BOOL;
         END_VAR
 
         TASK task0(INTERVAL := T#20ms, PRIORITY := 0);

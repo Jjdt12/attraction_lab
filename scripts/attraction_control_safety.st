@@ -40,6 +40,16 @@ VAR_EXTERNAL
     current_speed_from_main : INT;
     motor_running_from_main : BOOL;
 
+    proximity_sensor_1_from_main : BOOL;
+    proximity_sensor_2_from_main : BOOL;
+    proximity_sensor_3_from_main : BOOL;
+    proximity_sensor_4_from_main : BOOL;
+    proximity_sensor_5_from_main : BOOL;
+    proximity_sensor_6_from_main : BOOL;
+    proximity_sensor_7_from_main : BOOL;
+    proximity_sensor_8_from_main : BOOL;
+    proximity_sensor_9_from_main : BOOL;
+
     safety_violation_count : INT;
     alarm_register : INT;
     stealth_counter : INT;
@@ -119,6 +129,12 @@ IF emergency_stop_button THEN
     alert_active := TRUE;
 END_IF;
 
+(* ============================================== *)
+(* PROXIMITY SENSOR-BASED EVENT DETECTION        *)
+(* Events trigger when sensors detect the car    *)
+(* Counter increments on rising edge only        *)
+(* ============================================== *)
+
 event_1_active := FALSE;
 event_2_active := FALSE;
 event_3_active := FALSE;
@@ -129,101 +145,83 @@ event_7_active := FALSE;
 event_8_active := FALSE;
 event_9_active := FALSE;
 
-IF event_1_enable THEN
-    IF current_position_from_main >= 0 AND current_position_from_main <= 2 THEN
-        event_1_active := TRUE;
-        IF NOT last_event_1 THEN
-            event_1_counter := event_1_counter + 1;
-        END_IF;
+IF event_1_enable AND proximity_sensor_1_from_main THEN
+    event_1_active := TRUE;
+    IF NOT last_event_1 THEN
+        event_1_counter := event_1_counter + 1;
     END_IF;
 END_IF;
 last_event_1 := event_1_active;
 
-IF event_2_enable THEN
-    IF current_position_from_main >= 3 AND current_position_from_main <= 5 THEN
-        event_2_active := TRUE;
-        IF event_2_active THEN
-            event_2_counter := event_2_counter + 1;
-        END_IF;
-        IF NOT safety_ok THEN
-            alert_active := TRUE;
-        END_IF;
+IF event_2_enable AND proximity_sensor_2_from_main THEN
+    event_2_active := TRUE;
+    IF NOT last_event_1 THEN
+        event_2_counter := event_2_counter + 1;
+    END_IF;
+    IF NOT safety_ok THEN
+        alert_active := TRUE;
     END_IF;
 END_IF;
 
-IF event_3_enable THEN
-    IF current_position_from_main >= 6 AND current_position_from_main <= 8 THEN
-        event_3_active := TRUE;
-        IF event_3_active THEN
-            event_3_counter := event_3_counter + 1;
-        END_IF;
+IF event_3_enable AND proximity_sensor_3_from_main THEN
+    event_3_active := TRUE;
+    IF NOT last_event_1 THEN
+        event_3_counter := event_3_counter + 1;
     END_IF;
 END_IF;
 
-IF event_4_enable THEN
-    IF current_position_from_main >= 9 AND current_position_from_main <= 11 THEN
-        event_4_active := TRUE;
-        IF NOT last_event_4 THEN
-            event_4_counter := event_4_counter + 1;
-        END_IF;
+IF event_4_enable AND proximity_sensor_4_from_main THEN
+    event_4_active := TRUE;
+    IF NOT last_event_4 THEN
+        event_4_counter := event_4_counter + 1;
     END_IF;
 END_IF;
 last_event_4 := event_4_active;
 
-IF event_5_enable THEN
-    IF current_position_from_main >= 12 AND current_position_from_main <= 14 THEN
-        event_5_active := TRUE;
-        IF event_5_active THEN
-            event_5_counter := event_5_counter + 1;
-        END_IF;
-        IF current_speed_from_main > 70 THEN
-            alert_active := TRUE;
-            safety_violation_count := safety_violation_count + 1;
-        END_IF;
+IF event_5_enable AND proximity_sensor_5_from_main THEN
+    event_5_active := TRUE;
+    IF NOT last_event_4 THEN
+        event_5_counter := event_5_counter + 1;
+    END_IF;
+    IF current_speed_from_main > 70 THEN
+        alert_active := TRUE;
+        safety_violation_count := safety_violation_count + 1;
     END_IF;
 END_IF;
 
-IF event_6_enable THEN
-    IF current_position_from_main >= 15 AND current_position_from_main <= 17 THEN
-        event_6_active := TRUE;
-        IF event_6_active THEN
-            event_6_counter := event_6_counter + 1;
-        END_IF;
+IF event_6_enable AND proximity_sensor_6_from_main THEN
+    event_6_active := TRUE;
+    IF NOT last_event_4 THEN
+        event_6_counter := event_6_counter + 1;
     END_IF;
 END_IF;
 
-IF event_7_enable THEN
-    IF current_position_from_main >= 18 AND current_position_from_main <= 20 THEN
-        event_7_active := TRUE;
-        IF event_7_active THEN
-            event_7_counter := event_7_counter + 1;
-        END_IF;
-        IF current_speed_from_main > 50 THEN
-            alert_active := TRUE;
-            safety_violation_count := safety_violation_count + 1;
-        END_IF;
+IF event_7_enable AND proximity_sensor_7_from_main THEN
+    event_7_active := TRUE;
+    IF NOT last_event_4 THEN
+        event_7_counter := event_7_counter + 1;
+    END_IF;
+    IF current_speed_from_main > 50 THEN
+        alert_active := TRUE;
+        safety_violation_count := safety_violation_count + 1;
     END_IF;
 END_IF;
 
-IF event_8_enable THEN
-    IF current_position_from_main >= 21 AND current_position_from_main <= 23 THEN
-        event_8_active := TRUE;
-        IF event_8_active THEN
-            event_8_counter := event_8_counter + 1;
-        END_IF;
-        IF current_speed_from_main > 30 THEN
-            alert_active := TRUE;
-            safety_violation_count := safety_violation_count + 1;
-        END_IF;
+IF event_8_enable AND proximity_sensor_8_from_main THEN
+    event_8_active := TRUE;
+    IF NOT last_event_4 THEN
+        event_8_counter := event_8_counter + 1;
+    END_IF;
+    IF current_speed_from_main > 30 THEN
+        alert_active := TRUE;
+        safety_violation_count := safety_violation_count + 1;
     END_IF;
 END_IF;
 
-IF event_9_enable THEN
-    IF current_position_from_main >= 24 AND current_position_from_main <= 26 THEN
-        event_9_active := TRUE;
-        IF event_9_active THEN
-            event_9_counter := event_9_counter + 1;
-        END_IF;
+IF event_9_enable AND proximity_sensor_9_from_main THEN
+    event_9_active := TRUE;
+    IF NOT last_event_4 THEN
+        event_9_counter := event_9_counter + 1;
     END_IF;
 END_IF;
 
@@ -275,6 +273,16 @@ CONFIGURATION Config0
             current_position_from_main AT %MW10 : INT;
             current_speed_from_main AT %MW11 : INT;
             motor_running_from_main AT %MX50 : BOOL;  (* bit 50 via bridge *)
+
+            proximity_sensor_1_from_main AT %MW80 : BOOL;
+            proximity_sensor_2_from_main AT %MW81 : BOOL;
+            proximity_sensor_3_from_main AT %MW82 : BOOL;
+            proximity_sensor_4_from_main AT %MW83 : BOOL;
+            proximity_sensor_5_from_main AT %MW84 : BOOL;
+            proximity_sensor_6_from_main AT %MW85 : BOOL;
+            proximity_sensor_7_from_main AT %MW86 : BOOL;
+            proximity_sensor_8_from_main AT %MW87 : BOOL;
+            proximity_sensor_9_from_main AT %MW88 : BOOL;
 
             safety_violation_count AT %MW50 : INT;
             alarm_register AT %MW30 : INT;

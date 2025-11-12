@@ -56,6 +56,17 @@ COILS = {
     'safety_ok': 30,                 # %QX0.30
     'safety_plc_ready': 31,          # %QX0.31 - Safety PLC handshake
     'effects_plc_ready': 32,         # %QX0.32 - Effects PLC handshake
+
+    # Proximity Sensors (READ-ONLY outputs from Main PLC)
+    'proximity_sensor_1': 32,        # %QX4.0 - Sensor at pos 0-2 (Loading Gate)
+    'proximity_sensor_2': 33,        # %QX4.1 - Sensor at pos 3-5 (Safety Interlock)
+    'proximity_sensor_3': 34,        # %QX4.2 - Sensor at pos 6-8 (Launch)
+    'proximity_sensor_4': 35,        # %QX4.3 - Sensor at pos 9-11 (Photo Flash)
+    'proximity_sensor_5': 36,        # %QX4.4 - Sensor at pos 12-14 (Mid Brake)
+    'proximity_sensor_6': 37,        # %QX4.5 - Sensor at pos 15-17 (Track Switch)
+    'proximity_sensor_7': 38,        # %QX4.6 - Sensor at pos 18-20 (Final Brake)
+    'proximity_sensor_8': 39,        # %QX4.7 - Sensor at pos 21-23 (Station Approach)
+    'proximity_sensor_9': 40,        # %QX5.0 - Sensor at pos 24-26 (Unload Platform)
 }
 
 # ============================================

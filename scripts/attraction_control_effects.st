@@ -33,6 +33,16 @@ VAR
     event_1_active_from_safety_reg AT %MW70 : INT;
     event_4_active_from_safety_reg AT %MW71 : INT;
 
+    proximity_sensor_1_from_main AT %MW80 : INT;
+    proximity_sensor_2_from_main AT %MW81 : INT;
+    proximity_sensor_3_from_main AT %MW82 : INT;
+    proximity_sensor_4_from_main AT %MW83 : INT;
+    proximity_sensor_5_from_main AT %MW84 : INT;
+    proximity_sensor_6_from_main AT %MW85 : INT;
+    proximity_sensor_7_from_main AT %MW86 : INT;
+    proximity_sensor_8_from_main AT %MW87 : INT;
+    proximity_sensor_9_from_main AT %MW88 : INT;
+
     lighting_scene AT %MW60 : INT;
     audio_volume AT %MW61 : INT;
     effect_intensity AT %MW62 : INT;
@@ -71,6 +81,16 @@ VAR
 
     event_1_active_from_safety : BOOL;
     event_4_active_from_safety : BOOL;
+
+    proximity_sensor_1 : BOOL;
+    proximity_sensor_2 : BOOL;
+    proximity_sensor_3 : BOOL;
+    proximity_sensor_4 : BOOL;
+    proximity_sensor_5 : BOOL;
+    proximity_sensor_6 : BOOL;
+    proximity_sensor_7 : BOOL;
+    proximity_sensor_8 : BOOL;
+    proximity_sensor_9 : BOOL;
 END_VAR
 
 IF scan_counter = 0 THEN
@@ -119,6 +139,22 @@ event_9_enable := (event_9_enable_reg <> 0);
 event_1_active_from_safety := (event_1_active_from_safety_reg <> 0);
 event_4_active_from_safety := (event_4_active_from_safety_reg <> 0);
 
+(* Convert INT registers to BOOL for proximity sensors *)
+proximity_sensor_1 := (proximity_sensor_1_from_main <> 0);
+proximity_sensor_2 := (proximity_sensor_2_from_main <> 0);
+proximity_sensor_3 := (proximity_sensor_3_from_main <> 0);
+proximity_sensor_4 := (proximity_sensor_4_from_main <> 0);
+proximity_sensor_5 := (proximity_sensor_5_from_main <> 0);
+proximity_sensor_6 := (proximity_sensor_6_from_main <> 0);
+proximity_sensor_7 := (proximity_sensor_7_from_main <> 0);
+proximity_sensor_8 := (proximity_sensor_8_from_main <> 0);
+proximity_sensor_9 := (proximity_sensor_9_from_main <> 0);
+
+(* ============================================== *)
+(* PROXIMITY SENSOR-BASED EVENT DETECTION        *)
+(* Events activate when sensors detect the car   *)
+(* ============================================== *)
+
 event_1_active := FALSE;
 event_2_active := FALSE;
 event_3_active := FALSE;
@@ -129,85 +165,67 @@ event_7_active := FALSE;
 event_8_active := FALSE;
 event_9_active := FALSE;
 
-IF event_1_enable AND current_position_from_main >= 0 AND current_position_from_main <= 2 THEN
+IF event_1_enable AND proximity_sensor_1 THEN
     event_1_active := TRUE;
     IF last_position < 0 OR last_position > 2 THEN
         event_1_counter := event_1_counter + 1;
     END_IF;
-ELSE
-    event_1_active := FALSE;
 END_IF;
 
-IF event_2_enable AND current_position_from_main >= 3 AND current_position_from_main <= 5 THEN
+IF event_2_enable AND proximity_sensor_2 THEN
     event_2_active := TRUE;
     IF last_position < 3 OR last_position > 5 THEN
         event_2_counter := event_2_counter + 1;
     END_IF;
-ELSE
-    event_2_active := FALSE;
 END_IF;
 
-IF event_3_enable AND current_position_from_main >= 6 AND current_position_from_main <= 8 THEN
+IF event_3_enable AND proximity_sensor_3 THEN
     event_3_active := TRUE;
     IF last_position < 6 OR last_position > 8 THEN
         event_3_counter := event_3_counter + 1;
     END_IF;
-ELSE
-    event_3_active := FALSE;
 END_IF;
 
-IF event_4_enable AND current_position_from_main >= 9 AND current_position_from_main <= 11 THEN
+IF event_4_enable AND proximity_sensor_4 THEN
     event_4_active := TRUE;
     IF last_position < 9 OR last_position > 11 THEN
         event_4_counter := event_4_counter + 1;
     END_IF;
-ELSE
-    event_4_active := FALSE;
 END_IF;
 
-IF event_5_enable AND current_position_from_main >= 12 AND current_position_from_main <= 14 THEN
+IF event_5_enable AND proximity_sensor_5 THEN
     event_5_active := TRUE;
     IF last_position < 12 OR last_position > 14 THEN
         event_5_counter := event_5_counter + 1;
     END_IF;
-ELSE
-    event_5_active := FALSE;
 END_IF;
 
-IF event_6_enable AND current_position_from_main >= 15 AND current_position_from_main <= 17 THEN
+IF event_6_enable AND proximity_sensor_6 THEN
     event_6_active := TRUE;
     IF last_position < 15 OR last_position > 17 THEN
         event_6_counter := event_6_counter + 1;
     END_IF;
-ELSE
-    event_6_active := FALSE;
 END_IF;
 
-IF event_7_enable AND current_position_from_main >= 18 AND current_position_from_main <= 20 THEN
+IF event_7_enable AND proximity_sensor_7 THEN
     event_7_active := TRUE;
     IF last_position < 18 OR last_position > 20 THEN
         event_7_counter := event_7_counter + 1;
     END_IF;
-ELSE
-    event_7_active := FALSE;
 END_IF;
 
-IF event_8_enable AND current_position_from_main >= 21 AND current_position_from_main <= 23 THEN
+IF event_8_enable AND proximity_sensor_8 THEN
     event_8_active := TRUE;
     IF last_position < 21 OR last_position > 23 THEN
         event_8_counter := event_8_counter + 1;
     END_IF;
-ELSE
-    event_8_active := FALSE;
 END_IF;
 
-IF event_9_enable AND current_position_from_main >= 24 AND current_position_from_main <= 26 THEN
+IF event_9_enable AND proximity_sensor_9 THEN
     event_9_active := TRUE;
     IF last_position < 24 OR last_position > 26 THEN
         event_9_counter := event_9_counter + 1;
     END_IF;
-ELSE
-    event_9_active := FALSE;
 END_IF;
 
 IF event_4_active_from_safety THEN
@@ -216,7 +234,13 @@ ELSE
     flash_light := FALSE;
 END_IF;
 
-IF current_position_from_main >= 0 AND current_position_from_main <= 5 THEN
+(* ============================================== *)
+(* SHOW EFFECTS BASED ON PROXIMITY SENSORS       *)
+(* Effects activate when sensors detect the car  *)
+(* ============================================== *)
+
+IF proximity_sensor_1 OR proximity_sensor_2 THEN
+    (* Zone 1: Loading & Launch (pos 0-5) *)
     lighting_scene := 1;
     show_lighting_on := TRUE;
     audio_trigger_1 := TRUE;
@@ -225,7 +249,8 @@ IF current_position_from_main >= 0 AND current_position_from_main <= 5 THEN
     fog_machine_on := FALSE;
     strobe_active := FALSE;
     laser_effect_on := FALSE;
-ELSIF current_position_from_main >= 6 AND current_position_from_main <= 11 THEN
+ELSIF proximity_sensor_3 OR proximity_sensor_4 THEN
+    (* Zone 2 Early: Launch to Photo (pos 6-11) *)
     lighting_scene := 2;
     show_lighting_on := TRUE;
     audio_trigger_1 := FALSE;
@@ -234,7 +259,8 @@ ELSIF current_position_from_main >= 6 AND current_position_from_main <= 11 THEN
     fog_machine_on := TRUE;
     strobe_active := TRUE;
     laser_effect_on := TRUE;
-ELSIF current_position_from_main >= 12 AND current_position_from_main <= 17 THEN
+ELSIF proximity_sensor_5 OR proximity_sensor_6 THEN
+    (* Zone 2 Late: Brake to Switch (pos 12-17) *)
     lighting_scene := 3;
     show_lighting_on := TRUE;
     audio_trigger_1 := FALSE;
@@ -243,7 +269,8 @@ ELSIF current_position_from_main >= 12 AND current_position_from_main <= 17 THEN
     fog_machine_on := TRUE;
     strobe_active := FALSE;
     laser_effect_on := TRUE;
-ELSIF current_position_from_main >= 18 AND current_position_from_main <= 26 THEN
+ELSIF proximity_sensor_7 OR proximity_sensor_8 OR proximity_sensor_9 THEN
+    (* Zone 3: Return & Station (pos 18-26) *)
     lighting_scene := 4;
     show_lighting_on := TRUE;
     audio_trigger_1 := TRUE;
@@ -253,6 +280,7 @@ ELSIF current_position_from_main >= 18 AND current_position_from_main <= 26 THEN
     strobe_active := FALSE;
     laser_effect_on := FALSE;
 ELSE
+    (* No proximity sensor active - all effects off *)
     show_lighting_on := FALSE;
     audio_trigger_1 := FALSE;
     audio_trigger_2 := FALSE;
