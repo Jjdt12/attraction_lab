@@ -389,60 +389,33 @@ async def poll_plc_coils():
 
     while True:
         try:
-            # Inter-PLC Communication Bridge: Run FIRST before reads
-            # CRITICAL: Bridge 3 must run BEFORE Bridge 1 to avoid race condition
+            # Inter-PLC Communication Bridge
+            # NEW DESIGN: SAFETY PLC is authoritative, MAIN PLC just listens
             if modbus_client and is_plc_connected:
-                # Bridge 3: Copy control signals from MAIN to SAFETY PLC (runs FIRST)
+                # NEW BRIDGE: Passively copy SAFETY PLC's safety_ok status to MAIN PLC
+                # This eliminates the race condition because SAFETY PLC is always computing MW100,
+                # and we just copy whatever value it has (no time pressure)
                 if 'SAFETY' in modbus_clients and plc_connected_status.get('SAFETY'):
                     try:
-                        # Read control signals from MAIN PLC
-                        master_enable = read_coil_from_plc('MAIN', 0)
-                        estop = read_coil_from_plc('MAIN', 3)
-                        gate = read_coil_from_plc('MAIN', 4)
-
-                        # Write to SAFETY PLC coils (%QX0.0=0, %QX0.1=1, %QX0.2=2)
-                        if master_enable['success']:
-                            modbus_clients['SAFETY'].write_coil(0, master_enable['value'])
-                        if estop['success']:
-                            modbus_clients['SAFETY'].write_coil(1, estop['value'])
-                        if gate['success']:
-                            modbus_clients['SAFETY'].write_coil(2, gate['value'])
-
-                        # Diagnostic: Read back Safety PLC coils and MW100
-                        if first_poll:
-                            safety_master = read_coil_from_plc('SAFETY', 0)
-                            safety_estop = read_coil_from_plc('SAFETY', 1)
-                            safety_gate = read_coil_from_plc('SAFETY', 2)
-                            safety_mw100 = read_register_from_plc('SAFETY', 100, 1)
-                            print(f"🔍 [SAFETY DIAGNOSTIC] Coils: QX0.0={safety_master.get('value')}, QX0.1={safety_estop.get('value')}, QX0.2={safety_gate.get('value')} | MW100={safety_mw100.get('value')}")
-                    except Exception as e:
-                        pass
-
-                # Bridge 1: Read safety_ok_reg from SAFETY PLC holding register, write to MAIN PLC input register
-                if 'SAFETY' in modbus_clients and plc_connected_status.get('SAFETY'):
-                    try:
+                        # 1. Read the "safety OK" status from SAFETY PLC MW100
                         safety_result = read_register_from_plc('SAFETY', 100, 1)
+
                         if safety_result["success"]:
                             safety_ok_value = safety_result["value"]
-                            try:
-                                # Write to HOLDING register (MW102 = Modbus address 102)
-                                result = modbus_client.write_registers(address=102, values=[safety_ok_value])
-                                if result and not result.isError():
-                                    if safety_ok_value != previous_register_states.get('safety_ready_bridge'):
-                                        print(f"🔗 [BRIDGE] safety_ok from SAFETY MW100 -> MAIN MW102: {safety_ok_value}")
-                                        previous_register_states['safety_ready_bridge'] = safety_ok_value
-                                else:
-                                    if first_poll:
-                                        print(f"❌ [BRIDGE] Failed to write MW102 to MAIN: {result}")
-                            except Exception as e:
+
+                            # 2. Write that status directly to the MAIN PLC MW102
+                            result = modbus_client.write_register(102, safety_ok_value)
+
+                            if result and not result.isError():
+                                if safety_ok_value != previous_register_states.get('safety_bridge'):
+                                    print(f"🔗 [BRIDGE] Safety Status {safety_ok_value} -> MAIN MW102")
+                                    previous_register_states['safety_bridge'] = safety_ok_value
+                            else:
                                 if first_poll:
-                                    print(f"❌ [BRIDGE] Exception writing MW102: {e}")
-                        else:
-                            if first_poll:
-                                print(f"❌ [BRIDGE] Failed to read MW100 from SAFETY: {safety_result}")
+                                    print(f"❌ [BRIDGE] Failed to write MW102: {result}")
                     except Exception as e:
                         if first_poll:
-                            print(f"❌ [BRIDGE] Exception reading SAFETY MW100: {e}")
+                            print(f"❌ [BRIDGE] Error in Safety-to-Main bridge: {e}")
 
                 # Bridge 2: Set effects_plc_ready to TRUE (EFFECTS PLC always ready)
                 try:
