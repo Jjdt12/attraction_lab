@@ -159,9 +159,9 @@ def connect_to_all_plcs() -> dict:
         if plc_id == 'MAIN' and results[plc_id] and modbus_clients.get('MAIN'):
             try:
                 # Set safety_plc_ready_reg (MW102) = 1 - write to HOLDING register
-                result1 = modbus_clients['MAIN'].write_registers(address=102, values=[1])
+                result1 = modbus_clients['MAIN'].write_registers(address=1126, values=[1])  # MW102 = 1024 + 102
                 # Set effects_plc_ready_reg (MW103) = 1 - write to HOLDING register
-                result2 = modbus_clients['MAIN'].write_registers(address=103, values=[1])
+                result2 = modbus_clients['MAIN'].write_registers(address=1127, values=[1])  # MW103 = 1024 + 103
                 if not result1.isError() and not result2.isError():
                     print("✓ [INIT] Initialized safety and effects ready input registers on MAIN PLC")
                 else:
@@ -398,13 +398,13 @@ async def poll_plc_coils():
                 if 'SAFETY' in modbus_clients and plc_connected_status.get('SAFETY'):
                     try:
                         # 1. Read the "safety OK" status from SAFETY PLC MW100
-                        safety_result = read_register_from_plc('SAFETY', 100, 1)
+                        safety_result = read_register_from_plc('SAFETY', 1124, 1)  # MW100 = 1024 + 100
 
                         if safety_result["success"]:
                             safety_ok_value = safety_result["value"]
 
                             # 2. Write that status directly to the MAIN PLC MW102
-                            result = modbus_client.write_register(102, safety_ok_value)
+                            result = modbus_client.write_register(1126, safety_ok_value)  # MW102 = 1024 + 102
 
                             if result and not result.isError():
                                 if safety_ok_value != previous_register_states.get('safety_bridge'):
@@ -419,8 +419,8 @@ async def poll_plc_coils():
 
                 # Bridge 2: Set effects_plc_ready to TRUE (EFFECTS PLC always ready)
                 try:
-                    # Write to HOLDING register (MW103 = Modbus address 103)
-                    result = modbus_client.write_registers(address=103, values=[1])
+                    # Write to HOLDING register (MW103 = Modbus address 1127)
+                    result = modbus_client.write_registers(address=1127, values=[1])  # MW103 = 1024 + 103
                     if result and not result.isError():
                         if previous_register_states.get('effects_ready_bridge') != 1:
                             print(f"🔗 [BRIDGE] effects_plc_ready set on MAIN MW103: 1")
@@ -548,8 +548,8 @@ async def poll_plc_coils():
                 state_reg = read_register(HOLDING_REGISTERS['state'], 1)
                 error_reg = read_register(HOLDING_REGISTERS['last_error_code'], 1)
                 # Read HOLDING registers (MW102, MW103)
-                safety_ready_reg = read_register(102, 1)
-                effects_ready_reg = read_register(103, 1)
+                safety_ready_reg = read_register(1126, 1)  # MW102 = 1024 + 102
+                effects_ready_reg = read_register(1127, 1)  # MW103 = 1024 + 103
 
                 # Print state machine status every cycle
                 print(f"📊 [STATE] state={state_reg.get('value', '?')} | "
