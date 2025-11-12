@@ -296,15 +296,15 @@ CONFIGURATION Config0
             runtime_hours AT %MD2 : DINT;
             cycle_counter AT %MD3 : DINT;
 
-            proximity_sensor_1 AT %QX4.0 : BOOL;
-            proximity_sensor_2 AT %QX4.1 : BOOL;
-            proximity_sensor_3 AT %QX4.2 : BOOL;
-            proximity_sensor_4 AT %QX4.3 : BOOL;
-            proximity_sensor_5 AT %QX4.4 : BOOL;
-            proximity_sensor_6 AT %QX4.5 : BOOL;
-            proximity_sensor_7 AT %QX4.6 : BOOL;
-            proximity_sensor_8 AT %QX4.7 : BOOL;
-            proximity_sensor_9 AT %QX5.0 : BOOL;
+            proximity_sensor_1 AT %QX5.0 : BOOL;
+            proximity_sensor_2 AT %QX5.1 : BOOL;
+            proximity_sensor_3 AT %QX5.2 : BOOL;
+            proximity_sensor_4 AT %QX5.3 : BOOL;
+            proximity_sensor_5 AT %QX5.4 : BOOL;
+            proximity_sensor_6 AT %QX5.5 : BOOL;
+            proximity_sensor_7 AT %QX5.6 : BOOL;
+            proximity_sensor_8 AT %QX5.7 : BOOL;
+            proximity_sensor_9 AT %QX6.0 : BOOL;
         END_VAR
 
         TASK task0(INTERVAL := T#20ms, PRIORITY := 0);

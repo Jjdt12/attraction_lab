@@ -509,9 +509,9 @@ async def poll_plc_coils():
                 # Bridge 9: Copy proximity sensors from MAIN to SAFETY PLC
                 if 'SAFETY' in modbus_clients and plc_connected_status.get('SAFETY'):
                     try:
-                        # Read proximity sensors from MAIN PLC (coils 32-40)
+                        # Read proximity sensors from MAIN PLC (coils 40-48)
                         for i in range(1, 10):  # Sensors 1-9
-                            coil_addr = 31 + i  # proximity_sensor_1 = coil 32, etc.
+                            coil_addr = 39 + i  # proximity_sensor_1 = coil 40, etc.
                             sensor = read_coil_from_plc('MAIN', coil_addr)
                             if sensor['success']:
                                 # Write to SAFETY PLC %MW80-%MW88 (Modbus addresses 1104-1112)
@@ -525,9 +525,9 @@ async def poll_plc_coils():
                 # Bridge 10: Copy proximity sensors from MAIN to EFFECTS PLC
                 if 'EFFECTS' in modbus_clients and plc_connected_status.get('EFFECTS'):
                     try:
-                        # Read proximity sensors from MAIN PLC (coils 32-40)
+                        # Read proximity sensors from MAIN PLC (coils 40-48)
                         for i in range(1, 10):  # Sensors 1-9
-                            coil_addr = 31 + i  # proximity_sensor_1 = coil 32, etc.
+                            coil_addr = 39 + i  # proximity_sensor_1 = coil 40, etc.
                             sensor = read_coil_from_plc('MAIN', coil_addr)
                             if sensor['success']:
                                 # Write to EFFECTS PLC %MW80-%MW88 (Modbus addresses 1104-1112)

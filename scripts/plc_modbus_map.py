@@ -49,24 +49,25 @@ COILS = {
     'event_9_active': 25,            # %QX0.25
 
     # System Outputs
-    'motor_running': 26,             # %QX0.26
-    'brake_engaged': 27,             # %QX0.27
-    'flash_light': 28,               # %QX0.28
-    'alert_active': 29,              # %QX0.29
-    'safety_ok': 30,                 # %QX0.30
-    'safety_plc_ready': 31,          # %QX0.31 - Safety PLC handshake
-    'effects_plc_ready': 32,         # %QX0.32 - Effects PLC handshake
+    'motor_running': 26,             # %QX3.2
+    'brake_engaged': 27,             # %QX3.3
+    'flash_light': 28,               # %QX3.4
+    'alert_active': 29,              # %QX3.5
+    'safety_ok': 30,                 # %QX3.6
+    'safety_plc_ready': 31,          # %QX3.7
+    'effects_plc_ready': 32,         # %QX4.0
 
     # Proximity Sensors (READ-ONLY outputs from Main PLC)
-    'proximity_sensor_1': 32,        # %QX4.0 - Sensor at pos 0-2 (Loading Gate)
-    'proximity_sensor_2': 33,        # %QX4.1 - Sensor at pos 3-5 (Safety Interlock)
-    'proximity_sensor_3': 34,        # %QX4.2 - Sensor at pos 6-8 (Launch)
-    'proximity_sensor_4': 35,        # %QX4.3 - Sensor at pos 9-11 (Photo Flash)
-    'proximity_sensor_5': 36,        # %QX4.4 - Sensor at pos 12-14 (Mid Brake)
-    'proximity_sensor_6': 37,        # %QX4.5 - Sensor at pos 15-17 (Track Switch)
-    'proximity_sensor_7': 38,        # %QX4.6 - Sensor at pos 18-20 (Final Brake)
-    'proximity_sensor_8': 39,        # %QX4.7 - Sensor at pos 21-23 (Station Approach)
-    'proximity_sensor_9': 40,        # %QX5.0 - Sensor at pos 24-26 (Unload Platform)
+    # %QX5.0 through %QX6.0 = coils 40-48
+    'proximity_sensor_1': 40,        # %QX5.0 - Sensor at pos 0-2 (Loading Gate)
+    'proximity_sensor_2': 41,        # %QX5.1 - Sensor at pos 3-5 (Safety Interlock)
+    'proximity_sensor_3': 42,        # %QX5.2 - Sensor at pos 6-8 (Launch)
+    'proximity_sensor_4': 43,        # %QX5.3 - Sensor at pos 9-11 (Photo Flash)
+    'proximity_sensor_5': 44,        # %QX5.4 - Sensor at pos 12-14 (Mid Brake)
+    'proximity_sensor_6': 45,        # %QX5.5 - Sensor at pos 15-17 (Track Switch)
+    'proximity_sensor_7': 46,        # %QX5.6 - Sensor at pos 18-20 (Final Brake)
+    'proximity_sensor_8': 47,        # %QX5.7 - Sensor at pos 21-23 (Station Approach)
+    'proximity_sensor_9': 48,        # %QX6.0 - Sensor at pos 24-26 (Unload Platform)
 }
 
 # ============================================
