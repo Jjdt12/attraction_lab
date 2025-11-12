@@ -158,10 +158,10 @@ def connect_to_all_plcs() -> dict:
         # Initialize safety ready registers after MAIN PLC connects
         if plc_id == 'MAIN' and results[plc_id] and modbus_clients.get('MAIN'):
             try:
-                # Set safety_plc_ready_reg (IW100) = 1 - write to INPUT register
-                result1 = modbus_clients['MAIN'].write_registers(address=30100, values=[1])
-                # Set effects_plc_ready_reg (IW101) = 1 - write to INPUT register
-                result2 = modbus_clients['MAIN'].write_registers(address=30101, values=[1])
+                # Set safety_plc_ready_reg (MW102) = 1 - write to HOLDING register
+                result1 = modbus_clients['MAIN'].write_registers(address=102, values=[1])
+                # Set effects_plc_ready_reg (MW103) = 1 - write to HOLDING register
+                result2 = modbus_clients['MAIN'].write_registers(address=103, values=[1])
                 if not result1.isError() and not result2.isError():
                     print("✓ [INIT] Initialized safety and effects ready input registers on MAIN PLC")
                 else:
@@ -386,24 +386,32 @@ async def poll_plc_coils():
                         if safety_result["success"]:
                             safety_ok_value = safety_result["value"]
                             try:
-                                # Write to INPUT register (IW100 = Modbus address 30100)
-                                result = modbus_client.write_registers(address=30100, values=[safety_ok_value])
+                                # Write to HOLDING register (MW102 = Modbus address 102)
+                                result = modbus_client.write_registers(address=102, values=[safety_ok_value])
                                 if result and not result.isError():
                                     if safety_ok_value != previous_register_states.get('safety_ready_bridge'):
-                                        print(f"🔗 [BRIDGE] safety_ok from SAFETY -> safety_plc_ready_reg on MAIN (IW100): {safety_ok_value}")
+                                        print(f"🔗 [BRIDGE] safety_ok from SAFETY MW100 -> MAIN MW102: {safety_ok_value}")
                                         previous_register_states['safety_ready_bridge'] = safety_ok_value
+                                else:
+                                    if first_poll:
+                                        print(f"❌ [BRIDGE] Failed to write MW102 to MAIN: {result}")
                             except Exception as e:
-                                pass
+                                if first_poll:
+                                    print(f"❌ [BRIDGE] Exception writing MW102: {e}")
+                        else:
+                            if first_poll:
+                                print(f"❌ [BRIDGE] Failed to read MW100 from SAFETY: {safety_result}")
                     except Exception as e:
-                        pass
+                        if first_poll:
+                            print(f"❌ [BRIDGE] Exception reading SAFETY MW100: {e}")
 
                 # Bridge 2: Set effects_plc_ready to TRUE (EFFECTS PLC always ready)
                 try:
-                    # Write to INPUT register (IW101 = Modbus address 30101)
-                    result = modbus_client.write_registers(address=30101, values=[1])
+                    # Write to HOLDING register (MW103 = Modbus address 103)
+                    result = modbus_client.write_registers(address=103, values=[1])
                     if result and not result.isError():
                         if previous_register_states.get('effects_ready_bridge') != 1:
-                            print(f"🔗 [BRIDGE] effects_plc_ready_reg on MAIN (IW101): 1 (default)")
+                            print(f"🔗 [BRIDGE] effects_plc_ready set on MAIN MW103: 1")
                             previous_register_states['effects_ready_bridge'] = 1
                 except Exception as e:
                     pass
@@ -545,9 +553,9 @@ async def poll_plc_coils():
                 brake = read_coil(COILS['brake_engaged'])
                 state_reg = read_register(HOLDING_REGISTERS['state'], 1)
                 error_reg = read_register(HOLDING_REGISTERS['last_error_code'], 1)
-                # Read INPUT registers (IW100 = 30100, IW101 = 30101)
-                safety_ready_reg = read_input_register(30100, 1)
-                effects_ready_reg = read_input_register(30101, 1)
+                # Read HOLDING registers (MW102, MW103)
+                safety_ready_reg = read_holding_register(102, 1)
+                effects_ready_reg = read_holding_register(103, 1)
 
                 # Print state machine status every cycle
                 print(f"📊 [STATE] state={state_reg.get('value', '?')} | "
