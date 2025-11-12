@@ -249,15 +249,15 @@ last_position := current_position;
 (* PROXIMITY SENSOR SIMULATION                      *)
 (* Each sensor detects when car is within ±1 pos   *)
 (* ================================================ *)
-proximity_sensor_1 := (current_position >= 0 AND current_position <= 2);
-proximity_sensor_2 := (current_position >= 3 AND current_position <= 5);
-proximity_sensor_3 := (current_position >= 6 AND current_position <= 8);
-proximity_sensor_4 := (current_position >= 9 AND current_position <= 11);
-proximity_sensor_5 := (current_position >= 12 AND current_position <= 14);
-proximity_sensor_6 := (current_position >= 15 AND current_position <= 17);
-proximity_sensor_7 := (current_position >= 18 AND current_position <= 20);
-proximity_sensor_8 := (current_position >= 21 AND current_position <= 23);
-proximity_sensor_9 := (current_position >= 24 AND current_position <= 26);
+proximity_sensor_1 := (current_position >= 0 AND current_position <= 3);
+proximity_sensor_2 := (current_position >= 2 AND current_position <= 6);
+proximity_sensor_3 := (current_position >= 5 AND current_position <= 9);
+proximity_sensor_4 := (current_position >= 8 AND current_position <= 12);
+proximity_sensor_5 := (current_position >= 11 AND current_position <= 15);
+proximity_sensor_6 := (current_position >= 14 AND current_position <= 18);
+proximity_sensor_7 := (current_position >= 17 AND current_position <= 21);
+proximity_sensor_8 := (current_position >= 20 AND current_position <= 24);
+proximity_sensor_9 := (current_position >= 23 AND current_position <= 26);
 
 END_PROGRAM
 
