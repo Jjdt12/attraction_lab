@@ -101,9 +101,9 @@ END_IF;
 scan_counter := scan_counter + 1;
 
 safety_ok := FALSE;
-IF safety_gate_closed THEN
-    IF NOT emergency_stop_button THEN
-        IF master_enable THEN
+IF safety_gate_closed <> 0 THEN
+    IF emergency_stop_button = 0 THEN
+        IF master_enable <> 0 THEN
             safety_ok := TRUE;
         END_IF;
     END_IF;
@@ -235,9 +235,9 @@ END_PROGRAM
 CONFIGURATION Config0
     RESOURCE Res0 ON PLC
         VAR_GLOBAL
-            master_enable AT %QX0.0 : BOOL;
-            emergency_stop_button AT %QX0.3 : BOOL;
-            safety_gate_closed AT %QX0.4 : BOOL;
+            master_enable AT %MW0 : INT;
+            emergency_stop_button AT %MW3 : INT;
+            safety_gate_closed AT %MW4 : INT;
             safety_ok_reg AT %MW100 : INT;
 
             event_1_enable AT %QX1.0 : BOOL;  (* bit 8 = byte 1, bit 0 *)

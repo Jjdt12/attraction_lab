@@ -273,15 +273,8 @@ def write_coil(address: int, value: bool) -> dict:
             print(f"✅ [WRITE] Success: {coil_name} = {value}")
             asyncio.create_task(log_modbus_operation("MAIN", "WRITE_COIL", address, value))
 
-            # Also write safety coils to SAFETY PLC
-            if address in safety_coils and 'SAFETY' in modbus_clients and plc_connected_status.get('SAFETY'):
-                try:
-                    safety_result = modbus_clients['SAFETY'].write_coil(address=address, value=value)
-                    if safety_result and not safety_result.isError():
-                        print(f"✅ [WRITE] Mirrored to SAFETY PLC: {coil_name} = {value}")
-                        asyncio.create_task(log_modbus_operation("SAFETY", "WRITE_COIL", address, value))
-                except Exception as e:
-                    print(f"⚠️  [WRITE] Failed to mirror to SAFETY PLC: {e}")
+            # Safety coils are now mirrored via Bridge 3 as holding registers
+            # No need to mirror here anymore
 
             return {"success": True, "address": address, "value": value}
         else:
@@ -424,21 +417,21 @@ async def poll_plc_coils():
                         estop = read_coil_from_plc('MAIN', 3)
                         gate = read_coil_from_plc('MAIN', 4)
 
-                        # Write to SAFETY PLC
+                        # Write to SAFETY PLC as holding registers (MW0, MW3, MW4)
                         if master_enable['success']:
-                            modbus_clients['SAFETY'].write_coil(0, master_enable['value'])
+                            modbus_clients['SAFETY'].write_register(0, 1 if master_enable['value'] else 0)
                         if estop['success']:
-                            modbus_clients['SAFETY'].write_coil(3, estop['value'])
+                            modbus_clients['SAFETY'].write_register(3, 1 if estop['value'] else 0)
                         if gate['success']:
-                            modbus_clients['SAFETY'].write_coil(4, gate['value'])
+                            modbus_clients['SAFETY'].write_register(4, 1 if gate['value'] else 0)
 
-                        # Diagnostic: Read back Safety PLC coils and MW100
+                        # Diagnostic: Read back Safety PLC registers and MW100
                         if first_poll:
-                            safety_master = read_coil_from_plc('SAFETY', 0)
-                            safety_estop = read_coil_from_plc('SAFETY', 3)
-                            safety_gate = read_coil_from_plc('SAFETY', 4)
+                            safety_master = read_register_from_plc('SAFETY', 0, 1)
+                            safety_estop = read_register_from_plc('SAFETY', 3, 1)
+                            safety_gate = read_register_from_plc('SAFETY', 4, 1)
                             safety_mw100 = read_register_from_plc('SAFETY', 100, 1)
-                            print(f"🔍 [SAFETY DIAGNOSTIC] Coils: master={safety_master.get('value')}, estop={safety_estop.get('value')}, gate={safety_gate.get('value')} | MW100={safety_mw100.get('value')}")
+                            print(f"🔍 [SAFETY DIAGNOSTIC] Registers: MW0={safety_master.get('value')}, MW3={safety_estop.get('value')}, MW4={safety_gate.get('value')} | MW100={safety_mw100.get('value')}")
                     except Exception as e:
                         pass
 
