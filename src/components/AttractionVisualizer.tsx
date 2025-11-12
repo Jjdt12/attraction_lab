@@ -19,9 +19,13 @@ interface EffectConfig {
 }
 
 // Match the PLC logic exactly from attraction_control_effects.st
+// Zone 1 (pos 0-5): Audio 1, Show Lighting
+// Zone 2 Early (pos 6-11): Audio 2, Fog, Strobe, Laser, Show Lighting
+// Zone 2 Late (pos 12-17): Audio 3, Fog, Laser, Show Lighting
+// Zone 3 (pos 18-26): Audio 1, Show Lighting
 const EFFECTS_CONFIG: EffectConfig[] = [
   { name: 'Show Lighting', icon: Lightbulb, coil: 60, color: 'yellow', positions: [0, 26] },
-  { name: 'Audio 1', icon: Volume2, coil: 61, color: 'blue', positions: [0, 5] },
+  { name: 'Audio 1', icon: Volume2, coil: 61, color: 'blue', positions: [0, 26] }, // Active in Zone 1 and Zone 3
   { name: 'Audio 2', icon: Volume2, coil: 62, color: 'purple', positions: [6, 11] },
   { name: 'Audio 3', icon: Volume2, coil: 63, color: 'cyan', positions: [12, 17] },
   { name: 'Fog Machine', icon: Wind, coil: 64, color: 'slate', positions: [6, 17] },
