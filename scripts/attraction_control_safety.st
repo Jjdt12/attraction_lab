@@ -235,9 +235,9 @@ END_PROGRAM
 CONFIGURATION Config0
     RESOURCE Res0 ON PLC
         VAR_GLOBAL
-            master_enable AT %IX0.0 : BOOL;
-            emergency_stop_button AT %IX0.3 : BOOL;
-            safety_gate_closed AT %IX0.4 : BOOL;
+            master_enable AT %QX0.0 : BOOL;
+            emergency_stop_button AT %QX0.3 : BOOL;
+            safety_gate_closed AT %QX0.4 : BOOL;
             safety_ok_reg AT %MW100 : INT;
 
             event_1_enable AT %QX1.0 : BOOL;  (* bit 8 = byte 1, bit 0 *)
