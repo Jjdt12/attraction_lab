@@ -70,6 +70,10 @@ VAR
 
     motor_load_factor : INT;
     temp_accumulator : INT;
+
+    (* Ride cycle tracking *)
+    ride_in_progress : BOOL;
+    ride_started_position : INT;
 END_VAR
 
 IF scan_counter = 0 THEN
@@ -97,6 +101,9 @@ IF scan_counter = 0 THEN
     actual_speed := 0;
     target_speed := 50;
     speed_ramp_rate := 2;
+
+    ride_in_progress := FALSE;
+    ride_started_position := 0;
 
     (* safety_plc_ready_reg and effects_plc_ready_reg are written by SCADA bridge *)
     (* PLC reads their state but does not write to them *)
@@ -151,12 +158,14 @@ CASE state OF
         brake_engaged := TRUE;
         actual_speed := 0;
         motor_current_amps := 0;
+        ride_in_progress := FALSE;
 
         IF start_command THEN
             IF safety_plc_ready THEN
                 state := 1;
                 start_timer := 0;
                 last_error_code := 0;
+                ride_started_position := current_position;
             ELSE
                 last_error_code := 300;
             END_IF;
@@ -173,14 +182,28 @@ CASE state OF
             motor_running := TRUE;
             target_speed := speed_setpoint;
             state := 2;
+            ride_in_progress := TRUE;
         END_IF;
 
     2:
         motor_running := TRUE;
         brake_engaged := FALSE;
 
+        (* Auto-stop when ride completes one full cycle back to start position *)
+        IF ride_in_progress AND current_position = ride_started_position AND last_position <> ride_started_position THEN
+            state := 3;
+            last_error_code := 0;
+        END_IF;
+
+        (* Manual stop command *)
         IF stop_command THEN
             state := 3;
+        END_IF;
+
+        (* Safety override - immediate stop if safety not ready *)
+        IF NOT safety_plc_ready THEN
+            state := 3;
+            last_error_code := 301;
         END_IF;
 
         IF NOT zone_1_enable THEN
@@ -263,11 +286,15 @@ CASE state OF
         END_IF;
 
     3:
+        (* STOPPING state - ramp down and stop *)
         motor_running := FALSE;
         brake_engaged := TRUE;
-        state := 0;
         actual_speed := 0;
         motor_current_amps := 0;
+        ride_in_progress := FALSE;
+
+        (* Return to IDLE state *)
+        state := 0;
 
 END_CASE;
 
