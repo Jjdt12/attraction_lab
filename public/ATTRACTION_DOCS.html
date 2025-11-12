@@ -361,7 +361,7 @@
 
             <h3><span class="plc-badge plc-main">MAIN PLC</span> Port 502</h3>
             <p><strong>Responsibilities:</strong> Master coordinator, state machine, position tracking, speed control, event sequencing</p>
-            <p><strong>Key Signals:</strong> Coil 31 (Safety Ready), Coil 32 (Effects Ready)</p>
+            <p><strong>Key Signals:</strong> Register %MW102 (Safety PLC Ready), Register %MW103 (Effects PLC Ready)</p>
 
             <h3><span class="plc-badge plc-safety">SAFETY PLC</span> Port 503</h3>
             <p><strong>Responsibilities:</strong> E-stop monitoring, gate interlocks, zone occupancy, event validation</p>
@@ -488,16 +488,10 @@
                         <td>All interlocks satisfied</td>
                     </tr>
                     <tr>
-                        <td class="address">31</td>
-                        <td><span class="var-name">safety_plc_ready</span></td>
-                        <td>OUTPUT</td>
-                        <td>Safety PLC heartbeat</td>
-                    </tr>
-                    <tr>
-                        <td class="address">32</td>
-                        <td><span class="var-name">effects_plc_ready</span></td>
-                        <td>OUTPUT</td>
-                        <td>Effects PLC heartbeat</td>
+                        <td class="address">40-48</td>
+                        <td><span class="var-name">proximity_X</span></td>
+                        <td>INPUT</td>
+                        <td>Position sensors (1-9) for event triggering</td>
                     </tr>
                 </tbody>
             </table>
@@ -540,8 +534,20 @@
                     <tr>
                         <td class="address">1039</td>
                         <td><span class="var-name">state</span></td>
-                        <td>0-5</td>
-                        <td>State machine (IDLE/RUNNING/etc)</td>
+                        <td>0-3</td>
+                        <td>State machine (0=IDLE, 1=STARTING, 2=RUNNING, 3=STOPPING)</td>
+                    </tr>
+                    <tr>
+                        <td class="address">1126</td>
+                        <td><span class="var-name">safety_plc_ready_reg</span></td>
+                        <td>0-1</td>
+                        <td>Safety PLC status (1=ready, 0=fault) - Read from %MW102</td>
+                    </tr>
+                    <tr>
+                        <td class="address">1127</td>
+                        <td><span class="var-name">effects_plc_ready_reg</span></td>
+                        <td>0-1</td>
+                        <td>Effects PLC status (1=ready, 0=fault) - Read from %MW103</td>
                     </tr>
                 </tbody>
             </table>
@@ -598,11 +604,14 @@
   4. All events (8-16) = TRUE
   5. speed_setpoint (reg 0) = 50
   6. start_command (1) = pulse
-  7. Check safety_plc_ready (31) = TRUE
-  8. Check effects_plc_ready (32) = TRUE
+  7. Check safety_plc_ready_reg (reg 1126/%MW102) = 1
+  8. Check effects_plc_ready_reg (reg 1127/%MW103) = 1
 
 STOP: stop_command (2) = pulse
-E-STOP: emergency_stop (3) = TRUE</div>
+E-STOP: emergency_stop (3) = TRUE
+
+NOTE: PLC ready status uses memory word registers (MW102/MW103),
+      NOT coils. These are bridged from other PLCs via SCADA.</div>
         </div>
 
         <div class="footer">
