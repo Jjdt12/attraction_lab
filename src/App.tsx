@@ -122,9 +122,9 @@ function App() {
     maintenanceFlag,
     speedSetpoint,
     zones: {
-      zone1: coilStates[5] || true,   // Coil 5 = zone_1_enable (QX0.5)
-      zone2: coilStates[6] || true,   // Coil 6 = zone_2_enable (QX0.6)
-      zone3: coilStates[7] || true,   // Coil 7 = zone_3_enable (QX0.7)
+      zone1: coilStates[5] !== false,   // Coil 5 = zone_1_enable (QX0.5)
+      zone2: coilStates[6] !== false,   // Coil 6 = zone_2_enable (QX0.6)
+      zone3: coilStates[7] !== false,   // Coil 7 = zone_3_enable (QX0.7)
     },
     onFlagCapture: (title: string, points: number) => {
       console.log('[App] Flag captured:', title, points);
