@@ -1,6 +1,10 @@
-# Attraction Control System - CTF Challenge Attack Scripts
+# External Attack Scripts
 
-This directory contains Python exploit scripts for all 10 CTF challenges in the Attraction Technology Lab. These scripts demonstrate real ICS/SCADA attack techniques using Modbus TCP protocol.
+This directory contains educational attack scripts demonstrating various ICS/SCADA attack techniques against the Project Nexus attraction control system.
+
+## Overview
+
+These scripts are designed for the **Attraction Technology Virtual Lab** CTF challenges. Each script demonstrates a specific attack vector against the multi-PLC distributed control system.
 
 ## Prerequisites
 
@@ -8,122 +12,313 @@ This directory contains Python exploit scripts for all 10 CTF challenges in the 
 pip install pymodbus
 ```
 
-## Important Notes
-
-- **These scripts perform the attacks but DO NOT print the flags**
-- Flags are awarded by the web interface when it detects the challenge conditions
-- Check the web interface for flag capture notifications after running scripts
-- All scripts require the PLC to be running at the specified IP address
-- Most challenges require the ride to be in RUNNING state
-
 ## Challenge Scripts
 
-### 1. Lights Out (Easy - 100 points)
+### Beginner Level
+
+#### Challenge 01: First Contact (50 points)
+**File:** `challenge_01_first_contact.py`
+
+Establish connection and explore the PLC network by reading multiple Modbus registers.
+
 ```bash
-python3 challenge_01_lights_out.py <PLC_IP> [PORT]
+python3 ext_attacks/challenge_01_first_contact.py
 ```
-Disable the photo flash event while the ride is running.
 
-### 2. Emergency Override (Easy - 150 points)
+**Learning Objectives:**
+- Basic Modbus/TCP communication
+- PLC register addressing
+- Network reconnaissance
+
+---
+
+#### Challenge 02: Portal Disruption (100 points)
+**File:** `challenge_02_portal_disruption.py`
+
+Disable the photo flash event in Scene 4 (Portal Chamber) via direct Modbus coil write.
+
 ```bash
-python3 challenge_02_emergency_override.py
+python3 ext_attacks/challenge_02_portal_disruption.py
 ```
-Trigger the emergency stop through Modbus while the ride is running.
 
-### 3. Zone Manipulation (Medium - 200 points)
+**Requirements:**
+- Ride must be running
+- Vehicle must be in positions 9-11
+
+**Learning Objectives:**
+- Modbus coil manipulation
+- Event-based show control
+- Timing attacks
+
+---
+
+#### Challenge 03: Emergency Override (150 points)
+**File:** `challenge_03_emergency_override.py`
+
+Trigger the emergency stop system via Modbus while ride is operating.
+
 ```bash
-python3 challenge_03_zone_manipulation.py
+python3 ext_attacks/challenge_03_emergency_override.py
 ```
-Enable or disable individual attraction zones during operation.
 
-### 4. Speed Control (Medium - 250 points)
+**Requirements:**
+- Ride must be running
+- E-stop must be triggered via Modbus, not UI
+
+**Learning Objectives:**
+- Safety system manipulation
+- Emergency stop mechanisms
+
+---
+
+### Easy Level
+
+#### Challenge 04: Zone Lockout (200 points)
+**File:** `challenge_04_zone_lockout.py`
+
+Disable Zone 2 via Modbus while the vehicle is moving through it.
+
 ```bash
-python3 challenge_04_speed_control.py
+python3 ext_attacks/challenge_04_zone_lockout.py
 ```
-Modify the ride speed setpoint to maximum during operation.
 
-### 5. Safety Bypass (Hard - 350 points)
+**Requirements:**
+- Ride must be running
+- Vehicle must be in Zone 2 (positions 9-17)
+- Zone disable must be via Modbus
+
+**Learning Objectives:**
+- Zone-based ride control
+- Maintenance isolation bypass
+- Timing-based attacks
+
+---
+
+### Medium Level
+
+#### Challenge 05: Launch Override (250 points)
+**File:** `challenge_05_launch_override.py`
+
+Set vehicle speed to an extreme value (>80% or <10%) via Modbus register write.
+
 ```bash
-python3 challenge_05_safety_bypass.py <PLC_IP> [PORT]
+python3 ext_attacks/challenge_05_launch_override.py
 ```
-Bypass the safety interlock system and complete a full ride cycle.
 
-### 6. State Machine Attack (Hard - 400 points)
+**Requirements:**
+- Ride must be running
+- Speed manipulation via Modbus only
+
+**Learning Objectives:**
+- Holding register manipulation
+- Speed control systems
+- Process variable tampering
+
+---
+
+#### Challenge 06: Reality Shift (250 points)
+**File:** `challenge_06_reality_shift.py`
+
+Teleport the vehicle across zones by writing directly to the position register.
+
 ```bash
-python3 challenge_06_state_machine_attack.py
+python3 ext_attacks/challenge_06_reality_shift.py
 ```
-Force the PLC state machine into maintenance mode.
 
-### 7. Event Disable (Medium - 200 points)
+**Requirements:**
+- Ride must be running
+- Position jump must be >5 positions
+- Direct Modbus write to MW1
+
+**Learning Objectives:**
+- Position register manipulation
+- Vehicle tracking bypass
+- State desynchronization
+
+---
+
+#### Challenge 07: Scene Blackout (300 points)
+**File:** `challenge_07_scene_blackout.py`
+
+Disable three or more show events simultaneously via Modbus.
+
 ```bash
-python3 challenge_07_event_disable.py <PLC_IP> [PORT]
+python3 ext_attacks/challenge_07_scene_blackout.py
 ```
-Disable specific ride events while the ride is running.
 
-### 8. Stealth Mode (Hard - 300 points)
+**Requirements:**
+- Ride must be running
+- At least 3 events disabled via Modbus
+- UI controls don't count
+
+**Learning Objectives:**
+- Multi-coil manipulation
+- Show control systems
+- Coordinated attacks
+
+---
+
+#### Challenge 08: Heartbeat Hijack (350 points)
+**File:** `challenge_08_heartbeat_hijack.py`
+
+Spoof the Safety PLC Ready signal (Coil 31) to fake inter-PLC communication.
+
 ```bash
-python3 challenge_08_stealth_mode.py
+python3 ext_attacks/challenge_08_heartbeat_hijack.py
 ```
-Keep the ride running for at least 3 complete cycles without triggering any event detection.
 
-### 9. Position Teleport (Medium - 250 points)
+**Requirements:**
+- Write TRUE to coil 31 via Modbus
+- Signal must be externally spoofed
+
+**Learning Objectives:**
+- PLC heartbeat signals
+- Inter-PLC communication
+- Signal spoofing attacks
+
+---
+
+### Hard Level
+
+#### Challenge 09: Safety Bypass (400 points)
+**File:** `challenge_09_safety_bypass.py`
+
+Start the ride with the safety gate open by manipulating safety interlocks.
+
 ```bash
-python3 challenge_09_position_teleport.py <PLC_IP> [PORT]
+python3 ext_attacks/challenge_09_safety_bypass.py
 ```
-Manipulate the vehicle position to jump across zones instantly.
 
-### 10. Ghost Mode (Expert - 500 points)
+**Requirements:**
+- Ride must be in Idle state
+- Start ride with safety_gate_closed = FALSE
+- Bypass must occur via Modbus
+
+**Learning Objectives:**
+- Safety interlock bypass
+- Critical safety systems
+- Pre-operation attacks
+
+---
+
+#### Challenge 10: The Nexus Core (450 points)
+**File:** `challenge_10_nexus_core.py`
+
+Force the Main PLC state machine into MAINTENANCE mode (state 5) during operation.
+
 ```bash
-python3 challenge_10_ghost_mode.py <PLC_IP> [PORT]
+python3 ext_attacks/challenge_10_nexus_core.py
 ```
-Complete 3 full cycles with all 9 events disabled simultaneously.
 
-## General Attack Workflow
+**Requirements:**
+- Write 5 to state register (MW2)
+- Can be done during any state
 
-1. Start the PLC and ensure it's accessible at the target IP
-2. Start the ride using the web interface (unless challenge requires specific state)
-3. Run the appropriate challenge script
-4. Monitor the script output for attack progress
-5. Check the web interface for flag capture notification
-6. The flag will appear in the CTF Challenges panel when conditions are met
+**Learning Objectives:**
+- State machine manipulation
+- PLC control flow bypass
+- Direct register manipulation
 
-## System Architecture
+---
 
-The attraction control system features:
-- **3 Zones**: Loading & Launch (Zone 1), Main Experience (Zone 2), Return & Station (Zone 3)
-- **9 Events**: Position-triggered events across the 3 zones
-- **6 States**: IDLE, STARTING, RUNNING, STOPPING, EMERGENCY, MAINTENANCE
-- **OpenPLC Backend**: Real industrial PLC running Structured Text logic
-- **Modbus TCP**: All communication via standard Modbus protocol on port 502
+## PLC Connection Details
 
-## Key Modbus Addresses
+| PLC | Port | Purpose |
+|-----|------|---------|
+| Main PLC | 502 | Sequencing, position, speed, zones |
+| Safety PLC | 503 | Safety interlocks, event validation |
+| Effects PLC | 504 | Show lighting, audio, effects |
 
-### Coils (Digital I/O)
-- 0-4: Core control (master_enable, start_command, stop_command, emergency_stop, safety_gate)
-- 5-7: Zone enables
-- 8-16: Event enables (9 events)
-- 17-25: Event active states (read-only)
-- 26-30: System outputs
+## Memory Map Reference
 
-### Holding Registers
-- 0: speed_setpoint (0-100%)
-- 1: current_position (0-360 degrees)
-- 2: current_speed
-- 1024+: Memory words (state machine, counters, etc.)
+### Main PLC (Port 502)
 
-## Defensive Lessons
+**Key Coils:**
+- Coil 2: `emergency_stop_button`
+- Coil 4: `safety_gate_closed`
+- Coil 6: `zone_2_enable`
+- Coils 8-16: Event enables (1-9)
+- Coil 10: `start_command`
+- Coil 31: `safety_plc_ready`
 
-These challenges demonstrate real attack vectors against industrial control systems:
+**Key Registers:**
+- MW0: `speed_setpoint` (0-100%)
+- MW1: `current_position` (0-25)
+- MW2: `state` (0=Idle, 1=Starting, 2=Running, 3=Stopping, 4=Emergency, 5=Maintenance)
+- MW3: `current_speed`
+- MW5: `motor_current` (A)
+- MW6: `hydraulic_pressure` (PSI)
+- MW7: `bearing_temperature` (°C)
 
-- **Unauthorized Coil Writes**: Direct manipulation of control signals
-- **Register Manipulation**: Changing setpoints and position values
-- **State Machine Attacks**: Forcing systems into unexpected states
-- **Safety Bypass**: Disabling critical safety interlocks
-- **Stealth Operations**: Avoiding detection while maintaining control
+## Safety Notes
 
-Each challenge highlights the importance of:
-- Authentication and authorization for all write operations
-- Logging and monitoring of all Modbus transactions
-- Rate limiting and anomaly detection
-- Physical segmentation of safety systems
-- Regular security audits of ICS protocols
+**IMPORTANT:** These attack scripts are for **educational purposes only** in an isolated lab environment.
+
+- **Never** use these techniques on production systems
+- **Never** use these techniques on systems you don't own
+- These scripts are for learning ICS/SCADA security in a safe environment
+- All attacks are demonstrated against a simulated PLC in Docker
+
+## Usage Tips
+
+1. **Start the lab environment first:**
+   ```bash
+   cd scripts && bash start.sh
+   ```
+
+2. **Open the HMI interface:**
+   - Navigate to http://localhost:3000
+   - Start the ride using the UI
+
+3. **Run attack scripts:**
+   - Most scripts require the ride to be running
+   - Some require specific positions or states
+   - Follow the on-screen instructions
+
+4. **Check the CTF dashboard:**
+   - View completed challenges
+   - Track your points
+   - See challenge descriptions
+
+## Troubleshooting
+
+### Connection Refused
+- Ensure OpenPLC containers are running: `docker ps`
+- Check Main PLC is on port 502: `telnet localhost 502`
+
+### Challenge Not Completing
+- Verify you used Modbus writes, not UI controls
+- Check the challenge requirements carefully
+- Look at console output for debugging info
+- Ensure ride is in the correct state
+
+### Script Hangs
+- Some scripts wait for specific conditions
+- Press Ctrl+C to interrupt
+- Make sure ride is running when required
+
+## Learning Path
+
+Recommended order for beginners:
+
+1. **First Contact** - Learn basic Modbus communication
+2. **Portal Disruption** - Practice coil writes with timing
+3. **Emergency Override** - Understand safety systems
+4. **Zone Lockout** - Advanced timing attacks
+5. **Launch Override** - Register manipulation
+6. **Reality Shift** - Position control
+7. **Scene Blackout** - Coordinated attacks
+8. **Heartbeat Hijack** - Inter-PLC communication
+9. **Safety Bypass** - Critical safety bypass
+10. **The Nexus Core** - State machine attacks
+
+## Additional Resources
+
+- Main documentation: `/public/wiki/index.html`
+- Operator manual: `/public/wiki/operator-manual.html`
+- PLC programming: `/public/wiki/plc-programming.html`
+- Network topology: `/public/wiki/network-topology.html`
+
+## License
+
+MIT - Educational use only

