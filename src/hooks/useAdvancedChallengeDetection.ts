@@ -408,7 +408,11 @@ export function useAdvancedChallengeDetection({
   }, [sessionId, carPosition, rideRunning]);
 
   const completeChallenge = async (title: string, method: string) => {
-    if (!sessionId) {
+    // Challenge 1 (First Contact) doesn't require a session
+    // For other challenges, we need a session to track completions
+    const requiresSession = title !== 'First Contact';
+
+    if (requiresSession && !sessionId) {
       console.error('[Challenge] No sessionId, cannot complete challenge');
       return;
     }
@@ -426,11 +430,14 @@ export function useAdvancedChallengeDetection({
       return;
     }
 
+    // For Challenge 1, create a temporary session or just award the flag without persistence
+    const completionSessionId = sessionId || 'no-session-' + Date.now();
+
     const { error } = await supabase
       .from('challenge_completions')
       .insert({
         challenge_id: challenge.id,
-        session_id: sessionId,
+        session_id: completionSessionId,
         method_used: method,
       });
 
