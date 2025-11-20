@@ -42,47 +42,47 @@ def explore_plc():
     print("Exploring PLC memory map...")
     print("-" * 60)
 
-    # Read 1: Speed setpoint
-    result = client.read_holding_registers(0, 1, slave=1)
+    # Read 1: Speed setpoint (MW0 = address 1024)
+    result = client.read_holding_registers(1024, 1, slave=1)
     if not result.isError():
         print(f"[Read 1] Speed Setpoint (MW0): {result.registers[0]}%")
         time.sleep(0.2)
 
-    # Read 2: Current position
-    result = client.read_holding_registers(1, 1, slave=1)
+    # Read 2: Current position (MW1 = address 1025)
+    result = client.read_holding_registers(1025, 1, slave=1)
     if not result.isError():
         print(f"[Read 2] Current Position (MW1): {result.registers[0]}")
         time.sleep(0.2)
 
-    # Read 3: State machine
-    result = client.read_holding_registers(2, 1, slave=1)
+    # Read 3: State machine (MW15 = address 1039)
+    result = client.read_holding_registers(1039, 1, slave=1)
     if not result.isError():
         state_names = ['Idle', 'Starting', 'Running', 'Stopping', 'Emergency']
         state = result.registers[0]
         state_name = state_names[state] if state < len(state_names) else 'Unknown'
-        print(f"[Read 3] State Machine (MW2): {state} ({state_name})")
+        print(f"[Read 3] State Machine (MW15): {state} ({state_name})")
         time.sleep(0.2)
 
-    # Read 4: Current speed
-    result = client.read_holding_registers(3, 1, slave=1)
+    # Read 4: Current speed (MW2 = address 1026)
+    result = client.read_holding_registers(1026, 1, slave=1)
     if not result.isError():
-        print(f"[Read 4] Current Speed (MW3): {result.registers[0]}%")
+        print(f"[Read 4] Current Speed (MW2): {result.registers[0]}%")
         time.sleep(0.2)
 
-    # Read 5: Motor current
-    result = client.read_holding_registers(5, 1, slave=1)
+    # Read 5: Motor current (MW5 = address 1029)
+    result = client.read_holding_registers(1029, 1, slave=1)
     if not result.isError():
         print(f"[Read 5] Motor Current (MW5): {result.registers[0]} A")
         time.sleep(0.2)
 
-    # Read 6: Hydraulic pressure
-    result = client.read_holding_registers(6, 1, slave=1)
+    # Read 6: Hydraulic pressure (MW6 = address 1030)
+    result = client.read_holding_registers(1030, 1, slave=1)
     if not result.isError():
         print(f"[Read 6] Hydraulic Pressure (MW6): {result.registers[0]} PSI")
         time.sleep(0.2)
 
-    # Read 7: Bearing temperature
-    result = client.read_holding_registers(7, 1, slave=1)
+    # Read 7: Bearing temperature (MW7 = address 1031)
+    result = client.read_holding_registers(1031, 1, slave=1)
     if not result.isError():
         print(f"[Read 7] Bearing Temperature (MW7): {result.registers[0]}°C")
 

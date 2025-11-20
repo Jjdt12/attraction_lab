@@ -42,8 +42,8 @@ def disable_portal_flash():
     print(f"✓ Connected to Main PLC at {PLC_HOST}:{MAIN_PLC_PORT}")
     print()
 
-    # Check if ride is running
-    result = client.read_holding_registers(2, 1, slave=1)
+    # Check if ride is running (state is at MW15 = address 1039)
+    result = client.read_holding_registers(1039, 1, slave=1)
     if result.isError():
         print("✗ Failed to read ride state")
         client.close()
@@ -69,7 +69,8 @@ def disable_portal_flash():
     # Wait for vehicle to enter Scene 4 zone
     scene_4_entered = False
     for i in range(100):
-        result = client.read_holding_registers(1, 1, slave=1)
+        # Position is at MW1 (address 1025)
+        result = client.read_holding_registers(1025, 1, slave=1)
         if not result.isError():
             position = result.registers[0]
 
