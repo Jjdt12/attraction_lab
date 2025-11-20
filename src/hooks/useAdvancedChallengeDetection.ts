@@ -150,9 +150,10 @@ export function useAdvancedChallengeDetection({
 
   // 2. Portal Disruption (100pts) - Disable event 4 (Photo Flash at position 9)
   useEffect(() => {
-    if (!sessionId || portalDisruptionCompleted.current || !rideRunning) return;
+    const event4Enabled = coilStates[11];
+    console.log('[Challenge 2] Check - sessionId:', !!sessionId, 'completed:', portalDisruptionCompleted.current, 'rideRunning:', rideRunning, 'state:', state, 'event4Enabled:', event4Enabled);
 
-    const event4Enabled = coilStates[11]; // event_4_enable (coil 11)
+    if (!sessionId || portalDisruptionCompleted.current || !rideRunning) return;
 
     // Detect when event 4 is disabled during ride operation (state 2 = Running)
     // Same pattern as Scene Blackout - check current state, not transitions
