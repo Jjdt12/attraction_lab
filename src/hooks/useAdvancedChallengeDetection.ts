@@ -133,16 +133,28 @@ export function useAdvancedChallengeDetection({
 
   // BEGINNER CHALLENGES
 
-  // 1. First Contact (50pts) - Just starting a session counts
+  // 1. First Contact (50pts) - Read data from all 3 PLCs via Modbus
   useEffect(() => {
-    if (sessionId && !firstContactCompleted.current && rideRunning) {
-      console.log('[Challenge] First Contact completed! Connected to PLC network');
-      completeChallenge('First Contact', 'network_connection');
-      firstContactCompleted.current = true;
-    }
-  }, [sessionId, rideRunning]);
+    if (!sessionId || firstContactCompleted.current) return;
 
-  // 2. Portal Disruption (100pts) - Disable event 4 (Photo Flash at position 9)
+    // Check if user has read from Main (502), Safety (503), and Effects (504) PLCs
+    // For now, we only connect to Main PLC, so check for multiple register reads
+    supabase
+      .from('modbus_events')
+      .select('address, event_type')
+      .eq('session_id', sessionId)
+      .eq('event_type', 'read_registers')
+      .then(({ data }) => {
+        if (data && data.length >= 5 && !firstContactCompleted.current) {
+          // User has performed multiple reads, indicating they're exploring the system
+          console.log('[Challenge] First Contact completed! Explored PLC network via Modbus reads');
+          completeChallenge('First Contact', 'network_connection');
+          firstContactCompleted.current = true;
+        }
+      });
+  }, [sessionId, coilStates]);
+
+  // 2. Portal Disruption (100pts) - Disable event 4 (Photo Flash at position 9) via Modbus
   useEffect(() => {
     if (!sessionId || portalDisruptionCompleted.current || !rideRunning) return;
 
@@ -150,9 +162,24 @@ export function useAdvancedChallengeDetection({
     const event4Enabled = coilStates[11] || false; // event_4_enable (coil 11)
 
     if (inEvent4Zone && !event4Enabled && state === 2) {
-      console.log('[Challenge] Portal Disruption completed! Photo flash event disabled in Scene 4');
-      completeChallenge('Portal Disruption', 'event_disable');
-      portalDisruptionCompleted.current = true;
+      // Verify this was done via Modbus write, not UI
+      supabase
+        .from('modbus_events')
+        .select('source')
+        .eq('session_id', sessionId)
+        .eq('address', 11) // event_4_enable coil
+        .eq('event_type', 'write_coil')
+        .neq('source', 'hmi_ui')
+        .order('timestamp', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+        .then(({ data }) => {
+          if (data && !portalDisruptionCompleted.current) {
+            console.log('[Challenge] Portal Disruption completed! Photo flash event disabled via Modbus');
+            completeChallenge('Portal Disruption', 'event_disable');
+            portalDisruptionCompleted.current = true;
+          }
+        });
     }
   }, [sessionId, carPosition, coilStates, rideRunning, state]);
 
@@ -181,32 +208,63 @@ export function useAdvancedChallengeDetection({
     }
   }, [sessionId, emergencyStop, rideRunning]);
 
-  // 4. Zone Lockout (200pts) - Disable Zone 2 while vehicle is in it (positions 9-17)
+  // 4. Zone Lockout (200pts) - Disable Zone 2 while vehicle is in it via Modbus
   useEffect(() => {
     if (!sessionId || zoneLockoutCompleted.current || !rideRunning) return;
 
     const inZone2 = carPosition >= 9 && carPosition <= 17;
     if (inZone2 && !zones.zone2) {
-      console.log('[Challenge] Zone Lockout completed! Zone 2 disabled while vehicle inside');
-      completeChallenge('Zone Lockout', 'zone_manipulation');
-      zoneLockoutCompleted.current = true;
+      // Verify this was done via Modbus write, not UI
+      supabase
+        .from('modbus_events')
+        .select('source')
+        .eq('session_id', sessionId)
+        .eq('address', 6) // zone_2_enable coil
+        .eq('event_type', 'write_coil')
+        .eq('value', false)
+        .neq('source', 'hmi_ui')
+        .order('timestamp', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+        .then(({ data }) => {
+          if (data && !zoneLockoutCompleted.current) {
+            console.log('[Challenge] Zone Lockout completed! Zone 2 disabled via Modbus while vehicle inside');
+            completeChallenge('Zone Lockout', 'zone_manipulation');
+            zoneLockoutCompleted.current = true;
+          }
+        });
     }
   }, [sessionId, carPosition, zones, rideRunning]);
 
   // INTERMEDIATE CHALLENGES
 
-  // 5. Launch Override (250pts) - Set speed to extreme values during operation
+  // 5. Launch Override (250pts) - Set speed to extreme values via Modbus during operation
   useEffect(() => {
     if (!sessionId || launchOverrideCompleted.current || !rideRunning) return;
 
     if (speedSetpoint > 80 || speedSetpoint < 10) {
-      console.log(`[Challenge] Launch Override completed! Speed set to extreme value: ${speedSetpoint}%`);
-      completeChallenge('Launch Override', 'speed_manipulation');
-      launchOverrideCompleted.current = true;
+      // Verify this was done via Modbus write, not UI
+      supabase
+        .from('modbus_events')
+        .select('source, value')
+        .eq('session_id', sessionId)
+        .eq('address', 0) // speed_setpoint register
+        .eq('event_type', 'write_register')
+        .neq('source', 'hmi_ui')
+        .order('timestamp', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+        .then(({ data }) => {
+          if (data && (data.value > 80 || data.value < 10) && !launchOverrideCompleted.current) {
+            console.log(`[Challenge] Launch Override completed! Speed set to ${data.value}% via Modbus`);
+            completeChallenge('Launch Override', 'speed_manipulation');
+            launchOverrideCompleted.current = true;
+          }
+        });
     }
   }, [sessionId, speedSetpoint, rideRunning]);
 
-  // 6. Reality Shift (250pts) - Teleport across zones (large position jump)
+  // 6. Reality Shift (250pts) - Teleport across zones via direct position write
   useEffect(() => {
     if (!sessionId || realityShiftCompleted.current || !rideRunning) return;
 
@@ -214,13 +272,27 @@ export function useAdvancedChallengeDetection({
 
     // Detect teleport: jump > 5 positions (not wrap-around)
     if (posDiff > 5 && posDiff < 20 && lastPosition.current > 0) {
-      console.log(`[Challenge] Reality Shift completed! Position teleported ${posDiff} units`);
-      completeChallenge('Reality Shift', 'position_manipulation');
-      realityShiftCompleted.current = true;
+      // Verify this was done via Modbus write to position register
+      supabase
+        .from('modbus_events')
+        .select('value')
+        .eq('session_id', sessionId)
+        .eq('address', 1) // current_position register
+        .eq('event_type', 'write_register')
+        .order('timestamp', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+        .then(({ data }) => {
+          if (data && !realityShiftCompleted.current) {
+            console.log(`[Challenge] Reality Shift completed! Position manually set to ${data.value} via Modbus`);
+            completeChallenge('Reality Shift', 'position_manipulation');
+            realityShiftCompleted.current = true;
+          }
+        });
     }
   }, [sessionId, carPosition, rideRunning]);
 
-  // 7. Scene Blackout (300pts) - Disable 3+ events simultaneously
+  // 7. Scene Blackout (300pts) - Disable 3+ events simultaneously via Modbus
   useEffect(() => {
     if (!sessionId || sceneBlackoutCompleted.current || !rideRunning) return;
 
@@ -228,9 +300,22 @@ export function useAdvancedChallengeDetection({
     const disabledCount = eventCoils.filter(enabled => !enabled).length;
 
     if (disabledCount >= 3) {
-      console.log(`[Challenge] Scene Blackout completed! ${disabledCount} events disabled simultaneously`);
-      completeChallenge('Scene Blackout', 'multi_event_disable');
-      sceneBlackoutCompleted.current = true;
+      // Verify at least 3 events were disabled via Modbus (not UI)
+      supabase
+        .from('modbus_events')
+        .select('address')
+        .eq('session_id', sessionId)
+        .in('address', [8, 9, 10, 11, 12, 13, 14, 15, 16]) // event enable coils
+        .eq('event_type', 'write_coil')
+        .eq('value', false)
+        .neq('source', 'hmi_ui')
+        .then(({ data }) => {
+          if (data && data.length >= 3 && !sceneBlackoutCompleted.current) {
+            console.log(`[Challenge] Scene Blackout completed! ${disabledCount} events disabled via Modbus`);
+            completeChallenge('Scene Blackout', 'multi_event_disable');
+            sceneBlackoutCompleted.current = true;
+          }
+        });
     }
   }, [sessionId, coilStates, rideRunning]);
 
