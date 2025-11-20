@@ -430,6 +430,8 @@ export function useAdvancedChallengeDetection({
     // For Challenge 1, create a temporary session or just award the flag without persistence
     const completionSessionId = sessionId || 'no-session-' + Date.now();
 
+    console.log(`[Challenge] Inserting completion - challenge_id: ${challenge.id}, session_id: ${completionSessionId}, method: ${method}`);
+
     const { error } = await supabase
       .from('challenge_completions')
       .insert({
