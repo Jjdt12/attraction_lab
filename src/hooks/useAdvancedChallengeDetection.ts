@@ -153,11 +153,10 @@ export function useAdvancedChallengeDetection({
     if (!sessionId || portalDisruptionCompleted.current || !rideRunning) return;
 
     const event4Enabled = coilStates[11]; // event_4_enable (coil 11)
-    const wasEnabled = lastCoilStates.current[11];
 
-    // Detect when event 4 gets disabled during ride operation (state 2 = Running)
-    // Just detect the transition from TRUE to FALSE while ride is running
-    if (state === 2 && wasEnabled === true && event4Enabled === false) {
+    // Detect when event 4 is disabled during ride operation (state 2 = Running)
+    // Same pattern as Scene Blackout - check current state, not transitions
+    if (state === 2 && event4Enabled === false) {
       console.log('[Challenge] Portal Disruption completed! Photo flash event disabled during ride operation');
       completeChallenge('Portal Disruption', 'event_disable');
       portalDisruptionCompleted.current = true;
@@ -194,10 +193,9 @@ export function useAdvancedChallengeDetection({
     if (!sessionId || zoneLockoutCompleted.current || !rideRunning) return;
 
     const inZone2 = carPosition >= 9 && carPosition <= 17;
-    const wasZone2Enabled = lastZoneState.current.zone2;
 
-    // Detect when Zone 2 gets disabled while vehicle is inside
-    if (inZone2 && wasZone2Enabled && !zones.zone2) {
+    // Detect when Zone 2 is disabled while vehicle is inside
+    if (inZone2 && !zones.zone2) {
       console.log('[Challenge] Zone Lockout completed! Zone 2 disabled while vehicle inside');
       completeChallenge('Zone Lockout', 'zone_manipulation');
       zoneLockoutCompleted.current = true;
@@ -210,16 +208,15 @@ export function useAdvancedChallengeDetection({
   useEffect(() => {
     if (!sessionId || launchOverrideCompleted.current || !rideRunning) return;
 
-    const wasNormalSpeed = lastSpeed.current >= 10 && lastSpeed.current <= 80;
     const isExtremeSpeed = speedSetpoint > 80 || speedSetpoint < 10;
 
-    // Detect transition to extreme speed from normal speed
-    if (wasNormalSpeed && isExtremeSpeed) {
+    // Detect extreme speed during operation
+    if (state === 2 && isExtremeSpeed) {
       console.log(`[Challenge] Launch Override completed! Speed set to extreme value: ${speedSetpoint}%`);
       completeChallenge('Launch Override', 'speed_manipulation');
       launchOverrideCompleted.current = true;
     }
-  }, [sessionId, speedSetpoint, rideRunning]);
+  }, [sessionId, speedSetpoint, rideRunning, state]);
 
   // 6. Reality Shift (250pts) - Teleport across zones (large position jump)
   useEffect(() => {
