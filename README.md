@@ -6,29 +6,57 @@ A comprehensive web-based virtual lab for testing attraction control systems, Mo
 
 ## Overview
 
-This project simulates an attraction ride control system with:
-- Multi-zone attraction with 5 controllable zones
-- Advanced state machine (Idle, Starting, Running, Stopping, Emergency, Maintenance)
+This project simulates a realistic industrial attraction ride control system with:
+- **Three-PLC distributed architecture** (Main, Safety, Effects)
+- 26-position track with 9 proximity sensors
+- Advanced state machine (Idle, Starting, Running, Stopping, Emergency)
 - Real-time Modbus TCP communication with OpenPLC
-- Safety interlock system (E-stop, safety gate, master enable)
+- Safety interlock system with independent Safety PLC
+- Position-based show effects and lighting scenes
 - 10 CTF challenges ranging from easy to hard
-- Runtime and cycle counters with maintenance triggers
+- Process variable simulation (motor current, hydraulic pressure, temperature)
 - Speed control and position tracking
 
 ## Architecture
 
+### Multi-PLC System
+
+```
+┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
+│   MAIN PLC      │     │   SAFETY PLC    │     │  EFFECTS PLC    │
+│   Port 502      │     │   Port 503      │     │   Port 504      │
+├─────────────────┤     ├─────────────────┤     ├─────────────────┤
+│ • Sequencing    │     │ • Safety Gates  │     │ • Show Lighting │
+│ • Position      │     │ • E-Stops       │     │ • Audio         │
+│ • Speed Control │     │ • Interlocks    │     │ • Effects       │
+│ • Zone Logic    │     │ • Event Safety  │     │ • Fog/Strobe    │
+└─────────────────┘     └─────────────────┘     └─────────────────┘
+         │                       │                       │
+         └───────────────────────┴───────────────────────┘
+                                 │
+                        ┌────────▼────────┐
+                        │  HMI Interface  │
+                        │  Port 3000      │
+                        └─────────────────┘
+```
+
+**See `MULTI_PLC_ARCHITECTURE.md` for detailed architecture documentation.**
+
 ### Web Interface (React + TypeScript)
 - **AttractionVisualizer**: Visual representation of the ride with car and lights
 - **ControlPanel**: Ride control interface
-- **PLCStatus**: WebSocket and PLC connection status
-- **PLCStateMonitor**: Real-time PLC state machine and system status
-- **CoilStatus**: Live Modbus coil state visualization
+- **MultiPLCStatus**: Connection status for all three PLCs
+- **SystemHealthDashboard**: Real-time diagnostics and process variables
+- **RideEventsMonitor**: 9 proximity sensor event tracking
+- **TrendChart**: Live charts for position, speed, temperature, current
+- **AlarmPanel**: Active alarms and alarm history
+- **NetworkMonitor**: Modbus traffic analysis
 - **CTFChallenges**: Real-time challenge tracking with points system
-- Connects to WebSocket server for real-time PLC communication
+- **DocumentationViewer**: In-universe operator manuals and service bulletins
 
 ### Standalone Server (Python)
 - **standalone_server.py**: All-in-one server serving web interface, WebSocket, and Modbus
-- Maintains persistent Modbus TCP connection to PLC
+- Maintains persistent Modbus TCP connection to Main PLC (port 502)
 - Handles WebSocket connections from web interface
 - Bridges browser ↔ PLC communication
 - Logs events to Supabase database
@@ -44,19 +72,15 @@ This project simulates an attraction ride control system with:
 ### Python Scripts
 Located in `/scripts`:
 - **standalone_server.py**: Integrated web + WebSocket + Modbus server (started via start.sh)
-- **upload_st_to_openplc.py**: Automated PLC program deployment
+- **upload_multi_plc.py**: Automated deployment of all three PLC programs
 - **probe.py**: Diagnostic tool for Modbus testing
 - **plc_modbus_map.py**: Memory map definitions for Modbus communication
 
-### PLC Program
-- **attraction_control.st**: Enhanced Structured Text program with:
-  - 6-state machine (Idle, Starting, Running, Stopping, Emergency, Maintenance)
-  - 5 controllable zones with position tracking
-  - Safety interlock logic (gate, e-stop, master enable)
-  - Speed setpoint control (0-100%)
-  - Runtime hours and cycle counters
-  - Maintenance flag triggers
-  - Error code tracking
+### PLC Programs
+Three separate Structured Text programs:
+- **attraction_control_main.st**: Main sequencing, position tracking, speed control, zone logic
+- **attraction_control_safety.st**: Safety interlocks, event-based safety checks, alarm generation
+- **attraction_control_effects.st**: Show lighting scenes, audio triggers, special effects
 
 ## CTF Challenges
 
@@ -126,7 +150,7 @@ Environment variables are pre-configured in `.env` - no setup needed!
 source venv/bin/activate
 ```
 
-2. **Start Everything (OpenPLC + WebSocket Server + Web Interface):**
+2. **Start Everything (3 OpenPLC containers + WebSocket Server):**
 ```bash
 cd scripts && bash start.sh
 ```
@@ -159,20 +183,30 @@ cd scripts && bash start.sh
 ---
 
 The startup script will:
-- Start the OpenPLC container with Docker
-- Upload and compile the attraction control program
-- Start the PLC runtime
+- Start 3 OpenPLC containers with Docker (Main, Safety, Effects)
+- Upload and compile all three PLC programs
+- Start all PLC runtimes
 - Launch the integrated web server with WebSocket support
 
 **Open in Browser:**
-- Navigate to http://localhost:3000
-- The lab will **automatically connect** to the PLC at localhost:502
+- **SCADA HMI:** http://localhost:3000 (main operator interface)
+- The lab will **automatically connect** to Main PLC at localhost:502
 - The system will auto-initialize with safe baseline conditions
 - Click the **Help** button in the header to read the attraction documentation and get started!
 
   ![Help Button](public/image%20copy%20copy.png)
 
-**Note:** The settings gear icon in the control panel is still available if you need to connect to a different PLC host/port.
+**PLC Access Points:**
+| Interface | URL | Credentials |
+|-----------|-----|-------------|
+| Main PLC Admin | http://localhost:8080 | openplc / openplc |
+| Safety PLC Admin | http://localhost:8081 | openplc / openplc |
+| Effects PLC Admin | http://localhost:8082 | openplc / openplc |
+
+**Modbus TCP Ports:**
+- Main PLC: localhost:502
+- Safety PLC: localhost:503
+- Effects PLC: localhost:504
 
 #### Attack Scenarios
 
@@ -183,30 +217,27 @@ Attack scripts are available in `/ext_attacks` with examples for each CTF challe
 python ext_attacks/challenge_03_zone_manipulation.py
 
 # Example: Safety bypass attack
-python ext_attacks/challenge_04_safety_bypass.py
+python ext_attacks/challenge_05_safety_bypass.py
 
 # Example: State machine attack
-python ext_attacks/challenge_06_state_machine.py
+python ext_attacks/challenge_06_state_machine_attack.py
 ```
 
 See `ext_attacks/README.md` for documentation on all available attack scripts.
 
-#### Accessing OpenPLC
-
-The OpenPLC web interface is available at http://localhost:8080
-
-Default credentials: `openplc` / `openplc`
-
 ## Features
 
-- **Real-time PLC Simulation** - Advanced state machine with multi-zone control
-- **Live Modbus Monitoring** - Watch all coil/register reads and writes
+- **Three-PLC Distributed Architecture** - Realistic industrial control system structure
+- **Real-time PLC Simulation** - Advanced state machine with 26-position tracking
+- **Live Modbus Monitoring** - Watch all coil/register reads and writes across PLCs
 - **CTF Challenge System** - 10 challenges with automatic detection and scoring
 - **Automated Setup** - One-command deployment with Docker and Python
 - **Complete Logging** - All events stored in Supabase for analysis
-- **Beautiful UI** - Production-ready design with real-time updates
-- **Safety System Simulation** - E-stop, safety gates, and interlocks
-- **Multiple Attack Vectors** - Zone control, state manipulation, counter tampering
+- **Professional SCADA HMI** - Production-quality interface with tabbed navigation
+- **Independent Safety System** - Dedicated Safety PLC with event-based checks
+- **Show Effects Control** - Separate Effects PLC for lighting and audio
+- **Process Variable Simulation** - Motor current, hydraulic pressure, temperature monitoring
+- **Multiple Attack Vectors** - Multi-PLC coordination, zone control, state manipulation
 - **Educational Attack Scripts** - Pre-built examples for each challenge
 
 ## Use Cases
@@ -228,28 +259,50 @@ Default credentials: `openplc` / `openplc`
 - Python + pymodbus
 - OpenPLC Runtime (Docker)
 
-## PLC Memory Map
+## PLC Memory Maps
 
-### Digital I/O (Coils)
-- Coil 0: `proximity_sensor` - Position sensor trigger
-- Coil 1: `master_enable` - System enable
-- Coil 2: `emergency_stop_button` - E-stop status
-- Coil 3: `flash_light` - Warning light
-- Coil 4: `safety_gate_closed` - Safety gate sensor
-- Coils 5-9: `zone_1_enable` through `zone_5_enable` - Zone controls
-- Coils 10-11: `start_command`, `stop_command` - Ride controls
-- Coils 12-15: System status flags
+### Main PLC (Port 502)
+**Coils:**
+- %QX0.0-0.2: `master_enable`, `emergency_stop_button`, `safety_gate_closed`
+- %QX0.5-0.7: `zone_1_enable`, `zone_2_enable`, `zone_3_enable`
+- %QX1.0-1.1: `start_command`, `stop_command`
+- %QX1.5: `motor_running`
 
-### Registers (Holding Registers)
-- Register 0: `speed_setpoint` (0-100%)
-- Register 1: `current_position` (0-359 degrees)
-- Register 2-3: `runtime_hours` (DINT)
-- Register 4-5: `cycle_counter` (DINT)
-- Register 6: `state` (0-5: Idle, Starting, Running, Stopping, Emergency, Maintenance)
-- Register 7: `maintenance_flag`
-- Register 8: `last_error_code`
+**Registers:**
+- %MW0: `speed_setpoint` (0-100%)
+- %MW1: `current_position` (0-25 track positions)
+- %MW2: `state` (0=Idle, 1=Starting, 2=Running, 3=Stopping, 4=Emergency)
+- %MW3: `current_speed` (calculated speed)
+- %MW5-14: Process variables (current, pressure, temperature, brake wear, vibration)
+- %MW80-88: Proximity sensors 1-9 (position detection)
 
-See `ATTACK_GUIDE.md` for complete memory map and attack techniques.
+### Safety PLC (Port 503)
+**Coils:**
+- %QX0.0-0.2: Safety inputs (master_enable, e-stop, gate)
+- %QX1.0-2.0: Event enables (9 events)
+- %QX2.1-3.1: Event active flags (9 events)
+
+**Registers:**
+- %MW10-11: Current position/speed from Main PLC
+- %MW20-28: Event counters (9 events)
+- %MW30: `alarm_register`
+- %MW31: `stealth_counter`
+- %MW50: `safety_violation_count`
+- %MW100: `safety_ok_reg` (safety status for Main PLC)
+
+### Effects PLC (Port 504)
+**Coils:**
+- %QX10.0-10.3: Lighting scenes 1-4
+- %QX11.0-11.2: Audio channels 1-3
+- %QX12.0-12.3: Special effects (fog, strobe, laser, photo)
+
+**Registers:**
+- %MW60: `current_lighting_scene`
+- %MW61: `active_audio_channel`
+- %MW62: `position_from_main`
+- %MW70-73: Effect runtime counters
+
+**See `MULTI_PLC_ARCHITECTURE.md` and `ATTACK_GUIDE.md` for complete memory maps and attack techniques.**
 
 ## Security Notes
 
