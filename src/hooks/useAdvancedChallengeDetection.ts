@@ -150,23 +150,19 @@ export function useAdvancedChallengeDetection({
 
   // 2. Portal Disruption (100pts) - Disable event 4 (Photo Flash at position 9)
   useEffect(() => {
-    console.log('[Challenge 2 Debug] sessionId:', sessionId, 'completed:', portalDisruptionCompleted.current, 'rideRunning:', rideRunning);
-
     if (!sessionId || portalDisruptionCompleted.current || !rideRunning) return;
 
-    const inEvent4Zone = carPosition >= 9 && carPosition <= 11;
     const event4Enabled = coilStates[11]; // event_4_enable (coil 11)
+    const wasEnabled = lastCoilStates.current[11];
 
-    console.log('[Challenge 2 Debug] carPosition:', carPosition, 'inEvent4Zone:', inEvent4Zone, 'state:', state, 'event4Enabled:', event4Enabled);
-
-    // Detect when vehicle enters Scene 4 zone with event 4 disabled
-    // This catches both: disabling it before entry, or disabling during entry
-    if (inEvent4Zone && state === 2 && event4Enabled === false) {
-      console.log('[Challenge] Portal Disruption completed! Photo flash event disabled in Scene 4');
+    // Detect when event 4 gets disabled during ride operation (state 2 = Running)
+    // Just detect the transition from TRUE to FALSE while ride is running
+    if (state === 2 && wasEnabled === true && event4Enabled === false) {
+      console.log('[Challenge] Portal Disruption completed! Photo flash event disabled during ride operation');
       completeChallenge('Portal Disruption', 'event_disable');
       portalDisruptionCompleted.current = true;
     }
-  }, [sessionId, carPosition, coilStates, rideRunning, state]);
+  }, [sessionId, coilStates, rideRunning, state]);
 
   // 3. Emergency Override (150pts) - Trigger emergency stop via Modbus (not UI button)
   useEffect(() => {
@@ -412,9 +408,6 @@ export function useAdvancedChallengeDetection({
   }, [sessionId, carPosition, rideRunning]);
 
   const completeChallenge = async (title: string, method: string) => {
-    console.log(`[Challenge] completeChallenge called with title="${title}", method="${method}"`);
-    console.log(`[Challenge] sessionId=${sessionId}, onFlagCapture=${!!onFlagCapture}`);
-
     // Challenge 1 (First Contact) doesn't require a session
     // For other challenges, we need a session to track completions
     const requiresSession = title !== 'First Contact';
@@ -432,8 +425,6 @@ export function useAdvancedChallengeDetection({
       .eq('title', title)
       .maybeSingle();
 
-    console.log(`[Challenge] Database query result:`, { challenge, error: challengeError });
-
     if (challengeError || !challenge) {
       console.error(`[Challenge] Error finding challenge "${title}":`, challengeError);
       return;
@@ -441,8 +432,6 @@ export function useAdvancedChallengeDetection({
 
     // For Challenge 1, create a temporary session or just award the flag without persistence
     const completionSessionId = sessionId || 'no-session-' + Date.now();
-
-    console.log(`[Challenge] Inserting completion with session_id=${completionSessionId}`);
 
     const { error } = await supabase
       .from('challenge_completions')
@@ -460,12 +449,9 @@ export function useAdvancedChallengeDetection({
       }
     } else {
       console.log(`[Challenge] ✓ "${title}" completed successfully! (+${challenge.points} points)`);
-      console.log(`[Challenge] Calling onFlagCapture callback...`);
 
       if (onFlagCapture) {
         onFlagCapture(title, challenge.points);
-      } else {
-        console.warn('[Challenge] onFlagCapture callback is not defined!');
       }
     }
   };
