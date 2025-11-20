@@ -153,11 +153,11 @@ export function useAdvancedChallengeDetection({
     if (!sessionId || portalDisruptionCompleted.current || !rideRunning) return;
 
     const inEvent4Zone = carPosition >= 9 && carPosition <= 11;
-    const event4Enabled = coilStates[11] || false; // event_4_enable (coil 11)
-    const wasEnabled = lastCoilStates.current[11] || false;
+    const event4Enabled = coilStates[11]; // event_4_enable (coil 11)
 
-    // Detect when event 4 gets disabled while in the zone
-    if (inEvent4Zone && state === 2 && wasEnabled && !event4Enabled) {
+    // Detect when vehicle enters Scene 4 zone with event 4 disabled
+    // This catches both: disabling it before entry, or disabling during entry
+    if (inEvent4Zone && state === 2 && event4Enabled === false) {
       console.log('[Challenge] Portal Disruption completed! Photo flash event disabled in Scene 4');
       completeChallenge('Portal Disruption', 'event_disable');
       portalDisruptionCompleted.current = true;

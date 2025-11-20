@@ -69,7 +69,7 @@ def disable_zone_2():
     # Wait for vehicle to enter Zone 2
     zone_2_entered = False
     for i in range(150):
-        result = client.read_holding_registers(1025, 1, slave=1)
+        result = client.read_holding_registers(1, 1, slave=1)
         if not result.isError():
             position = result.registers[0]
 

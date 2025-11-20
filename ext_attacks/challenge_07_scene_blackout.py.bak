@@ -42,7 +42,7 @@ def disable_multiple_events():
     print()
 
     # Check if ride is running
-    result = client.read_holding_registers(1039, 1, slave=1)
+    result = client.read_holding_registers(2, 1, slave=1)
     if result.isError():
         print("✗ Failed to read ride state")
         client.close()

