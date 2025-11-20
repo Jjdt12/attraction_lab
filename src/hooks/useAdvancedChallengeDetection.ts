@@ -135,19 +135,18 @@ export function useAdvancedChallengeDetection({
 
   // 1. First Contact (50pts) - Just connecting and viewing data counts
   useEffect(() => {
-    if (!sessionId || firstContactCompleted.current) return;
+    if (firstContactCompleted.current) return;
 
-    // Award when user has an active session and any non-zero values appear
-    // This indicates they've connected and the PLC is responding
-    const hasAnyData = speedSetpoint > 0 || carPosition > 0 || state > 0 ||
-                       coilStates.some(c => c === true) || coilStates.some(c => c === false);
+    // Award when coilStates array is populated (indicates PLC connection and data retrieval)
+    // This works even without a session - just viewing the HMI counts
+    const hasCoilData = coilStates.length > 0;
 
-    if (hasAnyData && !firstContactCompleted.current) {
+    if (hasCoilData && !firstContactCompleted.current) {
       console.log('[Challenge] First Contact completed! Connected to PLC network');
       completeChallenge('First Contact', 'network_connection');
       firstContactCompleted.current = true;
     }
-  }, [sessionId, speedSetpoint, carPosition, state, coilStates]);
+  }, [speedSetpoint, carPosition, state, coilStates]);
 
   // 2. Portal Disruption (100pts) - Disable event 4 (Photo Flash at position 9)
   useEffect(() => {
