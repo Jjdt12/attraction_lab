@@ -1,0 +1,266 @@
+import {
+  Shield,
+  Layers,
+  Network,
+  AlertTriangle,
+  Target,
+  ClipboardCheck,
+  TrendingUp,
+  Activity,
+  CheckCircle2,
+  XCircle,
+  AlertCircle,
+} from 'lucide-react';
+import { useLabEnvironment } from '../contexts/LabEnvironmentContext';
+import type { ViewType } from '../App';
+
+interface DashboardProps {
+  onNavigate: (view: ViewType) => void;
+}
+
+export function Dashboard({ onNavigate }: DashboardProps) {
+  const { zones, devices, firewallRules, assessment } = useLabEnvironment();
+
+  const onlineDevices = devices.filter(d => d.status === 'online').length;
+  const enabledRules = firewallRules.filter(r => r.enabled).length;
+
+  const quickActions = [
+    { id: 'purdue-model', label: 'View Purdue Model', icon: Layers, color: 'cyan' },
+    { id: 'firewall-manager', label: 'Manage Firewalls', icon: Shield, color: 'emerald' },
+    { id: 'scenario-simulator', label: 'Run Attack Test', icon: Target, color: 'amber' },
+    { id: 'iec-62443', label: 'Check Compliance', icon: ClipboardCheck, color: 'blue' },
+  ] as const;
+
+  return (
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatCard
+          title="Security Level"
+          value={`SL ${assessment.iec62443.overallLevel}`}
+          subtitle="IEC 62443"
+          icon={Shield}
+          color="cyan"
+          trend={+5}
+        />
+        <StatCard
+          title="Active Zones"
+          value={zones.length.toString()}
+          subtitle="Configured"
+          icon={Layers}
+          color="emerald"
+        />
+        <StatCard
+          title="Devices Online"
+          value={`${onlineDevices}/${devices.length}`}
+          subtitle="Connected"
+          icon={Network}
+          color="blue"
+        />
+        <StatCard
+          title="Firewall Rules"
+          value={enabledRules.toString()}
+          subtitle="Active"
+          icon={AlertTriangle}
+          color="amber"
+        />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 space-y-6">
+          <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
+            <h2 className="text-lg font-semibold text-white mb-4">Architecture Overview</h2>
+            <div className="space-y-3">
+              {zones.slice(0, 6).map((zone) => (
+                <div
+                  key={zone.id}
+                  className="flex items-center justify-between p-3 bg-slate-800/50 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer"
+                  onClick={() => onNavigate('zone-editor')}
+                >
+                  <div className="flex items-center gap-3">
+                    <div
+                      className="w-3 h-3 rounded-full"
+                      style={{ backgroundColor: zone.color }}
+                    />
+                    <div>
+                      <p className="text-sm font-medium text-white">{zone.name}</p>
+                      <p className="text-xs text-slate-400">
+                        {devices.filter(d => d.zoneId === zone.id).length} devices
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-slate-500">SL {zone.securityLevel}</span>
+                    <div className={`w-2 h-2 rounded-full ${
+                      zone.securityLevel >= 3 ? 'bg-emerald-500' : zone.securityLevel >= 2 ? 'bg-amber-500' : 'bg-red-500'
+                    }`} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
+            <h2 className="text-lg font-semibold text-white mb-4">Security Assessment</h2>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-3">
+                <h3 className="text-sm font-medium text-slate-400">IEC 62443 Levels</h3>
+                {[
+                  { label: 'SL 1 - Basic', value: assessment.iec62443.sl1 },
+                  { label: 'SL 2 - Enhanced', value: assessment.iec62443.sl2 },
+                  { label: 'SL 3 - Significant', value: assessment.iec62443.sl3 },
+                  { label: 'SL 4 - Critical', value: assessment.iec62443.sl4 },
+                ].map(({ label, value }) => (
+                  <div key={label}>
+                    <div className="flex justify-between text-xs mb-1">
+                      <span className="text-slate-400">{label}</span>
+                      <span className="text-white">{value}%</span>
+                    </div>
+                    <div className="h-2 bg-slate-800 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full transition-all"
+                        style={{ width: `${value}%` }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="space-y-3">
+                <h3 className="text-sm font-medium text-slate-400">NIST CSF Functions</h3>
+                {[
+                  { label: 'Identify', value: assessment.nistCsf.identify },
+                  { label: 'Protect', value: assessment.nistCsf.protect },
+                  { label: 'Detect', value: assessment.nistCsf.detect },
+                  { label: 'Respond', value: assessment.nistCsf.respond },
+                  { label: 'Recover', value: assessment.nistCsf.recover },
+                ].map(({ label, value }) => (
+                  <div key={label}>
+                    <div className="flex justify-between text-xs mb-1">
+                      <span className="text-slate-400">{label}</span>
+                      <span className="text-white">{value}%</span>
+                    </div>
+                    <div className="h-2 bg-slate-800 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full transition-all"
+                        style={{ width: `${value}%` }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="space-y-6">
+          <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
+            <h2 className="text-lg font-semibold text-white mb-4">Quick Actions</h2>
+            <div className="space-y-2">
+              {quickActions.map(({ id, label, icon: Icon, color }) => (
+                <button
+                  key={id}
+                  onClick={() => onNavigate(id)}
+                  className={`w-full flex items-center gap-3 p-3 rounded-lg transition-all border border-transparent hover:border-${color}-500/20 bg-slate-800/50 hover:bg-${color}-500/10`}
+                >
+                  <div className={`p-2 rounded-lg bg-${color}-500/10`}>
+                    <Icon size={18} className={`text-${color}-400`} />
+                  </div>
+                  <span className="text-sm text-slate-300">{label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
+            <h2 className="text-lg font-semibold text-white mb-4">Top Gaps</h2>
+            <div className="space-y-3">
+              {assessment.gaps.slice(0, 4).map((gap, index) => (
+                <div key={index} className="flex items-start gap-3 p-3 bg-slate-800/50 rounded-lg">
+                  <AlertCircle size={16} className="text-amber-400 mt-0.5 shrink-0" />
+                  <p className="text-xs text-slate-300">{gap}</p>
+                </div>
+              ))}
+            </div>
+            <button
+              onClick={() => onNavigate('gap-analysis')}
+              className="w-full mt-4 py-2 text-sm text-cyan-400 hover:text-cyan-300 transition-colors"
+            >
+              View Full Analysis
+            </button>
+          </div>
+
+          <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
+            <h2 className="text-lg font-semibold text-white mb-4">System Status</h2>
+            <div className="space-y-3">
+              {[
+                { label: 'Main PLC', status: 'online' },
+                { label: 'Safety PLC', status: 'online' },
+                { label: 'SCADA Server', status: 'online' },
+                { label: 'OT Firewall', status: 'online' },
+                { label: 'Historian', status: 'warning' },
+              ].map(({ label, status }) => (
+                <div key={label} className="flex items-center justify-between">
+                  <span className="text-sm text-slate-400">{label}</span>
+                  <div className="flex items-center gap-2">
+                    {status === 'online' ? (
+                      <CheckCircle2 size={14} className="text-emerald-400" />
+                    ) : status === 'warning' ? (
+                      <AlertCircle size={14} className="text-amber-400" />
+                    ) : (
+                      <XCircle size={14} className="text-red-400" />
+                    )}
+                    <span className={`text-xs ${
+                      status === 'online' ? 'text-emerald-400' : status === 'warning' ? 'text-amber-400' : 'text-red-400'
+                    }`}>
+                      {status}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+interface StatCardProps {
+  title: string;
+  value: string;
+  subtitle: string;
+  icon: React.ComponentType<{ size?: number; className?: string }>;
+  color: 'cyan' | 'emerald' | 'blue' | 'amber';
+  trend?: number;
+}
+
+function StatCard({ title, value, subtitle, icon: Icon, color, trend }: StatCardProps) {
+  const colors = {
+    cyan: 'from-cyan-500 to-blue-500 bg-cyan-500/10 text-cyan-400',
+    emerald: 'from-emerald-500 to-teal-500 bg-emerald-500/10 text-emerald-400',
+    blue: 'from-blue-500 to-indigo-500 bg-blue-500/10 text-blue-400',
+    amber: 'from-amber-500 to-orange-500 bg-amber-500/10 text-amber-400',
+  };
+
+  return (
+    <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
+      <div className="flex items-start justify-between">
+        <div>
+          <p className="text-sm text-slate-400">{title}</p>
+          <p className="text-2xl font-bold text-white mt-1">{value}</p>
+          <p className="text-xs text-slate-500 mt-1">{subtitle}</p>
+        </div>
+        <div className={`p-3 rounded-xl ${colors[color].split(' ')[2]}`}>
+          <Icon size={20} className={colors[color].split(' ')[3]} />
+        </div>
+      </div>
+      {trend !== undefined && (
+        <div className="mt-4 flex items-center gap-1">
+          <TrendingUp size={14} className={trend >= 0 ? 'text-emerald-400' : 'text-red-400'} />
+          <span className={`text-xs ${trend >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+            {trend >= 0 ? '+' : ''}{trend}% from last assessment
+          </span>
+        </div>
+      )}
+    </div>
+  );
+}
