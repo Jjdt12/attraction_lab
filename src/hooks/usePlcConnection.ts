@@ -99,122 +99,6 @@ export function usePlcConnection(wsUrl: string = 'ws://localhost:8765') {
   });
   const [error, setError] = useState<string | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
-  const reconnectTimeoutRef = useRef<number | null>(null);
-
-  const connect = useCallback(() => {
-    if (wsRef.current?.readyState === WebSocket.OPEN) return;
-
-    setConnectionStatus('connecting');
-    setError(null);
-
-    try {
-      const ws = new WebSocket(wsUrl);
-
-      ws.onopen = () => {
-        setConnectionStatus('connected');
-        setError(null);
-        ws.send(JSON.stringify({ type: 'connect_plc' }));
-      };
-
-      ws.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data);
-
-          if (data.type === 'coil_update') {
-            const plcKey = data.plc === 'main' ? 'main' : data.plc === 'safety' ? 'safety' : 'effects';
-            setPlcStates(prev => ({
-              ...prev,
-              [plcKey]: {
-                ...prev[plcKey],
-                connected: true,
-                coils: { ...prev[plcKey].coils, [data.address]: data.value },
-                lastUpdate: Date.now(),
-              },
-            }));
-          } else if (data.type === 'register_update') {
-            const plcKey = data.plc === 'main' ? 'main' : data.plc === 'safety' ? 'safety' : 'effects';
-            setPlcStates(prev => ({
-              ...prev,
-              [plcKey]: {
-                ...prev[plcKey],
-                connected: true,
-                registers: { ...prev[plcKey].registers, [data.address]: data.value },
-                lastUpdate: Date.now(),
-              },
-            }));
-          } else if (data.type === 'initial_state') {
-            const plcKey = data.plc === 'main' ? 'main' : data.plc === 'safety' ? 'safety' : 'effects';
-            const coils: Record<number, boolean> = {};
-            const registers: Record<number, number> = {};
-
-            if (data.coils) {
-              Object.entries(data.coils).forEach(([addr, val]) => {
-                coils[parseInt(addr)] = val as boolean;
-              });
-            }
-            if (data.registers) {
-              Object.entries(data.registers).forEach(([addr, val]) => {
-                registers[parseInt(addr)] = val as number;
-              });
-            }
-
-            setPlcStates(prev => ({
-              ...prev,
-              [plcKey]: {
-                connected: true,
-                coils,
-                registers,
-                lastUpdate: Date.now(),
-              },
-            }));
-          } else if (data.type === 'plc_status') {
-            setPlcStates(prev => ({
-              ...prev,
-              main: { ...prev.main, connected: data.main?.connected ?? prev.main.connected },
-              safety: { ...prev.safety, connected: data.safety?.connected ?? prev.safety.connected },
-              effects: { ...prev.effects, connected: data.effects?.connected ?? prev.effects.connected },
-            }));
-          }
-        } catch {
-          console.warn('Failed to parse WebSocket message');
-        }
-      };
-
-      ws.onerror = () => {
-        setConnectionStatus('error');
-        setError('WebSocket connection error');
-      };
-
-      ws.onclose = () => {
-        setConnectionStatus('disconnected');
-        wsRef.current = null;
-
-        if (reconnectTimeoutRef.current) {
-          clearTimeout(reconnectTimeoutRef.current);
-        }
-        reconnectTimeoutRef.current = window.setTimeout(() => {
-          connect();
-        }, 3000);
-      };
-
-      wsRef.current = ws;
-    } catch {
-      setConnectionStatus('error');
-      setError('Failed to create WebSocket connection');
-    }
-  }, [wsUrl]);
-
-  const disconnect = useCallback(() => {
-    if (reconnectTimeoutRef.current) {
-      clearTimeout(reconnectTimeoutRef.current);
-      reconnectTimeoutRef.current = null;
-    }
-    if (wsRef.current) {
-      wsRef.current.close();
-      wsRef.current = null;
-    }
-    setConnectionStatus('disconnected');
-  }, []);
 
   const writeCoil = useCallback((plc: 'main' | 'safety' | 'effects', address: number, value: boolean) => {
     if (wsRef.current?.readyState === WebSocket.OPEN) {
@@ -239,9 +123,126 @@ export function usePlcConnection(wsUrl: string = 'ws://localhost:8765') {
   }, []);
 
   useEffect(() => {
-    connect();
-    return () => disconnect();
-  }, [connect, disconnect]);
+    let mounted = true;
+    let ws: WebSocket | null = null;
+    let reconnectTimeout: number | null = null;
+
+    const attemptConnect = () => {
+      if (!mounted) return;
+      if (ws?.readyState === WebSocket.OPEN) return;
+
+      setConnectionStatus('connecting');
+      setError(null);
+
+      try {
+        ws = new WebSocket(wsUrl);
+
+        ws.onopen = () => {
+          if (!mounted) return;
+          setConnectionStatus('connected');
+          setError(null);
+          ws?.send(JSON.stringify({ type: 'connect_plc' }));
+        };
+
+        ws.onmessage = (event) => {
+          if (!mounted) return;
+          try {
+            const data = JSON.parse(event.data);
+
+            if (data.type === 'coil_update') {
+              const plcKey = data.plc === 'main' ? 'main' : data.plc === 'safety' ? 'safety' : 'effects';
+              setPlcStates(prev => ({
+                ...prev,
+                [plcKey]: {
+                  ...prev[plcKey],
+                  connected: true,
+                  coils: { ...prev[plcKey].coils, [data.address]: data.value },
+                  lastUpdate: Date.now(),
+                },
+              }));
+            } else if (data.type === 'register_update') {
+              const plcKey = data.plc === 'main' ? 'main' : data.plc === 'safety' ? 'safety' : 'effects';
+              setPlcStates(prev => ({
+                ...prev,
+                [plcKey]: {
+                  ...prev[plcKey],
+                  connected: true,
+                  registers: { ...prev[plcKey].registers, [data.address]: data.value },
+                  lastUpdate: Date.now(),
+                },
+              }));
+            } else if (data.type === 'initial_state') {
+              const plcKey = data.plc === 'main' ? 'main' : data.plc === 'safety' ? 'safety' : 'effects';
+              const coils: Record<number, boolean> = {};
+              const registers: Record<number, number> = {};
+
+              if (data.coils) {
+                Object.entries(data.coils).forEach(([addr, val]) => {
+                  coils[parseInt(addr)] = val as boolean;
+                });
+              }
+              if (data.registers) {
+                Object.entries(data.registers).forEach(([addr, val]) => {
+                  registers[parseInt(addr)] = val as number;
+                });
+              }
+
+              setPlcStates(prev => ({
+                ...prev,
+                [plcKey]: {
+                  connected: true,
+                  coils,
+                  registers,
+                  lastUpdate: Date.now(),
+                },
+              }));
+            } else if (data.type === 'plc_status') {
+              setPlcStates(prev => ({
+                ...prev,
+                main: { ...prev.main, connected: data.main?.connected ?? prev.main.connected },
+                safety: { ...prev.safety, connected: data.safety?.connected ?? prev.safety.connected },
+                effects: { ...prev.effects, connected: data.effects?.connected ?? prev.effects.connected },
+              }));
+            }
+          } catch {
+            console.warn('Failed to parse WebSocket message');
+          }
+        };
+
+        ws.onerror = () => {
+          if (!mounted) return;
+          setConnectionStatus('error');
+          setError('WebSocket connection error');
+        };
+
+        ws.onclose = () => {
+          if (!mounted) return;
+          setConnectionStatus('disconnected');
+          ws = null;
+          reconnectTimeout = window.setTimeout(attemptConnect, 5000);
+        };
+
+        wsRef.current = ws;
+      } catch {
+        if (!mounted) return;
+        setConnectionStatus('error');
+        setError('Failed to create WebSocket connection');
+      }
+    };
+
+    attemptConnect();
+
+    return () => {
+      mounted = false;
+      if (reconnectTimeout) {
+        clearTimeout(reconnectTimeout);
+      }
+      if (ws) {
+        ws.close();
+      }
+      wsRef.current = null;
+    };
+  }, [wsUrl]);
 
   const getCoilName = (address: number) => COIL_NAMES[address] || `coil_${address}`;
   const getRegisterName = (address: number) => REGISTER_NAMES[address] || `reg_${address}`;
@@ -252,8 +253,6 @@ export function usePlcConnection(wsUrl: string = 'ws://localhost:8765') {
     connectionStatus,
     plcStates,
     error,
-    connect,
-    disconnect,
     writeCoil,
     writeRegister,
     getCoilName,
