@@ -1,17 +1,25 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   Target,
   Play,
-  Pause,
   RotateCcw,
   CheckCircle2,
   XCircle,
   AlertTriangle,
   Shield,
-  Clock,
-  Activity,
+  Loader2,
+  Info,
 } from 'lucide-react';
 import { useLabEnvironment } from '../../contexts/LabEnvironmentContext';
+import { useSecurity } from '../../contexts/SecurityContext';
+
+interface AttackStage {
+  id: string;
+  name: string;
+  description: string;
+  checkType: 'firewall' | 'ids' | 'acl' | 'segmentation' | 'protocol';
+  requiredControl: string;
+}
 
 interface AttackScenario {
   id: string;
@@ -22,7 +30,7 @@ interface AttackScenario {
   techniques: string[];
   mitigations: string[];
   severity: 'low' | 'medium' | 'high' | 'critical';
-  timeToExecute: number;
+  stages: AttackStage[];
 }
 
 const attackScenarios: AttackScenario[] = [
@@ -35,7 +43,13 @@ const attackScenarios: AttackScenario[] = [
     techniques: ['T1566 - Phishing', 'T1021 - Remote Services', 'T1486 - Data Encrypted'],
     mitigations: ['Network segmentation', 'IDMZ enforcement', 'Application whitelisting'],
     severity: 'critical',
-    timeToExecute: 45,
+    stages: [
+      { id: 'initial', name: 'Initial Access', description: 'Attacker gains foothold via phishing', checkType: 'firewall', requiredControl: 'Email filtering firewall rule' },
+      { id: 'recon', name: 'Network Reconnaissance', description: 'Scanning for OT systems', checkType: 'ids', requiredControl: 'IDS signature for port scanning' },
+      { id: 'lateral', name: 'Lateral Movement to DMZ', description: 'Moving toward IDMZ boundary', checkType: 'segmentation', requiredControl: 'IDMZ zone with firewall' },
+      { id: 'breach', name: 'IDMZ Breach Attempt', description: 'Trying to cross IT/OT boundary', checkType: 'firewall', requiredControl: 'Deny rule from IT to OT' },
+      { id: 'impact', name: 'OT Network Access', description: 'Attempting to reach PLCs', checkType: 'acl', requiredControl: 'ACL blocking unauthorized IPs' },
+    ],
   },
   {
     id: 'modbus-injection',
@@ -46,7 +60,13 @@ const attackScenarios: AttackScenario[] = [
     techniques: ['T0831 - Manipulation of Control', 'T0843 - Program Upload'],
     mitigations: ['Protocol filtering', 'Function code whitelisting', 'Network monitoring'],
     severity: 'high',
-    timeToExecute: 30,
+    stages: [
+      { id: 'position', name: 'Network Position', description: 'Attacker on OT network segment', checkType: 'segmentation', requiredControl: 'Proper zone segmentation' },
+      { id: 'intercept', name: 'Traffic Interception', description: 'Capturing Modbus traffic', checkType: 'ids', requiredControl: 'IDS signature for ARP spoofing' },
+      { id: 'inject', name: 'Command Injection', description: 'Sending malicious function codes', checkType: 'protocol', requiredControl: 'Protocol filter for Modbus' },
+      { id: 'execute', name: 'PLC Execution', description: 'PLC processes malicious command', checkType: 'acl', requiredControl: 'ACL limiting Modbus sources' },
+      { id: 'impact', name: 'Physical Impact', description: 'Unauthorized process change', checkType: 'ids', requiredControl: 'IDS for anomalous values' },
+    ],
   },
   {
     id: 'insider-threat',
@@ -57,7 +77,13 @@ const attackScenarios: AttackScenario[] = [
     techniques: ['T0859 - Valid Accounts', 'T0821 - Modify Controller Tasking'],
     mitigations: ['Least privilege access', 'Audit logging', 'Dual authorization'],
     severity: 'high',
-    timeToExecute: 20,
+    stages: [
+      { id: 'access', name: 'Legitimate Access', description: 'User logs in with valid credentials', checkType: 'acl', requiredControl: 'Role-based ACL limiting access' },
+      { id: 'escalate', name: 'Privilege Abuse', description: 'Accessing unauthorized systems', checkType: 'acl', requiredControl: 'Least privilege ACL rules' },
+      { id: 'modify', name: 'Configuration Change', description: 'Modifying PLC program', checkType: 'ids', requiredControl: 'IDS for config changes' },
+      { id: 'cover', name: 'Log Tampering', description: 'Attempting to hide actions', checkType: 'ids', requiredControl: 'IDS for log anomalies' },
+      { id: 'impact', name: 'Process Manipulation', description: 'Causing operational impact', checkType: 'protocol', requiredControl: 'Protocol filter for write commands' },
+    ],
   },
   {
     id: 'supply-chain',
@@ -68,57 +94,213 @@ const attackScenarios: AttackScenario[] = [
     techniques: ['T0862 - Supply Chain Compromise', 'T0839 - Module Firmware'],
     mitigations: ['Firmware validation', 'Secure update process', 'Vendor verification'],
     severity: 'critical',
-    timeToExecute: 60,
+    stages: [
+      { id: 'delivery', name: 'Update Delivery', description: 'Malicious update reaches network', checkType: 'firewall', requiredControl: 'Firewall blocking external downloads' },
+      { id: 'staging', name: 'Update Staging', description: 'Update placed on staging server', checkType: 'segmentation', requiredControl: 'DMZ for update servers' },
+      { id: 'transfer', name: 'OT Transfer', description: 'Update transferred to OT network', checkType: 'firewall', requiredControl: 'Firewall restricting IT to OT' },
+      { id: 'install', name: 'Installation', description: 'Firmware installed on PLC', checkType: 'ids', requiredControl: 'IDS for firmware changes' },
+      { id: 'impact', name: 'Backdoor Active', description: 'Malicious code executing', checkType: 'ids', requiredControl: 'IDS for anomalous behavior' },
+    ],
   },
 ];
+
+interface StageResult {
+  stageId: string;
+  stageName: string;
+  blocked: boolean;
+  blockingControl: string | null;
+  status: 'pending' | 'running' | 'passed' | 'blocked';
+}
 
 interface SimulationResult {
   scenarioId: string;
   blocked: boolean;
   stagesCompleted: number;
+  totalStages: number;
   blockingControl: string | null;
-  duration: number;
+  stageResults: StageResult[];
+}
+
+function useSecuritySafe() {
+  try {
+    return useSecurity();
+  } catch {
+    return null;
+  }
 }
 
 export function ScenarioSimulator() {
-  const { firewallRules, zones } = useLabEnvironment();
+  const { zones } = useLabEnvironment();
+  const securityContext = useSecuritySafe();
   const [selectedScenario, setSelectedScenario] = useState<AttackScenario | null>(null);
   const [running, setRunning] = useState(false);
-  const [progress, setProgress] = useState(0);
+  const [currentStageIndex, setCurrentStageIndex] = useState(-1);
+  const [stageResults, setStageResults] = useState<StageResult[]>([]);
   const [results, setResults] = useState<SimulationResult[]>([]);
+  const simulationRef = useRef<NodeJS.Timeout | null>(null);
+
+  const hasUserConfiguredSecurity = () => {
+    if (!securityContext) return false;
+    const enabledRules = securityContext.rules?.filter(r => r.enabled) || [];
+    return enabledRules.length > 0 || securityContext.config?.firewallEnabled || securityContext.config?.idsEnabled;
+  };
+
+  const checkStageBlocked = (stage: AttackStage): { blocked: boolean; control: string | null } => {
+    if (!securityContext) {
+      return { blocked: false, control: null };
+    }
+
+    const rules = securityContext.rules || [];
+
+    switch (stage.checkType) {
+      case 'firewall': {
+        if (!securityContext.config?.firewallEnabled) {
+          return { blocked: false, control: null };
+        }
+        const blockingRule = rules.find(
+          r => r.ruleType === 'firewall' && r.enabled
+        );
+        return {
+          blocked: !!blockingRule,
+          control: blockingRule ? `Firewall: ${blockingRule.name}` : null
+        };
+      }
+      case 'ids': {
+        if (!securityContext.config?.idsEnabled) {
+          return { blocked: false, control: null };
+        }
+        const detectingSignature = rules.find(
+          r => r.ruleType === 'ids_signature' && r.enabled
+        );
+        return {
+          blocked: !!detectingSignature,
+          control: detectingSignature ? `IDS: ${detectingSignature.name}` : null
+        };
+      }
+      case 'acl': {
+        if (!securityContext.config?.authenticationEnabled) {
+          return { blocked: false, control: null };
+        }
+        const blockingAcl = rules.find(
+          r => r.ruleType === 'acl' && r.enabled
+        );
+        return {
+          blocked: !!blockingAcl,
+          control: blockingAcl ? `ACL: ${blockingAcl.name}` : null
+        };
+      }
+      case 'protocol': {
+        if (!securityContext.config?.protocolFilteringEnabled) {
+          return { blocked: false, control: null };
+        }
+        const blockingFilter = rules.find(
+          r => r.ruleType === 'protocol_filter' && r.enabled
+        );
+        return {
+          blocked: !!blockingFilter,
+          control: blockingFilter ? `Protocol Filter: ${blockingFilter.name}` : null
+        };
+      }
+      case 'segmentation': {
+        if (!securityContext.config?.networkSegmentationEnabled) {
+          return { blocked: false, control: null };
+        }
+        const hasIdmzZone = zones.some(z => z.name.toLowerCase().includes('dmz'));
+        const hasSegmentationRules = rules.some(
+          r => r.ruleType === 'firewall' && r.enabled
+        );
+        return {
+          blocked: hasIdmzZone && hasSegmentationRules,
+          control: hasIdmzZone && hasSegmentationRules ? 'Network Segmentation' : null
+        };
+      }
+      default:
+        return { blocked: false, control: null };
+    }
+  };
 
   const runSimulation = () => {
     if (!selectedScenario) return;
 
     setRunning(true);
-    setProgress(0);
+    setCurrentStageIndex(0);
+    setStageResults(selectedScenario.stages.map(s => ({
+      stageId: s.id,
+      stageName: s.name,
+      blocked: false,
+      blockingControl: null,
+      status: 'pending' as const,
+    })));
+  };
 
-    const interval = setInterval(() => {
-      setProgress(prev => {
-        if (prev >= 100) {
-          clearInterval(interval);
+  useEffect(() => {
+    if (!running || !selectedScenario || currentStageIndex < 0) return;
+
+    if (currentStageIndex >= selectedScenario.stages.length) {
+      setRunning(false);
+      const finalResults = stageResults;
+      const blockedStage = finalResults.find(r => r.blocked);
+      setResults(prev => [...prev, {
+        scenarioId: selectedScenario.id,
+        blocked: !!blockedStage,
+        stagesCompleted: blockedStage
+          ? finalResults.findIndex(r => r.blocked) + 1
+          : finalResults.length,
+        totalStages: finalResults.length,
+        blockingControl: blockedStage?.blockingControl || null,
+        stageResults: finalResults,
+      }]);
+      setCurrentStageIndex(-1);
+      return;
+    }
+
+    setStageResults(prev => prev.map((r, i) =>
+      i === currentStageIndex ? { ...r, status: 'running' } : r
+    ));
+
+    simulationRef.current = setTimeout(() => {
+      const stage = selectedScenario.stages[currentStageIndex];
+      const { blocked, control } = checkStageBlocked(stage);
+
+      setStageResults(prev => prev.map((r, i) =>
+        i === currentStageIndex
+          ? { ...r, blocked, blockingControl: control, status: blocked ? 'blocked' : 'passed' }
+          : r
+      ));
+
+      if (blocked) {
+        setTimeout(() => {
           setRunning(false);
+          const finalResults = stageResults.map((r, i) =>
+            i === currentStageIndex
+              ? { ...r, blocked: true, blockingControl: control, status: 'blocked' as const }
+              : r
+          );
+          setResults(prev => [...prev, {
+            scenarioId: selectedScenario.id,
+            blocked: true,
+            stagesCompleted: currentStageIndex + 1,
+            totalStages: selectedScenario.stages.length,
+            blockingControl: control,
+            stageResults: finalResults,
+          }]);
+          setCurrentStageIndex(-1);
+        }, 500);
+      } else {
+        setCurrentStageIndex(prev => prev + 1);
+      }
+    }, 800);
 
-          const hasIdmz = zones.some(z => z.name.toLowerCase().includes('dmz'));
-          const hasDenyRules = firewallRules.some(r => r.action === 'deny' && r.enabled);
-          const blocked = hasIdmz && hasDenyRules && Math.random() > 0.3;
+    return () => {
+      if (simulationRef.current) clearTimeout(simulationRef.current);
+    };
+  }, [running, currentStageIndex, selectedScenario]);
 
-          setResults(prev => [
-            ...prev,
-            {
-              scenarioId: selectedScenario.id,
-              blocked,
-              stagesCompleted: blocked ? Math.floor(Math.random() * 3) + 1 : 5,
-              blockingControl: blocked ? selectedScenario.mitigations[0] : null,
-              duration: selectedScenario.timeToExecute,
-            },
-          ]);
-
-          return 100;
-        }
-        return prev + 2;
-      });
-    }, selectedScenario.timeToExecute * 10);
+  const resetSimulation = () => {
+    setResults([]);
+    setStageResults([]);
+    setCurrentStageIndex(-1);
+    setRunning(false);
   };
 
   const getSeverityColor = (severity: AttackScenario['severity']) => {
@@ -223,10 +405,10 @@ export function ScenarioSimulator() {
                           : 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20'
                       } disabled:opacity-50`}
                     >
-                      {running ? <Pause size={18} /> : <Play size={18} />}
+                      {running ? <Loader2 size={18} className="animate-spin" /> : <Play size={18} />}
                     </button>
                     <button
-                      onClick={() => setResults([])}
+                      onClick={resetSimulation}
                       className="p-2 bg-slate-800 hover:bg-slate-700 rounded-lg transition-colors text-slate-400"
                     >
                       <RotateCcw size={18} />
@@ -234,17 +416,95 @@ export function ScenarioSimulator() {
                   </div>
                 </div>
 
-                {running && (
-                  <div className="mb-4">
-                    <div className="flex items-center justify-between text-xs text-slate-400 mb-1">
-                      <span>Simulation Progress</span>
-                      <span>{progress}%</span>
+                {!hasUserConfiguredSecurity() && (
+                  <div className="mb-4 p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg">
+                    <div className="flex items-start gap-2">
+                      <Info size={16} className="text-amber-400 shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-sm text-amber-300 font-medium">No security controls configured</p>
+                        <p className="text-xs text-slate-400 mt-1">
+                          Configure firewall rules, IDS signatures, ACLs, or protocol filters in the Security Training section to test your defenses.
+                        </p>
+                      </div>
                     </div>
-                    <div className="h-2 bg-slate-800 rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-cyan-500 rounded-full transition-all"
-                        style={{ width: `${progress}%` }}
-                      />
+                  </div>
+                )}
+
+                {(running || stageResults.length > 0) && (
+                  <div className="mb-4">
+                    <h4 className="text-xs font-semibold text-slate-500 uppercase mb-3">Attack Stages</h4>
+                    <div className="space-y-2">
+                      {(stageResults.length > 0 ? stageResults : selectedScenario.stages.map(s => ({
+                        stageId: s.id,
+                        stageName: s.name,
+                        blocked: false,
+                        blockingControl: null,
+                        status: 'pending' as const,
+                      }))).map((stage, idx) => {
+                        const stageInfo = selectedScenario.stages[idx];
+                        return (
+                          <div
+                            key={stage.stageId}
+                            className={`p-3 rounded-lg border transition-all ${
+                              stage.status === 'blocked'
+                                ? 'bg-emerald-500/10 border-emerald-500/30'
+                                : stage.status === 'passed'
+                                ? 'bg-red-500/10 border-red-500/30'
+                                : stage.status === 'running'
+                                ? 'bg-cyan-500/10 border-cyan-500/30'
+                                : 'bg-slate-800/50 border-slate-700'
+                            }`}
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className="w-6 h-6 flex items-center justify-center">
+                                {stage.status === 'blocked' ? (
+                                  <Shield size={16} className="text-emerald-400" />
+                                ) : stage.status === 'passed' ? (
+                                  <XCircle size={16} className="text-red-400" />
+                                ) : stage.status === 'running' ? (
+                                  <Loader2 size={16} className="text-cyan-400 animate-spin" />
+                                ) : (
+                                  <span className="text-xs text-slate-500">{idx + 1}</span>
+                                )}
+                              </div>
+                              <div className="flex-1">
+                                <p className={`text-sm font-medium ${
+                                  stage.status === 'blocked' ? 'text-emerald-300' :
+                                  stage.status === 'passed' ? 'text-red-300' :
+                                  stage.status === 'running' ? 'text-cyan-300' : 'text-slate-400'
+                                }`}>
+                                  {stage.stageName}
+                                </p>
+                                <p className="text-xs text-slate-500">{stageInfo?.description}</p>
+                              </div>
+                              <div className="text-right">
+                                {stage.status === 'blocked' && (
+                                  <span className="text-xs text-emerald-400">Blocked</span>
+                                )}
+                                {stage.status === 'passed' && (
+                                  <span className="text-xs text-red-400">Passed</span>
+                                )}
+                                {stage.status === 'running' && (
+                                  <span className="text-xs text-cyan-400">Testing...</span>
+                                )}
+                                {stage.status === 'pending' && (
+                                  <span className="text-xs text-slate-500">Pending</span>
+                                )}
+                              </div>
+                            </div>
+                            {stage.blockingControl && (
+                              <p className="text-xs text-emerald-400 mt-2 ml-9">
+                                Blocked by: {stage.blockingControl}
+                              </p>
+                            )}
+                            {stage.status === 'pending' && stageInfo && (
+                              <p className="text-xs text-slate-500 mt-1 ml-9">
+                                Requires: {stageInfo.requiredControl}
+                              </p>
+                            )}
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 )}
@@ -312,7 +572,7 @@ export function ScenarioSimulator() {
                               </span>
                             </div>
                             <span className="text-xs text-slate-500">
-                              {result.stagesCompleted}/5 stages completed
+                              {result.blocked ? `Stopped at stage ${result.stagesCompleted}` : `All ${result.totalStages} stages passed`}
                             </span>
                           </div>
                           {result.blockingControl && (
