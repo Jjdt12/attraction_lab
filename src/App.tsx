@@ -5,6 +5,7 @@ import { PurdueModel } from './components/architecture/PurdueModel';
 import { IDMZDesigner } from './components/architecture/IDMZDesigner';
 import { NetworkTopology } from './components/architecture/NetworkTopology';
 import { ZoneEditor } from './components/architecture/ZoneEditor';
+import { ArchitectureTrainingDashboard } from './components/architecture/ArchitectureTrainingDashboard';
 import { FirewallManager } from './components/security/FirewallManager';
 import { ProtocolSecurity } from './components/security/ProtocolSecurity';
 import { AccessControlLists } from './components/security/AccessControlLists';
@@ -37,6 +38,7 @@ export type ViewType =
   | 'attraction-hmi'
   | 'security-training'
   | 'defense-validator'
+  | 'architecture-training'
   | 'purdue-model'
   | 'idmz-designer'
   | 'network-topology'
@@ -76,6 +78,8 @@ function App() {
         return <SecurityTrainingDashboard />;
       case 'defense-validator':
         return <DefenseValidator />;
+      case 'architecture-training':
+        return <ArchitectureTrainingDashboard />;
       case 'purdue-model':
         return <PurdueModel />;
       case 'idmz-designer':

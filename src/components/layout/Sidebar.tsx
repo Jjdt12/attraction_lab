@@ -59,14 +59,15 @@ const navSections: NavSection[] = [
     ],
   },
   {
-    title: 'Security Training',
+    title: 'Hands-On Training',
     items: [
-      { id: 'security-training', label: 'Training Dashboard', icon: <GraduationCap size={18} /> },
-      { id: 'defense-validator', label: 'Defense Validator', icon: <Crosshair size={18} /> },
+      { id: 'architecture-training', label: 'Architecture Lab', icon: <Layers size={18} /> },
+      { id: 'security-training', label: 'Security Controls Lab', icon: <GraduationCap size={18} /> },
+      { id: 'defense-validator', label: 'Test Your Defenses', icon: <Crosshair size={18} /> },
     ],
   },
   {
-    title: 'Architecture',
+    title: 'Reference Views',
     items: [
       { id: 'purdue-model', label: 'Purdue Model', icon: <Layers size={18} /> },
       { id: 'idmz-designer', label: 'IDMZ Designer', icon: <Shield size={18} /> },
