@@ -2,33 +2,18 @@ import {
   LayoutDashboard,
   Layers,
   Shield,
-  Network,
-  Grid3X3,
-  Flame,
-  Lock,
-  Key,
-  UserCheck,
-  AlertTriangle,
-  ToggleLeft,
-  ShieldAlert,
-  GitBranch,
-  Target,
-  Route,
-  Zap,
-  Timer,
-  ClipboardCheck,
-  FileCheck,
-  Search,
-  Lightbulb,
-  Scale,
-  BookOpen,
-  HelpCircle,
-  Presentation,
   ChevronLeft,
   ChevronRight,
   Monitor,
   GraduationCap,
   Crosshair,
+  BookOpen,
+  HelpCircle,
+  Presentation,
+  Scale,
+  AlertTriangle,
+  Target,
+  ClipboardCheck,
 } from 'lucide-react';
 import type { ViewType } from '../../App';
 
@@ -48,6 +33,7 @@ interface NavItem {
   id: ViewType;
   label: string;
   icon: React.ReactNode;
+  moduleNumber?: number;
 }
 
 const navSections: NavSection[] = [
@@ -55,69 +41,32 @@ const navSections: NavSection[] = [
     title: 'Overview',
     items: [
       { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard size={18} /> },
-      { id: 'attraction-hmi', label: 'Attraction HMI', icon: <Monitor size={18} /> },
+      { id: 'attraction-hmi', label: 'Attraction Simulator', icon: <Monitor size={18} /> },
     ],
   },
   {
-    title: 'Hands-On Training',
+    title: 'Training Modules',
     items: [
-      { id: 'architecture-training', label: 'Architecture Lab', icon: <Layers size={18} /> },
-      { id: 'security-training', label: 'Security Controls Lab', icon: <GraduationCap size={18} /> },
-      { id: 'defense-validator', label: 'Test Your Defenses', icon: <Crosshair size={18} /> },
+      { id: 'architecture-training', label: 'Architecture Fundamentals', icon: <Layers size={18} />, moduleNumber: 1 },
+      { id: 'security-training', label: 'Security Controls', icon: <GraduationCap size={18} />, moduleNumber: 2 },
+      { id: 'sis-protection', label: 'Safety Systems', icon: <AlertTriangle size={18} />, moduleNumber: 3 },
+      { id: 'scenario-simulator', label: 'Attack & Defense', icon: <Target size={18} />, moduleNumber: 4 },
+      { id: 'iec-62443', label: 'Compliance & Standards', icon: <ClipboardCheck size={18} />, moduleNumber: 5 },
     ],
   },
   {
-    title: 'Reference Views',
+    title: 'Validate Your Skills',
     items: [
-      { id: 'purdue-model', label: 'Purdue Model', icon: <Layers size={18} /> },
-      { id: 'idmz-designer', label: 'IDMZ Designer', icon: <Shield size={18} /> },
-      { id: 'network-topology', label: 'Network Topology', icon: <Network size={18} /> },
-      { id: 'zone-editor', label: 'Zone Editor', icon: <Grid3X3 size={18} /> },
+      { id: 'defense-validator', label: 'Defense Tester', icon: <Crosshair size={18} /> },
     ],
   },
   {
-    title: 'Security Controls',
+    title: 'Reference Library',
     items: [
-      { id: 'firewall-manager', label: 'Firewall Rules', icon: <Flame size={18} /> },
-      { id: 'protocol-security', label: 'Protocol Security', icon: <Lock size={18} /> },
-      { id: 'access-control', label: 'Access Control', icon: <Key size={18} /> },
-      { id: 'authentication', label: 'Authentication', icon: <UserCheck size={18} /> },
-    ],
-  },
-  {
-    title: 'Safety Systems',
-    items: [
-      { id: 'sis-protection', label: 'SIS Protection', icon: <AlertTriangle size={18} /> },
-      { id: 'fail-safe', label: 'Fail-Safe Simulator', icon: <ToggleLeft size={18} /> },
-      { id: 'triton-defense', label: 'TRITON Defense', icon: <ShieldAlert size={18} /> },
-      { id: 'redundancy', label: 'Redundancy Config', icon: <GitBranch size={18} /> },
-    ],
-  },
-  {
-    title: 'Attack Testing',
-    items: [
-      { id: 'scenario-simulator', label: 'Scenario Simulator', icon: <Target size={18} /> },
-      { id: 'lateral-movement', label: 'Lateral Movement', icon: <Route size={18} /> },
-      { id: 'protocol-attack', label: 'Protocol Attack', icon: <Zap size={18} /> },
-      { id: 'latency-analysis', label: 'Latency Analysis', icon: <Timer size={18} /> },
-    ],
-  },
-  {
-    title: 'Compliance',
-    items: [
-      { id: 'iec-62443', label: 'IEC 62443', icon: <ClipboardCheck size={18} /> },
-      { id: 'nist-csf', label: 'NIST CSF', icon: <FileCheck size={18} /> },
-      { id: 'gap-analysis', label: 'Gap Analysis', icon: <Search size={18} /> },
-      { id: 'recommendations', label: 'Recommendations', icon: <Lightbulb size={18} /> },
-    ],
-  },
-  {
-    title: 'Education',
-    items: [
-      { id: 'saic-vs-cia', label: 'SAIC vs CIA', icon: <Scale size={18} /> },
-      { id: 'protocol-reference', label: 'Protocol Reference', icon: <BookOpen size={18} /> },
       { id: 'glossary', label: 'Glossary', icon: <HelpCircle size={18} /> },
-      { id: 'interview-mode', label: 'Interview Mode', icon: <Presentation size={18} /> },
+      { id: 'protocol-reference', label: 'Protocol Reference', icon: <BookOpen size={18} /> },
+      { id: 'saic-vs-cia', label: 'SAIC vs CIA', icon: <Scale size={18} /> },
+      { id: 'interview-mode', label: 'Interview Prep', icon: <Presentation size={18} /> },
     ],
   },
 ];
@@ -137,7 +86,7 @@ export function Sidebar({ currentView, onViewChange, collapsed, onToggleCollapse
             </div>
             <div>
               <h1 className="text-sm font-bold text-white leading-tight">ICS Security</h1>
-              <p className="text-[10px] text-slate-400">Engineering Lab</p>
+              <p className="text-[10px] text-slate-400">Training Lab</p>
             </div>
           </div>
         )}
@@ -169,7 +118,14 @@ export function Sidebar({ currentView, onViewChange, collapsed, onToggleCollapse
                     }`}
                     title={collapsed ? item.label : undefined}
                   >
-                    <span className={currentView === item.id ? 'text-cyan-400' : ''}>{item.icon}</span>
+                    <span className={`relative ${currentView === item.id ? 'text-cyan-400' : ''}`}>
+                      {item.icon}
+                      {item.moduleNumber && !collapsed && (
+                        <span className="absolute -top-1 -left-1 w-3.5 h-3.5 bg-slate-700 rounded-full text-[9px] font-bold flex items-center justify-center text-slate-300">
+                          {item.moduleNumber}
+                        </span>
+                      )}
+                    </span>
                     {!collapsed && <span>{item.label}</span>}
                   </button>
                 </li>
@@ -182,7 +138,7 @@ export function Sidebar({ currentView, onViewChange, collapsed, onToggleCollapse
       <div className="p-4 border-t border-slate-800">
         {!collapsed && (
           <div className="text-[10px] text-slate-500 text-center">
-            Security Engineering Lab v2.0
+            Security Training Lab v2.0
           </div>
         )}
       </div>
