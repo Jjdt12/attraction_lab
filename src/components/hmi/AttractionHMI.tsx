@@ -18,11 +18,35 @@ import {
   Shield,
   Timer,
   RotateCcw,
+  CloudFog,
+  Lightbulb,
+  Volume2,
+  Sparkles,
+  Sun,
+  FlashlightOff,
 } from 'lucide-react';
 import { usePlcConnection } from '../../hooks/usePlcConnection';
 
 const TRACK_POSITIONS = 26;
 const POSITIONS_PER_SCENE = 3;
+
+const SHOW_EFFECTS_CONFIG = {
+  flash_light: { address: 28, name: 'Flash Light', icon: Camera, color: 'amber' },
+  show_lighting: { address: 60, name: 'Show Lighting', icon: Lightbulb, color: 'yellow' },
+  audio_1: { address: 61, name: 'Audio Ch 1', icon: Volume2, color: 'cyan' },
+  audio_2: { address: 62, name: 'Audio Ch 2', icon: Volume2, color: 'blue' },
+  audio_3: { address: 63, name: 'Audio Ch 3', icon: Volume2, color: 'indigo' },
+  fog_machine: { address: 64, name: 'Fog Machine', icon: CloudFog, color: 'slate' },
+  strobe: { address: 65, name: 'Strobe', icon: Sun, color: 'white' },
+  laser: { address: 66, name: 'Laser Effect', icon: Sparkles, color: 'red' },
+};
+
+const EFFECT_ZONES = [
+  { zone: 1, name: 'Loading/Launch', posRange: [0, 5], effects: ['show_lighting', 'audio_1'] },
+  { zone: 2, name: 'Thrill Zone', posRange: [6, 11], effects: ['show_lighting', 'audio_2', 'fog_machine', 'strobe', 'laser'] },
+  { zone: 3, name: 'Scenic Route', posRange: [12, 17], effects: ['show_lighting', 'audio_3', 'fog_machine', 'laser'] },
+  { zone: 4, name: 'Return/Station', posRange: [18, 26], effects: ['show_lighting', 'audio_1'] },
+];
 
 const EVENT_CONFIG = [
   { name: 'Loading Gate', icon: CircleDot, color: 'cyan', position: 1 },
@@ -283,12 +307,14 @@ export function AttractionHMI() {
         </div>
       </div>
 
+      <ShowEffectsPanel effectsPlc={effectsPlc} position={position} />
+
       <div className="bg-slate-900 border border-slate-800 rounded-xl p-4">
         <div className="flex items-center gap-2 mb-4">
           <Activity size={18} className="text-emerald-400" />
           <h3 className="text-sm font-semibold text-white">Track Visualization</h3>
         </div>
-        <TrackVisualization position={position} events={EVENT_CONFIG} mainPlc={mainPlc} />
+        <TrackVisualization position={position} events={EVENT_CONFIG} mainPlc={mainPlc} effectsPlc={effectsPlc} />
       </div>
 
       {connectionStatus === 'disconnected' || connectionStatus === 'error' ? (
@@ -417,65 +443,252 @@ interface TrackVisualizationProps {
   position: number;
   events: typeof EVENT_CONFIG;
   mainPlc: { coils: Record<number, boolean> };
+  effectsPlc: { coils: Record<number, boolean> };
 }
 
-function TrackVisualization({ position, events, mainPlc }: TrackVisualizationProps) {
+function TrackVisualization({ position, events, mainPlc, effectsPlc }: TrackVisualizationProps) {
+  const fogActive = effectsPlc.coils[64] ?? false;
+  const strobeActive = effectsPlc.coils[65] ?? false;
+  const laserActive = effectsPlc.coils[66] ?? false;
+
   return (
-    <div className="relative h-28">
-      <div className="absolute inset-x-0 top-1/2 h-3 bg-slate-800 rounded-full -translate-y-1/2">
-        <div
-          className="absolute top-0 left-0 h-full bg-gradient-to-r from-cyan-500/30 to-transparent rounded-full transition-all duration-200"
-          style={{ width: `${(position / TRACK_POSITIONS) * 100}%` }}
-        />
-      </div>
+    <div className="relative">
+      <div className="absolute inset-x-0 top-0 h-6 flex">
+        {EFFECT_ZONES.map((zone, i) => {
+          const startPct = (zone.posRange[0] / TRACK_POSITIONS) * 100;
+          const endPct = (zone.posRange[1] / TRACK_POSITIONS) * 100;
+          const widthPct = endPct - startPct;
+          const isInZone = position >= zone.posRange[0] && position <= zone.posRange[1];
 
-      {[0, 9, 18].map((zoneStart, i) => (
-        <div
-          key={i}
-          className="absolute top-1/2 w-0.5 h-6 bg-slate-600 -translate-y-1/2"
-          style={{ left: `${(zoneStart / TRACK_POSITIONS) * 100}%` }}
-        />
-      ))}
+          const zoneHasFog = zone.effects.includes('fog_machine');
+          const zoneHasStrobe = zone.effects.includes('strobe');
+          const zoneHasLaser = zone.effects.includes('laser');
 
-      {events.map((event, index) => {
-        const activeCoil = 17 + index;
-        const isActive = mainPlc.coils[activeCoil] ?? false;
-        return (
-          <div
-            key={index}
-            className="absolute top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center"
-            style={{ left: `${(event.position / TRACK_POSITIONS) * 100}%` }}
-          >
+          return (
             <div
-              className={`w-4 h-4 rounded-full border-2 transition-all ${
-                isActive
-                  ? 'bg-cyan-400 border-cyan-400 scale-125'
-                  : 'bg-slate-700 border-slate-600'
-              }`}
-              title={event.name}
-            />
-            <span className="text-[9px] text-slate-500 mt-5 whitespace-nowrap max-w-12 truncate">
-              {event.name.split(' ')[0]}
-            </span>
-          </div>
-        );
-      })}
-
-      <div
-        className="absolute top-1/2 w-6 h-6 bg-emerald-500 rounded-full border-2 border-white shadow-lg -translate-x-1/2 -translate-y-1/2 transition-all duration-200 z-10"
-        style={{ left: `${(position / TRACK_POSITIONS) * 100}%` }}
-      >
-        <div className="absolute inset-0 bg-emerald-400 rounded-full animate-ping opacity-50" />
+              key={i}
+              className="absolute h-full flex items-center justify-center gap-1"
+              style={{ left: `${startPct}%`, width: `${widthPct}%` }}
+            >
+              {zoneHasFog && (
+                <CloudFog
+                  size={12}
+                  className={`transition-all ${isInZone && fogActive ? 'text-slate-300 animate-pulse' : 'text-slate-700'}`}
+                />
+              )}
+              {zoneHasStrobe && (
+                <Sun
+                  size={12}
+                  className={`transition-all ${isInZone && strobeActive ? 'text-white animate-pulse' : 'text-slate-700'}`}
+                />
+              )}
+              {zoneHasLaser && (
+                <Sparkles
+                  size={12}
+                  className={`transition-all ${isInZone && laserActive ? 'text-red-400 animate-pulse' : 'text-slate-700'}`}
+                />
+              )}
+            </div>
+          );
+        })}
       </div>
 
-      <div className="absolute bottom-0 left-0 right-0 flex justify-between text-xs text-slate-500 px-1">
-        <span>0</span>
-        <span className="text-cyan-500/50">Z1</span>
-        <span>9</span>
-        <span className="text-cyan-500/50">Z2</span>
-        <span>18</span>
-        <span className="text-cyan-500/50">Z3</span>
-        <span>26</span>
+      <div className="relative h-28 mt-6">
+        <div className="absolute inset-x-0 top-1/2 h-3 bg-slate-800 rounded-full -translate-y-1/2 overflow-hidden">
+          <div
+            className="absolute top-0 left-0 h-full bg-gradient-to-r from-cyan-500/30 to-transparent rounded-full transition-all duration-200"
+            style={{ width: `${(position / TRACK_POSITIONS) * 100}%` }}
+          />
+          {EFFECT_ZONES.map((zone, i) => {
+            const startPct = (zone.posRange[0] / TRACK_POSITIONS) * 100;
+            const endPct = (zone.posRange[1] / TRACK_POSITIONS) * 100;
+            const widthPct = endPct - startPct;
+            const isInZone = position >= zone.posRange[0] && position <= zone.posRange[1];
+            const hasActiveEffect = isInZone && (
+              (zone.effects.includes('fog_machine') && fogActive) ||
+              (zone.effects.includes('strobe') && strobeActive) ||
+              (zone.effects.includes('laser') && laserActive)
+            );
+
+            return (
+              <div
+                key={i}
+                className={`absolute top-0 h-full transition-all ${hasActiveEffect ? 'bg-amber-500/20' : ''}`}
+                style={{ left: `${startPct}%`, width: `${widthPct}%` }}
+              />
+            );
+          })}
+        </div>
+
+        {[0, 9, 18].map((zoneStart, i) => (
+          <div
+            key={i}
+            className="absolute top-1/2 w-0.5 h-6 bg-slate-600 -translate-y-1/2"
+            style={{ left: `${(zoneStart / TRACK_POSITIONS) * 100}%` }}
+          />
+        ))}
+
+        {events.map((event, index) => {
+          const activeCoil = 17 + index;
+          const isActive = mainPlc.coils[activeCoil] ?? false;
+          return (
+            <div
+              key={index}
+              className="absolute top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center"
+              style={{ left: `${(event.position / TRACK_POSITIONS) * 100}%` }}
+            >
+              <div
+                className={`w-4 h-4 rounded-full border-2 transition-all ${
+                  isActive
+                    ? 'bg-cyan-400 border-cyan-400 scale-125'
+                    : 'bg-slate-700 border-slate-600'
+                }`}
+                title={event.name}
+              />
+              <span className="text-[9px] text-slate-500 mt-5 whitespace-nowrap max-w-12 truncate">
+                {event.name.split(' ')[0]}
+              </span>
+            </div>
+          );
+        })}
+
+        <div
+          className="absolute top-1/2 w-6 h-6 bg-emerald-500 rounded-full border-2 border-white shadow-lg -translate-x-1/2 -translate-y-1/2 transition-all duration-200 z-10"
+          style={{ left: `${(position / TRACK_POSITIONS) * 100}%` }}
+        >
+          <div className="absolute inset-0 bg-emerald-400 rounded-full animate-ping opacity-50" />
+        </div>
+
+        <div className="absolute bottom-0 left-0 right-0 flex justify-between text-xs text-slate-500 px-1">
+          <span>0</span>
+          <span className="text-cyan-500/50">Z1</span>
+          <span>9</span>
+          <span className="text-cyan-500/50">Z2</span>
+          <span>18</span>
+          <span className="text-cyan-500/50">Z3</span>
+          <span>26</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+interface ShowEffectsPanelProps {
+  effectsPlc: { coils: Record<number, boolean> };
+  position: number;
+}
+
+function ShowEffectsPanel({ effectsPlc, position }: ShowEffectsPanelProps) {
+  const currentZone = EFFECT_ZONES.find(z => position >= z.posRange[0] && position <= z.posRange[1]);
+
+  return (
+    <div className="bg-slate-900 border border-slate-800 rounded-xl p-4">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          <Sparkles size={18} className="text-amber-400" />
+          <h3 className="text-sm font-semibold text-white">Show Effects</h3>
+        </div>
+        {currentZone && (
+          <span className="text-xs text-slate-400 bg-slate-800 px-2 py-1 rounded">
+            {currentZone.name}
+          </span>
+        )}
+      </div>
+
+      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
+        {Object.entries(SHOW_EFFECTS_CONFIG).map(([key, config]) => {
+          const isActive = effectsPlc.coils[config.address] ?? false;
+          const Icon = config.icon;
+          const expectedInZone = currentZone?.effects.includes(key);
+
+          const colorClasses: Record<string, string> = {
+            amber: 'bg-amber-500/20 border-amber-500/50 text-amber-400',
+            yellow: 'bg-yellow-500/20 border-yellow-500/50 text-yellow-400',
+            cyan: 'bg-cyan-500/20 border-cyan-500/50 text-cyan-400',
+            blue: 'bg-blue-500/20 border-blue-500/50 text-blue-400',
+            indigo: 'bg-indigo-500/20 border-indigo-500/50 text-indigo-400',
+            slate: 'bg-slate-400/20 border-slate-400/50 text-slate-300',
+            white: 'bg-white/20 border-white/50 text-white',
+            red: 'bg-red-500/20 border-red-500/50 text-red-400',
+          };
+
+          return (
+            <div
+              key={key}
+              className={`relative p-3 rounded-lg border transition-all ${
+                isActive
+                  ? colorClasses[config.color] || 'bg-cyan-500/20 border-cyan-500/50'
+                  : 'bg-slate-800/30 border-slate-700/50'
+              }`}
+            >
+              <div className="flex flex-col items-center gap-2">
+                <div className={`relative ${isActive ? 'animate-pulse' : ''}`}>
+                  <Icon
+                    size={24}
+                    className={isActive ? '' : 'text-slate-600'}
+                  />
+                  {isActive && config.color === 'white' && (
+                    <div className="absolute inset-0 bg-white rounded-full blur-md opacity-50" />
+                  )}
+                </div>
+                <span className={`text-xs font-medium text-center ${isActive ? '' : 'text-slate-500'}`}>
+                  {config.name}
+                </span>
+                <span className={`text-[10px] px-1.5 py-0.5 rounded ${
+                  isActive
+                    ? 'bg-emerald-500/20 text-emerald-400'
+                    : 'bg-slate-700/50 text-slate-500'
+                }`}>
+                  {isActive ? 'ON' : 'OFF'}
+                </span>
+              </div>
+              {expectedInZone && !isActive && (
+                <div className="absolute top-1 right-1 w-1.5 h-1.5 bg-amber-500 rounded-full" title="Expected in this zone" />
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="mt-4 pt-4 border-t border-slate-800">
+        <div className="text-xs text-slate-500 mb-2">Effect Zones</div>
+        <div className="grid grid-cols-4 gap-2">
+          {EFFECT_ZONES.map((zone) => {
+            const isCurrentZone = position >= zone.posRange[0] && position <= zone.posRange[1];
+            return (
+              <div
+                key={zone.zone}
+                className={`p-2 rounded text-xs transition-all ${
+                  isCurrentZone
+                    ? 'bg-cyan-500/20 border border-cyan-500/50'
+                    : 'bg-slate-800/50'
+                }`}
+              >
+                <div className={`font-medium ${isCurrentZone ? 'text-cyan-400' : 'text-slate-400'}`}>
+                  {zone.name}
+                </div>
+                <div className="text-slate-500 text-[10px]">
+                  Pos {zone.posRange[0]}-{zone.posRange[1]}
+                </div>
+                <div className="flex flex-wrap gap-1 mt-1">
+                  {zone.effects.map((effect) => {
+                    const cfg = SHOW_EFFECTS_CONFIG[effect as keyof typeof SHOW_EFFECTS_CONFIG];
+                    if (!cfg) return null;
+                    const EffectIcon = cfg.icon;
+                    const effectActive = effectsPlc.coils[cfg.address] ?? false;
+                    return (
+                      <EffectIcon
+                        key={effect}
+                        size={10}
+                        className={`${isCurrentZone && effectActive ? 'text-amber-400' : 'text-slate-600'}`}
+                      />
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
