@@ -26,10 +26,12 @@ import { ProtocolReference } from './components/education/ProtocolReference';
 import { Glossary } from './components/education/Glossary';
 import { InterviewMode } from './components/education/InterviewMode';
 import { Dashboard } from './components/Dashboard';
+import { AttractionHMI } from './components/hmi/AttractionHMI';
 import { LabEnvironmentProvider } from './contexts/LabEnvironmentContext';
 
 export type ViewType =
   | 'dashboard'
+  | 'attraction-hmi'
   | 'purdue-model'
   | 'idmz-designer'
   | 'network-topology'
@@ -63,6 +65,8 @@ function App() {
     switch (currentView) {
       case 'dashboard':
         return <Dashboard onNavigate={setCurrentView} />;
+      case 'attraction-hmi':
+        return <AttractionHMI />;
       case 'purdue-model':
         return <PurdueModel />;
       case 'idmz-designer':

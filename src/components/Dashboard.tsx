@@ -10,8 +10,12 @@ import {
   CheckCircle2,
   XCircle,
   AlertCircle,
+  Monitor,
+  ExternalLink,
+  BookOpen,
 } from 'lucide-react';
 import { useLabEnvironment } from '../contexts/LabEnvironmentContext';
+import { usePlcConnection } from '../hooks/usePlcConnection';
 import type { ViewType } from '../App';
 
 interface DashboardProps {
@@ -20,19 +24,59 @@ interface DashboardProps {
 
 export function Dashboard({ onNavigate }: DashboardProps) {
   const { zones, devices, firewallRules, assessment } = useLabEnvironment();
+  const { connectionStatus, plcStates } = usePlcConnection();
 
   const onlineDevices = devices.filter(d => d.status === 'online').length;
   const enabledRules = firewallRules.filter(r => r.enabled).length;
 
   const quickActions = [
-    { id: 'purdue-model', label: 'View Purdue Model', icon: Layers, color: 'cyan' },
-    { id: 'firewall-manager', label: 'Manage Firewalls', icon: Shield, color: 'emerald' },
+    { id: 'attraction-hmi', label: 'Open Live HMI', icon: Monitor, color: 'cyan' },
+    { id: 'purdue-model', label: 'View Purdue Model', icon: Layers, color: 'emerald' },
     { id: 'scenario-simulator', label: 'Run Attack Test', icon: Target, color: 'amber' },
     { id: 'iec-62443', label: 'Check Compliance', icon: ClipboardCheck, color: 'blue' },
   ] as const;
 
   return (
     <div className="space-y-6">
+      <div className="bg-gradient-to-r from-cyan-500/10 to-blue-500/10 border border-cyan-500/30 rounded-xl p-4 mb-2">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-cyan-500/20 rounded-lg">
+              <Monitor size={24} className="text-cyan-400" />
+            </div>
+            <div>
+              <h2 className="text-lg font-semibold text-white">Attraction Control Lab</h2>
+              <p className="text-sm text-slate-400">
+                {connectionStatus === 'connected' ? (
+                  <span className="text-emerald-400">Connected to PLCs - Live data available</span>
+                ) : connectionStatus === 'connecting' ? (
+                  <span className="text-amber-400">Connecting to backend...</span>
+                ) : (
+                  <span className="text-slate-400">Start backend with ./run.sh to enable live data</span>
+                )}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => window.open('/EXPLOIT_HELP.html', '_blank')}
+              className="flex items-center gap-2 px-3 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg transition-colors text-slate-300 text-sm"
+            >
+              <BookOpen size={16} />
+              Documentation
+              <ExternalLink size={12} />
+            </button>
+            <button
+              onClick={() => onNavigate('attraction-hmi')}
+              className="flex items-center gap-2 px-4 py-2 bg-cyan-500 hover:bg-cyan-600 rounded-lg transition-colors text-white font-medium text-sm"
+            >
+              <Monitor size={16} />
+              Open Live HMI
+            </button>
+          </div>
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           title="Security Level"
@@ -189,33 +233,42 @@ export function Dashboard({ onNavigate }: DashboardProps) {
           </div>
 
           <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
-            <h2 className="text-lg font-semibold text-white mb-4">System Status</h2>
+            <h2 className="text-lg font-semibold text-white mb-4">PLC Status (Live)</h2>
             <div className="space-y-3">
               {[
-                { label: 'Main PLC', status: 'online' },
-                { label: 'Safety PLC', status: 'online' },
-                { label: 'SCADA Server', status: 'online' },
-                { label: 'OT Firewall', status: 'online' },
-                { label: 'Historian', status: 'warning' },
-              ].map(({ label, status }) => (
+                { label: 'Main PLC', port: 502, connected: plcStates.main.connected },
+                { label: 'Safety PLC', port: 503, connected: plcStates.safety.connected },
+                { label: 'Effects PLC', port: 504, connected: plcStates.effects.connected },
+              ].map(({ label, port, connected }) => (
                 <div key={label} className="flex items-center justify-between">
-                  <span className="text-sm text-slate-400">{label}</span>
+                  <div>
+                    <span className="text-sm text-slate-400">{label}</span>
+                    <span className="text-xs text-slate-600 ml-2">:{port}</span>
+                  </div>
                   <div className="flex items-center gap-2">
-                    {status === 'online' ? (
+                    {connected ? (
                       <CheckCircle2 size={14} className="text-emerald-400" />
-                    ) : status === 'warning' ? (
+                    ) : connectionStatus === 'connecting' ? (
                       <AlertCircle size={14} className="text-amber-400" />
                     ) : (
-                      <XCircle size={14} className="text-red-400" />
+                      <XCircle size={14} className="text-slate-500" />
                     )}
                     <span className={`text-xs ${
-                      status === 'online' ? 'text-emerald-400' : status === 'warning' ? 'text-amber-400' : 'text-red-400'
+                      connected ? 'text-emerald-400' : connectionStatus === 'connecting' ? 'text-amber-400' : 'text-slate-500'
                     }`}>
-                      {status}
+                      {connected ? 'online' : connectionStatus === 'connecting' ? 'connecting' : 'offline'}
                     </span>
                   </div>
                 </div>
               ))}
+            </div>
+            <div className="mt-4 pt-3 border-t border-slate-800">
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-slate-500">WebSocket</span>
+                <span className={connectionStatus === 'connected' ? 'text-emerald-400' : 'text-slate-500'}>
+                  {connectionStatus}
+                </span>
+              </div>
             </div>
           </div>
         </div>

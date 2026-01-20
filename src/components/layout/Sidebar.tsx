@@ -26,6 +26,7 @@ import {
   Presentation,
   ChevronLeft,
   ChevronRight,
+  Monitor,
 } from 'lucide-react';
 import type { ViewType } from '../../App';
 
@@ -52,6 +53,7 @@ const navSections: NavSection[] = [
     title: 'Overview',
     items: [
       { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard size={18} /> },
+      { id: 'attraction-hmi', label: 'Attraction HMI', icon: <Monitor size={18} /> },
     ],
   },
   {
