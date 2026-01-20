@@ -57,9 +57,9 @@ if not exist "..\dist" (
 )
 
 REM Start all three PLCs in Docker
-echo Starting Multi-PLC Runtime (Main, Safety, Effects)...
+echo Starting Multi-PLC Runtime (Ride, Safety, Show)...
 cd ..
-%COMPOSE_CMD% up -d plc-main plc-safety plc-effects
+%COMPOSE_CMD% up -d plc-ride plc-safety plc-show
 cd scripts
 
 REM Wait for OpenPLC and upload programs to all three PLCs
@@ -78,14 +78,14 @@ echo.
 echo    Web Interface:  http://localhost:3000
 echo.
 echo    PLC Interfaces:
-echo      * Main PLC:    http://localhost:8080 (openplc/openplc)
-echo      * Safety PLC:  http://localhost:8081 (openplc/openplc)
-echo      * Effects PLC: http://localhost:8082 (openplc/openplc)
+echo      * Ride Control:  http://localhost:8080 (openplc/openplc)
+echo      * Safety PLC:    http://localhost:8081 (openplc/openplc)
+echo      * Show Control:  http://localhost:8082 (openplc/openplc)
 echo.
 echo    Modbus TCP:
-echo      * Main:    localhost:502
-echo      * Safety:  localhost:503
-echo      * Effects: localhost:504
+echo      * Ride:   localhost:502
+echo      * Safety: localhost:503
+echo      * Show:   localhost:504
 echo.
 echo    WebSocket:     ws://localhost:8765
 echo.

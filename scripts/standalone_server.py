@@ -49,9 +49,9 @@ EVENT_POS = 5
 
 # Multi-PLC Configuration
 PLC_CONFIGS = {
-    'MAIN': {'host': 'localhost', 'port': 502, 'name': 'Main Control'},
+    'RIDE': {'host': 'localhost', 'port': 502, 'name': 'Ride Control'},
     'SAFETY': {'host': 'localhost', 'port': 503, 'name': 'Safety Systems'},
-    'EFFECTS': {'host': 'localhost', 'port': 504, 'name': 'Show Effects'},
+    'SHOW': {'host': 'localhost', 'port': 504, 'name': 'Show Control'},
 }
 
 # Global state
@@ -135,8 +135,8 @@ def connect_to_plc(plc_id: str) -> bool:
             plc_connected_status[plc_id] = True
             print(f"✓ Connected to {config['name']} PLC at {config['host']}:{config['port']}")
 
-            # If this is the MAIN PLC, also set backward compatibility variables
-            if plc_id == 'MAIN':
+            # If this is the RIDE PLC, also set backward compatibility variables
+            if plc_id == 'RIDE':
                 modbus_client = client
                 current_plc_host = config['host']
                 current_plc_port = config['port']
@@ -159,10 +159,10 @@ def connect_to_all_plcs() -> dict:
     for plc_id in PLC_CONFIGS.keys():
         results[plc_id] = connect_to_plc(plc_id)
 
-        # Initialize safety ready registers and pre-set safety conditions after MAIN PLC connects
-        if plc_id == 'MAIN' and results[plc_id] and modbus_clients.get('MAIN'):
+        # Initialize safety ready registers and pre-set safety conditions after RIDE PLC connects
+        if plc_id == 'RIDE' and results[plc_id] and modbus_clients.get('RIDE'):
             try:
-                client = modbus_clients['MAIN']
+                client = modbus_clients['RIDE']
                 # Set safety_plc_ready_reg (MW102) = 1
                 result1 = client.write_registers(address=1126, values=[1])  # MW102 = 1024 + 102
                 # Set effects_plc_ready_reg (MW103) = 1
@@ -305,10 +305,10 @@ async def write_coil_async(address: int, value: bool, source_ip: str = "127.0.0.
         result = modbus_client.write_coil(address=address, value=value)
         if not result or result.isError():
             print(f"❌ [WRITE] Failed: {coil_name}")
-            return {"success": False, "error": "Write to MAIN PLC failed"}
+            return {"success": False, "error": "Write to RIDE PLC failed"}
 
-        print(f"✅ [WRITE] Success: {coil_name} = {value} (on MAIN)")
-        asyncio.create_task(log_modbus_operation("MAIN", "WRITE_COIL", address, value))
+        print(f"✅ [WRITE] Success: {coil_name} = {value} (on RIDE)")
+        asyncio.create_task(log_modbus_operation("RIDE", "WRITE_COIL", address, value))
 
         if address in safety_coils and 'SAFETY' in modbus_clients:
             try:
@@ -385,7 +385,7 @@ async def write_register_async(address: int, value: int, source_ip: str = "127.0
     try:
         result = modbus_client.write_register(address=address, value=value)
         if result and not result.isError():
-            asyncio.create_task(log_modbus_operation("MAIN", "WRITE_HOLDING", address, value))
+            asyncio.create_task(log_modbus_operation("RIDE", "WRITE_HOLDING", address, value))
             return {"success": True, "address": address, "value": value}
         else:
             return {"success": False, "error": "Write failed"}
@@ -467,7 +467,7 @@ async def poll_plc_coils():
                     if first_poll:
                         print(f"❌ [BRIDGE] Error forcing safety_plc_ready: {e}")
 
-                # Bridge 2: Set effects_plc_ready to TRUE (EFFECTS PLC always ready)
+                # Bridge 2: Set effects_plc_ready to TRUE (SHOW PLC always ready)
                 try:
                     # Write to HOLDING register (MW103 = Modbus address 1127)
                     result = modbus_client.write_registers(address=1127, values=[1])  # MW103 = 1024 + 103
@@ -478,13 +478,13 @@ async def poll_plc_coils():
                 except Exception as e:
                     pass
 
-                # Bridge 4: Copy MAIN position/speed/motor to SAFETY PLC
+                # Bridge 4: Copy RIDE position/speed/motor to SAFETY PLC
                 if 'SAFETY' in modbus_clients and plc_connected_status.get('SAFETY'):
                     try:
-                        # Read from MAIN PLC holding registers
-                        position = read_register_from_plc('MAIN', 1025, 1)  # current_position at %MW1 (1024+1)
-                        speed = read_register_from_plc('MAIN', 1026, 1)  # current_speed at %MW2 (1024+2)
-                        motor = read_coil_from_plc('MAIN', 26)  # motor_running at %QX3.2 (bit 26)
+                        # Read from RIDE PLC holding registers
+                        position = read_register_from_plc('RIDE', 1025, 1)  # current_position at %MW1 (1024+1)
+                        speed = read_register_from_plc('RIDE', 1026, 1)  # current_speed at %MW2 (1024+2)
+                        motor = read_coil_from_plc('RIDE', 26)  # motor_running at %QX3.2 (bit 26)
 
                         # Write to SAFETY PLC %MW10 and %MW11 (Modbus addresses 1034, 1035)
                         if position['success']:
@@ -498,61 +498,61 @@ async def poll_plc_coils():
                     except Exception as e:
                         print(f"⚠️ [BRIDGE] Error in Bridge 4: {e}")
 
-                # Bridge 5: Copy MAIN position to EFFECTS PLC
-                if 'EFFECTS' in modbus_clients and plc_connected_status.get('EFFECTS'):
+                # Bridge 5: Copy RIDE position to SHOW PLC
+                if 'SHOW' in modbus_clients and plc_connected_status.get('SHOW'):
                     try:
-                        # Read from MAIN PLC
-                        position = read_register_from_plc('MAIN', 1025, 1)  # current_position at %MW1
+                        # Read from RIDE PLC
+                        position = read_register_from_plc('RIDE', 1025, 1)  # current_position at %MW1
 
-                        # Write to EFFECTS PLC %MW10 (Modbus address 1034)
+                        # Write to SHOW PLC %MW10 (Modbus address 1034)
                         if position['success']:
-                            result = modbus_clients['EFFECTS'].write_register(1034, position['value'])  # %MW10
+                            result = modbus_clients['SHOW'].write_register(1034, position['value'])  # %MW10
 
                             # Log all position writes (no lag checking)
-                            print(f"🔗 [BRIDGE] position {position['value']} -> EFFECTS MW10")
+                            print(f"🔗 [BRIDGE] position {position['value']} -> SHOW MW10")
                     except Exception as e:
                         print(f"⚠️ [BRIDGE] Error in Bridge 5: {e}")
 
-                # Bridge 6: Copy SAFETY event signals to EFFECTS PLC
-                if 'SAFETY' in modbus_clients and plc_connected_status.get('SAFETY') and 'EFFECTS' in modbus_clients and plc_connected_status.get('EFFECTS'):
+                # Bridge 6: Copy SAFETY event signals to SHOW PLC
+                if 'SAFETY' in modbus_clients and plc_connected_status.get('SAFETY') and 'SHOW' in modbus_clients and plc_connected_status.get('SHOW'):
                     try:
                         # Read from SAFETY PLC
                         event1 = read_coil_from_plc('SAFETY', 17)  # event_1_active at %QX2.1
                         event4 = read_coil_from_plc('SAFETY', 20)  # event_4_active at %QX2.4
 
-                        # Write to EFFECTS PLC holding registers
+                        # Write to SHOW PLC holding registers
                         if event1['success']:
                             val1 = 1 if event1['value'] else 0
-                            modbus_clients['EFFECTS'].write_register(70, val1)  # %MW70
+                            modbus_clients['SHOW'].write_register(70, val1)  # %MW70
                         if event4['success']:
                             val4 = 1 if event4['value'] else 0
-                            modbus_clients['EFFECTS'].write_register(71, val4)  # %MW71
+                            modbus_clients['SHOW'].write_register(71, val4)  # %MW71
                     except Exception as e:
                         pass
 
-                # Bridge 8: Copy event_enable coils from MAIN to EFFECTS PLC holding registers
-                if 'EFFECTS' in modbus_clients and plc_connected_status.get('EFFECTS'):
+                # Bridge 8: Copy event_enable coils from RIDE to SHOW PLC holding registers
+                if 'SHOW' in modbus_clients and plc_connected_status.get('SHOW'):
                     try:
-                        # Read event_enable from MAIN PLC (coils 8-16)
+                        # Read event_enable from RIDE PLC (coils 8-16)
                         for i in range(1, 10):  # Events 1-9
                             coil_addr = 7 + i  # event_1_enable = coil 8, etc.
-                            enable = read_coil_from_plc('MAIN', coil_addr)
+                            enable = read_coil_from_plc('RIDE', coil_addr)
                             if enable['success']:
-                                # Write to EFFECTS PLC %MW100-%MW108 (Modbus addresses 1124-1132)
+                                # Write to SHOW PLC %MW100-%MW108 (Modbus addresses 1124-1132)
                                 mw_addr = 99 + i  # event_1 = MW100, event_9 = MW108
                                 modbus_addr = 1024 + mw_addr  # MW registers start at Modbus address 1024
                                 val = 1 if enable['value'] else 0
-                                modbus_clients['EFFECTS'].write_register(modbus_addr, val)
+                                modbus_clients['SHOW'].write_register(modbus_addr, val)
                     except Exception as e:
                         print(f"⚠️ [BRIDGE] Error in Bridge 8: {e}")
 
-                # Bridge 9: Copy proximity sensors from MAIN to SAFETY PLC
+                # Bridge 9: Copy proximity sensors from RIDE to SAFETY PLC
                 if 'SAFETY' in modbus_clients and plc_connected_status.get('SAFETY'):
                     try:
-                        # Read proximity sensors from MAIN PLC (coils 40-48)
+                        # Read proximity sensors from RIDE PLC (coils 40-48)
                         for i in range(1, 10):  # Sensors 1-9
                             coil_addr = 39 + i  # proximity_sensor_1 = coil 40, etc.
-                            sensor = read_coil_from_plc('MAIN', coil_addr)
+                            sensor = read_coil_from_plc('RIDE', coil_addr)
                             if sensor['success']:
                                 # Write to SAFETY PLC %MW80-%MW88 (Modbus addresses 1104-1112)
                                 mw_addr = 79 + i  # sensor_1 = MW80, sensor_9 = MW88
@@ -562,25 +562,25 @@ async def poll_plc_coils():
                     except Exception as e:
                         print(f"⚠️ [BRIDGE] Error in Bridge 9 (SAFETY proximity): {e}")
 
-                # Bridge 10: Copy proximity sensors from MAIN to EFFECTS PLC
-                if 'EFFECTS' in modbus_clients and plc_connected_status.get('EFFECTS'):
+                # Bridge 10: Copy proximity sensors from RIDE to SHOW PLC
+                if 'SHOW' in modbus_clients and plc_connected_status.get('SHOW'):
                     try:
-                        # Read proximity sensors from MAIN PLC (coils 40-48)
+                        # Read proximity sensors from RIDE PLC (coils 40-48)
                         for i in range(1, 10):  # Sensors 1-9
                             coil_addr = 39 + i  # proximity_sensor_1 = coil 40, etc.
-                            sensor = read_coil_from_plc('MAIN', coil_addr)
+                            sensor = read_coil_from_plc('RIDE', coil_addr)
                             if sensor['success']:
-                                # Write to EFFECTS PLC %MW80-%MW88 (Modbus addresses 1104-1112)
+                                # Write to SHOW PLC %MW80-%MW88 (Modbus addresses 1104-1112)
                                 mw_addr = 79 + i  # sensor_1 = MW80, sensor_9 = MW88
                                 modbus_addr = 1024 + mw_addr  # MW registers start at Modbus address 1024
                                 val = 1 if sensor['value'] else 0
-                                modbus_clients['EFFECTS'].write_register(modbus_addr, val)
+                                modbus_clients['SHOW'].write_register(modbus_addr, val)
 
                                 # Log active sensors (no lag checking)
                                 if val == 1:
-                                    print(f"🔗 [BRIDGE] proximity_sensor_{i} ACTIVE -> EFFECTS MW{79+i}")
+                                    print(f"🔗 [BRIDGE] proximity_sensor_{i} ACTIVE -> SHOW MW{79+i}")
                     except Exception as e:
-                        print(f"⚠️ [BRIDGE] Error in Bridge 10 (EFFECTS proximity): {e}")
+                        print(f"⚠️ [BRIDGE] Error in Bridge 10 (SHOW proximity): {e}")
 
             # Continuous diagnostic every poll cycle (more verbose debugging)
             if modbus_client and is_plc_connected:
@@ -690,27 +690,27 @@ async def poll_plc_coils():
                                         "value": current_value,
                                     })
 
-            # Poll Effects PLC for event coils (addresses 17-25)
-            if 'EFFECTS' in modbus_clients and plc_connected_status.get('EFFECTS'):
+            # Poll Show PLC for event coils (addresses 17-25)
+            if 'SHOW' in modbus_clients and plc_connected_status.get('SHOW'):
                 EVENT_COIL_START = 17
                 EVENT_COIL_COUNT = 9  # Events 1-9 (coils 17-25)
 
                 # Log first poll
-                if not previous_coil_states.get('effects_poll_started'):
-                    print(f"🔍 [EFFECTS] Polling event coils {EVENT_COIL_START}-{EVENT_COIL_START + EVENT_COIL_COUNT - 1}")
-                    previous_coil_states['effects_poll_started'] = True
+                if not previous_coil_states.get('show_poll_started'):
+                    print(f"🔍 [SHOW] Polling event coils {EVENT_COIL_START}-{EVENT_COIL_START + EVENT_COIL_COUNT - 1}")
+                    previous_coil_states['show_poll_started'] = True
 
                 for address in range(EVENT_COIL_START, EVENT_COIL_START + EVENT_COIL_COUNT):
-                    result = read_coil_from_plc('EFFECTS', address)
+                    result = read_coil_from_plc('SHOW', address)
                     if result["success"]:
                         current_value = result["value"]
-                        state_key = f"EFFECTS_{address}"
+                        state_key = f"SHOW_{address}"
                         previous_value = previous_coil_states.get(state_key)
 
                         # Debug log first poll
-                        if not previous_coil_states.get('effects_first_values_logged'):
+                        if not previous_coil_states.get('show_first_values_logged'):
                             event_num = address - EVENT_COIL_START + 1
-                            print(f"🔍 [EFFECTS] event_{event_num}_active (coil {address}) = {current_value}")
+                            print(f"🔍 [SHOW] event_{event_num}_active (coil {address}) = {current_value}")
 
                         if previous_value is None:
                             previous_coil_states[state_key] = current_value
@@ -718,7 +718,7 @@ async def poll_plc_coils():
                             event_num = address - EVENT_COIL_START + 1
                             event_name = f"event_{event_num}_active"
                             # Log all event changes for visibility
-                            print(f"🎪 [EFFECTS PLC] {event_name}: {previous_value} -> {current_value}")
+                            print(f"🎪 [SHOW PLC] {event_name}: {previous_value} -> {current_value}")
                             previous_coil_states[state_key] = current_value
 
                             await broadcast({
@@ -727,15 +727,15 @@ async def poll_plc_coils():
                                 "name": event_name,
                                 "event_num": event_num,
                                 "value": current_value,
-                                "plc": "EFFECTS",
+                                "plc": "SHOW",
                             })
 
                 # Mark first poll complete
-                if not previous_coil_states.get('effects_first_values_logged'):
-                    previous_coil_states['effects_first_values_logged'] = True
-                    print("✓ [EFFECTS] First event poll complete")
+                if not previous_coil_states.get('show_first_values_logged'):
+                    previous_coil_states['show_first_values_logged'] = True
+                    print("✓ [SHOW] First event poll complete")
 
-                # Poll Effects PLC for actual effect output coils
+                # Poll Show PLC for actual effect output coils
                 EFFECT_COILS = {
                     28: 'flash_light',          # %QX3.4
                     60: 'show_lighting_on',     # %QX7.4
@@ -748,10 +748,10 @@ async def poll_plc_coils():
                 }
 
                 for address, name in EFFECT_COILS.items():
-                    result = read_coil_from_plc('EFFECTS', address)
+                    result = read_coil_from_plc('SHOW', address)
                     if result["success"]:
                         current_value = result["value"]
-                        state_key = f"EFFECTS_COIL_{address}"
+                        state_key = f"SHOW_COIL_{address}"
                         previous_value = previous_coil_states.get(state_key)
 
                         if previous_value is None:
@@ -762,10 +762,10 @@ async def poll_plc_coils():
                                 "address": address,
                                 "name": name,
                                 "value": current_value,
-                                "plc": "EFFECTS",
+                                "plc": "SHOW",
                             })
                         elif previous_value != current_value:
-                            print(f"💡 [EFFECTS] {name} (coil {address}): {previous_value} -> {current_value}")
+                            print(f"💡 [SHOW] {name} (coil {address}): {previous_value} -> {current_value}")
                             previous_coil_states[state_key] = current_value
 
                             await broadcast({
@@ -773,7 +773,7 @@ async def poll_plc_coils():
                                 "address": address,
                                 "name": name,
                                 "value": current_value,
-                                "plc": "EFFECTS",
+                                "plc": "SHOW",
                             })
 
                 # Debug: Log all event states every 10 seconds
@@ -785,15 +785,15 @@ async def poll_plc_coils():
                     poll_plc_coils.last_event_debug_time = current_time
                     event_states = []
                     for addr in range(EVENT_COIL_START, EVENT_COIL_START + EVENT_COIL_COUNT):
-                        state_key = f"EFFECTS_{addr}"
+                        state_key = f"SHOW_{addr}"
                         value = previous_coil_states.get(state_key, False)
                         event_num = addr - EVENT_COIL_START + 1
                         event_states.append(f"E{event_num}={'T' if value else 'F'}")
 
-                    # Also read EFFECTS MW10 to see position value
-                    effects_pos = read_register_from_plc('EFFECTS', 10, 1)
-                    if effects_pos and effects_pos.get('success'):
-                        pos_value = effects_pos['value']
+                    # Also read SHOW MW10 to see position value
+                    show_pos = read_register_from_plc('SHOW', 10, 1)
+                    if show_pos and show_pos.get('success'):
+                        pos_value = show_pos['value']
                     else:
                         pos_value = 'ERR'
 
@@ -803,23 +803,23 @@ async def poll_plc_coils():
                     for i in range(1, 10):
                         mw_addr = 99 + i  # event_1 = MW100, event_9 = MW108
                         modbus_addr = 1024 + mw_addr  # MW registers start at Modbus address 1024
-                        enable_reg = read_register_from_plc('EFFECTS', modbus_addr)
+                        enable_reg = read_register_from_plc('SHOW', modbus_addr)
                         if enable_reg and enable_reg.get('success'):
                             enable_states.append(f"EN{i}={'T' if enable_reg['value'] != 0 else 'F'}")
                             enable_reg_values.append(f"MW{mw_addr}={enable_reg['value']}")
 
-                    print(f"📊 [EFFECTS DEBUG] Events: {' '.join(event_states)} | MW10={pos_value} | Enables: {' '.join(enable_states)}")
+                    print(f"📊 [SHOW DEBUG] Events: {' '.join(event_states)} | MW10={pos_value} | Enables: {' '.join(enable_states)}")
                     if enable_reg_values:
-                        print(f"📊 [EFFECTS RAW] {' '.join(enable_reg_values)}")
+                        print(f"📊 [SHOW RAW] {' '.join(enable_reg_values)}")
 
-            # Inter-PLC Communication: Copy position from MAIN to EFFECTS
-            if modbus_client and is_plc_connected and 'EFFECTS' in modbus_clients and plc_connected_status.get('EFFECTS'):
-                # Read current_position from MAIN PLC (holding register %QW1)
+            # Inter-PLC Communication: Copy position from RIDE to SHOW
+            if modbus_client and is_plc_connected and 'SHOW' in modbus_clients and plc_connected_status.get('SHOW'):
+                # Read current_position from RIDE PLC (holding register %QW1)
                 position_result = read_register(HOLDING_REGISTERS['current_position'], 1)
                 if position_result["success"]:
                     position_value = position_result["value"]
-                    # Write to EFFECTS PLC input register %IW10 (address 10)
-                    write_result = write_input_register_to_plc('EFFECTS', 10, position_value)
+                    # Write to SHOW PLC input register %IW10 (address 10)
+                    write_result = write_input_register_to_plc('SHOW', 10, position_value)
                     # Note: OpenPLC maps input registers to holding registers internally
 
             await asyncio.sleep(0.1)
@@ -1209,9 +1209,9 @@ async def main():
     print(f"🔌 WebSocket: ws://localhost:{WS_PORT}")
     print(f"\n📡 Ready for multi-PLC connection")
     print("   → Will auto-connect to all three PLCs:")
-    print("      • Main Control (localhost:502)")
+    print("      • Ride Control (localhost:502)")
     print("      • Safety Systems (localhost:503)")
-    print("      • Show Effects (localhost:504)")
+    print("      • Show Control (localhost:504)")
     print("\nPress Ctrl+C to stop\n")
 
     # Check if dist directory exists

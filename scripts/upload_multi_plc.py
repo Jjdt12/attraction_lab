@@ -12,8 +12,8 @@ from pathlib import Path
 # PLC Configuration
 PLCS = [
     {
-        'name': 'MAIN',
-        'container': 'attraction-plc-main',
+        'name': 'RIDE',
+        'container': 'attraction-plc-ride',
         'st_file': 'attraction_control_main.st',
         'port': 8080,
     },
@@ -24,8 +24,8 @@ PLCS = [
         'port': 8081,
     },
     {
-        'name': 'EFFECTS',
-        'container': 'attraction-plc-effects',
+        'name': 'SHOW',
+        'container': 'attraction-plc-show',
         'st_file': 'attraction_control_effects.st',
         'port': 8082,
     },
@@ -275,14 +275,14 @@ def main():
         print("✓ All PLCs initialized and running!")
         print("\n🎯 PLC Programs Started:")
         for plc in PLCS:
-            print(f"  • {plc['name']:8s} - attraction_control_{plc['name'].lower()}.st")
+            print(f"  • {plc['name']:8s} - {plc['st_file']}")
         print("\n🌐 PLC Web Interfaces:")
         for plc in PLCS:
             print(f"  • {plc['name']:8s} - http://localhost:{plc['port']} (openplc/openplc)")
         print("\n🔌 Modbus TCP Ports:")
-        print("  • MAIN:    localhost:502")
-        print("  • SAFETY:  localhost:503")
-        print("  • EFFECTS: localhost:504")
+        print("  • RIDE:   localhost:502")
+        print("  • SAFETY: localhost:503")
+        print("  • SHOW:   localhost:504")
         print("\n✨ All three PLCs are now running their control programs!")
         print("   You can now start the SCADA HMI with: python3 standalone_server.py")
         return 0

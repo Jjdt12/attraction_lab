@@ -1,13 +1,13 @@
 services:
-  plc-main:
+  plc-ride:
     image: tuttas/openplc_v3:latest
     platform: linux/amd64
-    container_name: attraction-plc-main
+    container_name: attraction-plc-ride
     ports:
       - "8080:8080"   # OpenPLC Web Interface
       - "502:502"     # Modbus TCP
     volumes:
-      - plc-main-data:/workdir
+      - plc-ride-data:/workdir
       - ./scripts/attraction_control_main.st:/workdir/st_files/attraction_control_main.st:ro
     environment:
       - OPENPLC_PASSWORD=openplc
@@ -39,15 +39,15 @@ services:
       retries: 10
       start_period: 10s
 
-  plc-effects:
+  plc-show:
     image: tuttas/openplc_v3:latest
     platform: linux/amd64
-    container_name: attraction-plc-effects
+    container_name: attraction-plc-show
     ports:
       - "8082:8080"   # OpenPLC Web Interface
       - "504:502"     # Modbus TCP
     volumes:
-      - plc-effects-data:/workdir
+      - plc-show-data:/workdir
       - ./scripts/attraction_control_effects.st:/workdir/st_files/attraction_control_effects.st:ro
     environment:
       - OPENPLC_PASSWORD=openplc
@@ -60,6 +60,6 @@ services:
       start_period: 10s
 
 volumes:
-  plc-main-data:
+  plc-ride-data:
   plc-safety-data:
-  plc-effects-data:
+  plc-show-data:
