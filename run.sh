@@ -35,6 +35,15 @@ check_docker() {
     echo "[OK] Docker is ready"
 }
 
+check_node() {
+    if ! command -v npm &> /dev/null; then
+        echo "[ERROR] Node.js/npm is not installed!"
+        echo "Install from: https://nodejs.org/"
+        exit 1
+    fi
+    echo "[OK] Node.js found"
+}
+
 check_python() {
     if command -v python3 &> /dev/null; then
         PYTHON_CMD="python3"
@@ -47,6 +56,16 @@ check_python() {
     echo "[OK] Python found: $PYTHON_CMD"
 }
 
+install_node_deps() {
+    if [ ! -d "node_modules" ]; then
+        echo "[SETUP] Installing Node dependencies..."
+        npm install --silent
+        echo "[OK] Node dependencies installed"
+    else
+        echo "[OK] Node dependencies already installed"
+    fi
+}
+
 install_python_deps() {
     if ! $PYTHON_CMD -c "import aiohttp, pymodbus, websockets" 2>/dev/null; then
         echo "[SETUP] Installing Python dependencies..."
@@ -54,21 +73,6 @@ install_python_deps() {
         echo "[OK] Python dependencies installed"
     else
         echo "[OK] Python dependencies already installed"
-    fi
-}
-
-build_frontend() {
-    if [ ! -d "dist" ] || [ ! -f "dist/index.html" ]; then
-        echo "[SETUP] Building frontend..."
-        if ! command -v npm &> /dev/null; then
-            echo "[ERROR] npm not found! Please install Node.js"
-            exit 1
-        fi
-        npm install --silent
-        npm run build --silent
-        echo "[OK] Frontend built"
-    else
-        echo "[OK] Frontend already built"
     fi
 }
 
@@ -85,21 +89,34 @@ upload_plc_programs() {
     cd ..
 }
 
+PYTHON_PID=""
+VITE_PID=""
+
 cleanup() {
     echo ""
     echo "[STOPPING] Shutting down..."
+
+    if [ -n "$VITE_PID" ] && kill -0 $VITE_PID 2>/dev/null; then
+        kill $VITE_PID 2>/dev/null || true
+    fi
+
+    if [ -n "$PYTHON_PID" ] && kill -0 $PYTHON_PID 2>/dev/null; then
+        kill $PYTHON_PID 2>/dev/null || true
+    fi
+
     $COMPOSE_CMD down 2>/dev/null || true
     echo "[OK] All services stopped"
     exit 0
 }
 
-trap cleanup SIGINT SIGTERM
+trap cleanup SIGINT SIGTERM EXIT
 
 echo "--- Checking Prerequisites ---"
 check_docker
+check_node
 check_python
+install_node_deps
 install_python_deps
-build_frontend
 echo ""
 
 echo "--- Starting Services ---"
@@ -107,26 +124,40 @@ start_plcs
 upload_plc_programs
 echo ""
 
+echo "[STARTING] Backend server..."
+cd scripts
+$PYTHON_CMD standalone_server.py &
+PYTHON_PID=$!
+cd ..
+
+sleep 2
+
+echo "[STARTING] Frontend dev server..."
+npm run dev &
+VITE_PID=$!
+
+sleep 3
+
+echo ""
 echo "============================================"
-echo "  READY!"
+echo "  READY! Open your browser to:"
+echo ""
+echo "    http://localhost:5173"
+echo ""
 echo "============================================"
 echo ""
-echo "  Web Interface:    http://localhost:3000"
+echo "  Backend Services:"
+echo "    WebSocket:      ws://localhost:8765"
 echo ""
-echo "  PLC Dashboards:"
+echo "  PLC Dashboards (login: openplc / openplc):"
 echo "    Main PLC:       http://localhost:8080"
 echo "    Safety PLC:     http://localhost:8081"
 echo "    Effects PLC:    http://localhost:8082"
-echo "    (login: openplc / openplc)"
 echo ""
-echo "  Modbus TCP Ports:"
-echo "    Main:    502"
-echo "    Safety:  503"
-echo "    Effects: 504"
+echo "  Modbus TCP: 502 (Main), 503 (Safety), 504 (Effects)"
 echo ""
 echo "  Press Ctrl+C to stop everything"
 echo "============================================"
 echo ""
 
-cd scripts
-$PYTHON_CMD standalone_server.py
+wait $PYTHON_PID $VITE_PID

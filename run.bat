@@ -27,6 +27,15 @@ if errorlevel 1 (
 )
 echo [OK] Docker is ready
 
+REM Check Node
+where npm >nul 2>&1
+if errorlevel 1 (
+    echo [ERROR] Node.js/npm is not installed!
+    echo Install from: https://nodejs.org/
+    exit /b 1
+)
+echo [OK] Node.js found
+
 REM Check Python
 where python >nul 2>&1
 if errorlevel 1 (
@@ -34,6 +43,15 @@ if errorlevel 1 (
     exit /b 1
 )
 echo [OK] Python found
+
+REM Install Node dependencies
+if not exist "node_modules" (
+    echo [SETUP] Installing Node dependencies...
+    call npm install --silent
+    echo [OK] Node dependencies installed
+) else (
+    echo [OK] Node dependencies already installed
+)
 
 REM Install Python dependencies
 python -c "import aiohttp, pymodbus, websockets" >nul 2>&1
@@ -43,21 +61,6 @@ if errorlevel 1 (
     echo [OK] Python dependencies installed
 ) else (
     echo [OK] Python dependencies already installed
-)
-
-REM Build frontend if needed
-if not exist "dist\index.html" (
-    echo [SETUP] Building frontend...
-    where npm >nul 2>&1
-    if errorlevel 1 (
-        echo [ERROR] npm not found! Please install Node.js
-        exit /b 1
-    )
-    call npm install --silent
-    call npm run build --silent
-    echo [OK] Frontend built
-) else (
-    echo [OK] Frontend already built
 )
 
 echo.
@@ -75,30 +78,37 @@ python upload_multi_plc.py
 cd ..
 
 echo.
+echo [STARTING] Backend server...
+start /b python scripts\standalone_server.py
+
+timeout /t 2 /nobreak >nul
+
+echo [STARTING] Frontend dev server...
+start "Vite Dev Server" cmd /c "npm run dev"
+
+timeout /t 3 /nobreak >nul
+
+echo.
 echo ============================================
-echo   READY!
+echo   READY! Open your browser to:
+echo.
+echo     http://localhost:5173
+echo.
 echo ============================================
 echo.
-echo   Web Interface:    http://localhost:3000
+echo   Backend Services:
+echo     WebSocket:      ws://localhost:8765
 echo.
-echo   PLC Dashboards:
+echo   PLC Dashboards (login: openplc / openplc):
 echo     Main PLC:       http://localhost:8080
 echo     Safety PLC:     http://localhost:8081
 echo     Effects PLC:    http://localhost:8082
-echo     (login: openplc / openplc)
 echo.
-echo   Modbus TCP Ports:
-echo     Main:    502
-echo     Safety:  503
-echo     Effects: 504
+echo   Modbus TCP: 502 (Main), 503 (Safety), 504 (Effects)
 echo.
-echo   Press Ctrl+C to stop (then run: docker compose down)
+echo   Close this window to stop (then run: docker compose down)
 echo ============================================
 echo.
 
-cd scripts
-python standalone_server.py
-
-REM Cleanup on exit
-cd ..
+pause
 docker compose down
