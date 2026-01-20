@@ -55,9 +55,9 @@ function App() {
   useAlarmSystem();
 
   const plcsForDisplay: PLCConnection[] = [
-    { name: 'MAIN', ...multiPLCStatus.MAIN, error: null, lastHeartbeat: Date.now() },
-    { name: 'SAFETY', ...multiPLCStatus.SAFETY, error: null, lastHeartbeat: Date.now() },
-    { name: 'EFFECTS', ...multiPLCStatus.EFFECTS, error: null, lastHeartbeat: Date.now() },
+    { name: 'MAIN', host: multiPLCStatus.MAIN.host, port: multiPLCStatus.MAIN.port, connected: multiPLCStatus.MAIN.connected, error: null, lastHeartbeat: Date.now() },
+    { name: 'SAFETY', host: multiPLCStatus.SAFETY.host, port: multiPLCStatus.SAFETY.port, connected: multiPLCStatus.SAFETY.connected, error: null, lastHeartbeat: Date.now() },
+    { name: 'EFFECTS', host: multiPLCStatus.EFFECTS.host, port: multiPLCStatus.EFFECTS.port, connected: multiPLCStatus.EFFECTS.connected, error: null, lastHeartbeat: Date.now() },
   ];
 
   const positionTrend = useTrendData(60);
