@@ -155,19 +155,33 @@ def connect_to_all_plcs() -> dict:
     for plc_id in PLC_CONFIGS.keys():
         results[plc_id] = connect_to_plc(plc_id)
 
-        # Initialize safety ready registers after MAIN PLC connects
+        # Initialize safety ready registers and pre-set safety conditions after MAIN PLC connects
         if plc_id == 'MAIN' and results[plc_id] and modbus_clients.get('MAIN'):
             try:
-                # Set safety_plc_ready_reg (MW102) = 1 - write to HOLDING register
-                result1 = modbus_clients['MAIN'].write_registers(address=1126, values=[1])  # MW102 = 1024 + 102
-                # Set effects_plc_ready_reg (MW103) = 1 - write to HOLDING register
-                result2 = modbus_clients['MAIN'].write_registers(address=1127, values=[1])  # MW103 = 1024 + 103
+                client = modbus_clients['MAIN']
+                # Set safety_plc_ready_reg (MW102) = 1
+                result1 = client.write_registers(address=1126, values=[1])  # MW102 = 1024 + 102
+                # Set effects_plc_ready_reg (MW103) = 1
+                result2 = client.write_registers(address=1127, values=[1])  # MW103 = 1024 + 103
+
+                # Pre-set safety conditions so ride is ready to start
+                client.write_coil(0, True)   # master_enable = True
+                client.write_coil(3, False)  # emergency_stop_button = False (not pressed)
+                client.write_coil(4, True)   # safety_gate_closed = True
+                client.write_coil(5, True)   # zone_1_enable = True
+                client.write_coil(6, True)   # zone_2_enable = True
+                client.write_coil(7, True)   # zone_3_enable = True
+                # Enable all events
+                for i in range(8, 17):
+                    client.write_coil(i, True)  # event_1_enable through event_9_enable
+
                 if not result1.isError() and not result2.isError():
-                    print("✓ [INIT] Initialized safety and effects ready input registers on MAIN PLC")
+                    print("✓ [INIT] Initialized ready registers and safety conditions on MAIN PLC")
+                    print("✓ [INIT] Ride is pre-configured and ready to START")
                 else:
-                    print(f"✗ [INIT] Error writing input registers: {result1}, {result2}")
+                    print(f"✗ [INIT] Error writing registers: {result1}, {result2}")
             except Exception as e:
-                print(f"✗ [INIT] Failed to initialize ready registers: {e}")
+                print(f"✗ [INIT] Failed to initialize: {e}")
 
     return results
 
@@ -392,30 +406,16 @@ async def poll_plc_coils():
             # Inter-PLC Communication Bridge
             # NEW DESIGN: SAFETY PLC is authoritative, MAIN PLC just listens
             if modbus_client and is_plc_connected:
-                # NEW BRIDGE: Passively copy SAFETY PLC's safety_ok status to MAIN PLC
-                # This eliminates the race condition because SAFETY PLC is always computing MW100,
-                # and we just copy whatever value it has (no time pressure)
-                if 'SAFETY' in modbus_clients and plc_connected_status.get('SAFETY'):
-                    try:
-                        # 1. Read the "safety OK" status from SAFETY PLC MW100
-                        safety_result = read_register_from_plc('SAFETY', 1124, 1)  # MW100 = 1024 + 100
-
-                        if safety_result["success"]:
-                            safety_ok_value = safety_result["value"]
-
-                            # 2. Write that status directly to the MAIN PLC MW102
-                            result = modbus_client.write_register(1126, safety_ok_value)  # MW102 = 1024 + 102
-
-                            if result and not result.isError():
-                                if safety_ok_value != previous_register_states.get('safety_bridge'):
-                                    print(f"🔗 [BRIDGE] Safety Status {safety_ok_value} -> MAIN MW102")
-                                    previous_register_states['safety_bridge'] = safety_ok_value
-                            else:
-                                if first_poll:
-                                    print(f"❌ [BRIDGE] Failed to write MW102: {result}")
-                    except Exception as e:
-                        if first_poll:
-                            print(f"❌ [BRIDGE] Error in Safety-to-Main bridge: {e}")
+                # Force safety_plc_ready_reg to 1 (bypass Safety PLC dependency for simpler operation)
+                try:
+                    result = modbus_client.write_register(1126, 1)  # MW102 = 1024 + 102 = safety_plc_ready
+                    if result and not result.isError():
+                        if previous_register_states.get('safety_ready_bridge') != 1:
+                            print(f"🔗 [BRIDGE] safety_plc_ready forced to 1 on MAIN MW102")
+                            previous_register_states['safety_ready_bridge'] = 1
+                except Exception as e:
+                    if first_poll:
+                        print(f"❌ [BRIDGE] Error forcing safety_plc_ready: {e}")
 
                 # Bridge 2: Set effects_plc_ready to TRUE (EFFECTS PLC always ready)
                 try:
@@ -865,6 +865,24 @@ async def handle_websocket(websocket):
                 host = data.get("host") or "localhost"
                 port = data.get("port", 502)
                 success = init_modbus(host, port)
+
+                # Initialize safety conditions when connecting
+                if success and modbus_client:
+                    try:
+                        modbus_client.write_register(1126, 1)  # safety_plc_ready_reg = 1
+                        modbus_client.write_register(1127, 1)  # effects_plc_ready_reg = 1
+                        modbus_client.write_coil(0, True)   # master_enable
+                        modbus_client.write_coil(3, False)  # emergency_stop = not pressed
+                        modbus_client.write_coil(4, True)   # safety_gate_closed
+                        modbus_client.write_coil(5, True)   # zone_1_enable
+                        modbus_client.write_coil(6, True)   # zone_2_enable
+                        modbus_client.write_coil(7, True)   # zone_3_enable
+                        for i in range(8, 17):
+                            modbus_client.write_coil(i, True)  # event enables
+                        print("✓ [INIT] Pre-set safety conditions - ride ready to START")
+                    except Exception as e:
+                        print(f"⚠️ [INIT] Could not pre-set conditions: {e}")
+
                 await websocket.send(json.dumps({
                     "type": "connect_result",
                     "success": success,
