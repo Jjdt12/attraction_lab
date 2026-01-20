@@ -837,7 +837,7 @@ async def handle_websocket(websocket):
 
         async for message in websocket:
             data = json.loads(message)
-            action = data.get("action")
+            action = data.get("action") or data.get("type")
 
             if action == "connect_all_plcs":
                 # Connect to all three PLCs
