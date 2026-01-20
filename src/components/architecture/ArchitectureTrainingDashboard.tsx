@@ -358,6 +358,13 @@ const ARCHITECTURE_OBJECTIVES: ArchitectureObjective[] = [
   },
 ];
 
+const WORKFLOW_STEPS = [
+  { id: 'learn', label: 'Learn', description: 'Understand the Purdue Model' },
+  { id: 'zones', label: 'Configure Zones', description: 'Create network zones' },
+  { id: 'idmz', label: 'Design IDMZ', description: 'Set up security boundary' },
+  { id: 'complete', label: 'Complete', description: 'All objectives done' },
+] as const;
+
 export function ArchitectureTrainingDashboard() {
   const [activeTab, setActiveTab] = useState<'learn' | 'zones' | 'idmz' | 'objectives'>('learn');
   const [expandedLevel, setExpandedLevel] = useState<string | null>('3.5');
@@ -435,6 +442,23 @@ export function ArchitectureTrainingDashboard() {
 
   const maxPoints = ARCHITECTURE_OBJECTIVES.reduce((sum, obj) => sum + obj.points, 0);
 
+  const zoneObjectives = ARCHITECTURE_OBJECTIVES.filter(obj => obj.category === 'zones');
+  const deviceObjectives = ARCHITECTURE_OBJECTIVES.filter(obj => obj.category === 'devices');
+  const idmzObjectives = ARCHITECTURE_OBJECTIVES.filter(obj => obj.category === 'idmz');
+
+  const zoneProgress = zoneObjectives.filter(obj => obj.validator(userZones, idmzComponents).completed).length;
+  const deviceProgress = deviceObjectives.filter(obj => obj.validator(userZones, idmzComponents).completed).length;
+  const idmzProgress = idmzObjectives.filter(obj => obj.validator(userZones, idmzComponents).completed).length;
+
+  const getCurrentWorkflowStep = () => {
+    if (completedObjectives === ARCHITECTURE_OBJECTIVES.length) return 3;
+    if (idmzProgress > 0) return 2;
+    if (zoneProgress > 0 || deviceProgress > 0) return 1;
+    return 0;
+  };
+
+  const currentStep = getCurrentWorkflowStep();
+
   const tabs = [
     { id: 'learn', label: 'Learn', icon: BookOpen },
     { id: 'zones', label: 'Configure Zones', icon: Grid3X3 },
@@ -464,6 +488,46 @@ export function ArchitectureTrainingDashboard() {
             <div className="text-xl font-bold text-amber-400">{totalPoints}</div>
             <div className="text-[10px] text-slate-400">/ {maxPoints} pts</div>
           </div>
+        </div>
+      </div>
+
+      <div className="p-4 bg-slate-900/50 border border-slate-800 rounded-xl">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-xs font-medium text-slate-500 uppercase tracking-wider">Your Progress</span>
+          <span className="text-xs text-slate-400">{completedObjectives}/{ARCHITECTURE_OBJECTIVES.length} objectives complete</span>
+        </div>
+        <div className="flex items-center gap-2">
+          {WORKFLOW_STEPS.map((step, index) => (
+            <div key={step.id} className="flex items-center flex-1">
+              <div className="flex flex-col items-center flex-1">
+                <div
+                  className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all ${
+                    index < currentStep
+                      ? 'bg-emerald-500 text-white'
+                      : index === currentStep
+                      ? 'bg-cyan-500 text-white ring-4 ring-cyan-500/30'
+                      : 'bg-slate-700 text-slate-400'
+                  }`}
+                >
+                  {index < currentStep ? (
+                    <CheckCircle size={16} />
+                  ) : (
+                    index + 1
+                  )}
+                </div>
+                <span className={`text-xs mt-1 ${
+                  index <= currentStep ? 'text-white' : 'text-slate-500'
+                }`}>
+                  {step.label}
+                </span>
+              </div>
+              {index < WORKFLOW_STEPS.length - 1 && (
+                <div className={`h-0.5 flex-1 mx-2 ${
+                  index < currentStep ? 'bg-emerald-500' : 'bg-slate-700'
+                }`} />
+              )}
+            </div>
+          ))}
         </div>
       </div>
 
@@ -633,34 +697,53 @@ export function ArchitectureTrainingDashboard() {
               ))}
             </div>
           </div>
+
+          <div className="p-6 bg-gradient-to-r from-emerald-500/10 to-cyan-500/10 border border-emerald-500/30 rounded-xl">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-xl bg-emerald-500/20 flex items-center justify-center">
+                <ArrowRight className="text-emerald-400" size={24} />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-white">Ready to Start Building?</h3>
+                <p className="text-sm text-slate-400">
+                  Now that you understand the Purdue Model, it's time to build your own network architecture.
+                  You'll create zones, add devices, and configure the IDMZ.
+                </p>
+              </div>
+              <button
+                onClick={() => setActiveTab('zones')}
+                className="px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg font-medium flex items-center gap-2 transition-colors"
+              >
+                Start Building
+                <ArrowRight size={18} />
+              </button>
+            </div>
+            <div className="mt-4 p-4 bg-slate-800/50 rounded-lg">
+              <p className="text-xs text-slate-400 mb-2 font-medium">Your first objective:</p>
+              <div className="flex items-center gap-2 text-sm text-white">
+                <Circle size={14} className="text-slate-500" />
+                <span>Create a Control Zone at Level 2 for your PLCs</span>
+                <span className="ml-auto text-xs text-amber-400">+10 pts</span>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 
       {activeTab === 'zones' && (
         <div className="space-y-6">
-          <div className="p-4 bg-amber-500/10 border border-amber-500/30 rounded-xl">
-            <div className="flex items-start gap-3">
-              <Lightbulb className="text-amber-400 shrink-0 mt-1" size={20} />
-              <div>
-                <h4 className="font-semibold text-amber-300">Exercise: Create Your Network Zones</h4>
-                <p className="text-sm text-slate-300 mt-1">
-                  Build the network architecture for our attraction. Create zones at different Purdue levels
-                  and add the appropriate devices to each zone. The objectives panel shows what you need to accomplish.
-                </p>
+          <div className="grid grid-cols-3 gap-6">
+            <div className="col-span-2 space-y-6">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-white">Your Network Zones</h3>
+                <button
+                  onClick={() => setShowAddZone(true)}
+                  className="flex items-center gap-2 px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-white rounded-lg transition-colors"
+                >
+                  <Plus size={16} />
+                  Add Zone
+                </button>
               </div>
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-white">Your Network Zones</h3>
-            <button
-              onClick={() => setShowAddZone(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-white rounded-lg transition-colors"
-            >
-              <Plus size={16} />
-              Add Zone
-            </button>
-          </div>
 
           {showAddZone && (
             <div className="p-4 bg-slate-800 border border-cyan-500/30 rounded-xl">
@@ -711,17 +794,30 @@ export function ArchitectureTrainingDashboard() {
           )}
 
           {userZones.length === 0 ? (
-            <div className="p-12 bg-slate-900 border border-slate-800 rounded-xl text-center">
-              <Grid3X3 size={48} className="mx-auto text-slate-600 mb-4" />
-              <h4 className="text-lg font-medium text-white mb-2">No Zones Created</h4>
-              <p className="text-slate-400 mb-4">
-                Start building your network architecture by creating zones at different Purdue levels.
-              </p>
+            <div className="p-8 bg-slate-900 border border-slate-800 rounded-xl">
+              <div className="text-center mb-6">
+                <Grid3X3 size={48} className="mx-auto text-slate-600 mb-4" />
+                <h4 className="text-lg font-medium text-white mb-2">No Zones Created Yet</h4>
+                <p className="text-slate-400">Start by creating your first network zone.</p>
+              </div>
+              <div className="p-4 bg-amber-500/10 border border-amber-500/30 rounded-lg mb-4">
+                <p className="text-sm text-amber-300 font-medium mb-2">Recommended first step:</p>
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-emerald-500/20 flex items-center justify-center text-emerald-400 text-sm font-bold">L2</div>
+                  <div>
+                    <p className="text-sm text-white">Create a Control Zone at Level 2</p>
+                    <p className="text-xs text-slate-400">This zone will contain your PLCs (Main, Safety, Effects)</p>
+                  </div>
+                </div>
+              </div>
               <button
-                onClick={() => setShowAddZone(true)}
-                className="px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-white rounded-lg"
+                onClick={() => {
+                  setNewZone({ name: 'Control Zone', level: '2', ipRange: '' });
+                  setShowAddZone(true);
+                }}
+                className="w-full px-4 py-3 bg-cyan-500 hover:bg-cyan-600 text-white rounded-lg font-medium"
               >
-                Create Your First Zone
+                Create Control Zone (Level 2)
               </button>
             </div>
           ) : (
@@ -853,25 +949,88 @@ export function ArchitectureTrainingDashboard() {
               })}
             </div>
           )}
+            </div>
+
+            <div className="space-y-4">
+              <div className="p-4 bg-slate-900 border border-slate-800 rounded-xl">
+                <div className="flex items-center gap-2 mb-4">
+                  <Target size={18} className="text-amber-400" />
+                  <h4 className="font-semibold text-white">Zone Objectives</h4>
+                </div>
+                <div className="space-y-3">
+                  {zoneObjectives.map((obj) => {
+                    const result = obj.validator(userZones, idmzComponents);
+                    return (
+                      <div key={obj.id} className={`p-3 rounded-lg ${result.completed ? 'bg-emerald-500/10 border border-emerald-500/30' : 'bg-slate-800/50'}`}>
+                        <div className="flex items-start gap-2">
+                          {result.completed ? (
+                            <CheckCircle size={16} className="text-emerald-400 shrink-0 mt-0.5" />
+                          ) : (
+                            <Circle size={16} className="text-slate-500 shrink-0 mt-0.5" />
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <p className={`text-sm ${result.completed ? 'text-emerald-300' : 'text-white'}`}>{obj.title}</p>
+                            {!result.completed && (
+                              <p className="text-xs text-slate-400 mt-1">{obj.hint}</p>
+                            )}
+                          </div>
+                          <span className="text-xs text-amber-400">{obj.points}pts</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="p-4 bg-slate-900 border border-slate-800 rounded-xl">
+                <div className="flex items-center gap-2 mb-4">
+                  <Cpu size={18} className="text-amber-400" />
+                  <h4 className="font-semibold text-white">Device Objectives</h4>
+                </div>
+                <div className="space-y-3">
+                  {deviceObjectives.map((obj) => {
+                    const result = obj.validator(userZones, idmzComponents);
+                    return (
+                      <div key={obj.id} className={`p-3 rounded-lg ${result.completed ? 'bg-emerald-500/10 border border-emerald-500/30' : 'bg-slate-800/50'}`}>
+                        <div className="flex items-start gap-2">
+                          {result.completed ? (
+                            <CheckCircle size={16} className="text-emerald-400 shrink-0 mt-0.5" />
+                          ) : (
+                            <Circle size={16} className="text-slate-500 shrink-0 mt-0.5" />
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <p className={`text-sm ${result.completed ? 'text-emerald-300' : 'text-white'}`}>{obj.title}</p>
+                            {!result.completed && (
+                              <p className="text-xs text-slate-400 mt-1">{obj.hint}</p>
+                            )}
+                          </div>
+                          <span className="text-xs text-amber-400">{obj.points}pts</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {(zoneProgress + deviceProgress) === (zoneObjectives.length + deviceObjectives.length) && (
+                <button
+                  onClick={() => setActiveTab('idmz')}
+                  className="w-full p-4 bg-emerald-500/20 border border-emerald-500/30 rounded-xl text-center hover:bg-emerald-500/30 transition-colors"
+                >
+                  <p className="text-emerald-300 font-medium">All zone objectives complete!</p>
+                  <p className="text-sm text-slate-400 mt-1">Continue to Design IDMZ</p>
+                </button>
+              )}
+            </div>
+          </div>
         </div>
       )}
 
       {activeTab === 'idmz' && (
         <div className="space-y-6">
-          <div className="p-4 bg-pink-500/10 border border-pink-500/30 rounded-xl">
-            <div className="flex items-start gap-3">
-              <Shield className="text-pink-400 shrink-0 mt-1" size={20} />
-              <div>
-                <h4 className="font-semibold text-pink-300">Exercise: Design Your Industrial DMZ</h4>
-                <p className="text-sm text-slate-300 mt-1">
-                  Enable the required IDMZ components to create a secure boundary between IT and OT networks.
-                  Each component serves a specific security function. Click to toggle and read why each matters.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-3 gap-6">
+          <div className="grid grid-cols-4 gap-6">
+            <div className="col-span-3 space-y-6">
+              <div className="grid grid-cols-3 gap-4">
             <div className="p-4 bg-blue-500/10 border border-blue-500/30 rounded-xl">
               <div className="flex items-center gap-2 mb-3">
                 <Server size={18} className="text-blue-400" />
@@ -940,24 +1099,91 @@ export function ArchitectureTrainingDashboard() {
                 <div className="p-2 bg-slate-800/50 rounded text-xs text-slate-300">Field Devices</div>
               </div>
             </div>
-          </div>
+              </div>
 
-          <div className="p-4 bg-slate-900 border border-slate-800 rounded-xl">
-            <h4 className="font-semibold text-white mb-4">IDMZ Component Details</h4>
-            <div className="space-y-4">
-              {idmzComponents.map((component) => (
-                <div key={component.id} className="p-4 bg-slate-800/50 rounded-lg">
-                  <div className="flex items-center justify-between mb-2">
-                    <h5 className="font-medium text-white">{component.name}</h5>
-                    <span className={`px-2 py-0.5 rounded text-xs ${
-                      component.enabled ? 'bg-emerald-500/20 text-emerald-300' : 'bg-slate-700 text-slate-400'
-                    }`}>
-                      {component.enabled ? 'Enabled' : 'Disabled'}
-                    </span>
-                  </div>
-                  <p className="text-sm text-slate-400">{component.description}</p>
+              <div className="p-4 bg-slate-900 border border-slate-800 rounded-xl">
+                <h4 className="font-semibold text-white mb-4">Component Details</h4>
+                <div className="space-y-3">
+                  {idmzComponents.map((component) => (
+                    <div key={component.id} className="p-3 bg-slate-800/50 rounded-lg">
+                      <div className="flex items-center justify-between mb-1">
+                        <h5 className="text-sm font-medium text-white">{component.name}</h5>
+                        <span className={`px-2 py-0.5 rounded text-xs ${
+                          component.enabled ? 'bg-emerald-500/20 text-emerald-300' : 'bg-slate-700 text-slate-400'
+                        }`}>
+                          {component.enabled ? 'Enabled' : 'Disabled'}
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-400">{component.description}</p>
+                    </div>
+                  ))}
                 </div>
-              ))}
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <div className="p-4 bg-slate-900 border border-slate-800 rounded-xl">
+                <div className="flex items-center gap-2 mb-4">
+                  <Target size={18} className="text-amber-400" />
+                  <h4 className="font-semibold text-white">IDMZ Objectives</h4>
+                </div>
+                <div className="space-y-3">
+                  {idmzObjectives.map((obj) => {
+                    const result = obj.validator(userZones, idmzComponents);
+                    return (
+                      <div key={obj.id} className={`p-3 rounded-lg ${result.completed ? 'bg-emerald-500/10 border border-emerald-500/30' : 'bg-slate-800/50'}`}>
+                        <div className="flex items-start gap-2">
+                          {result.completed ? (
+                            <CheckCircle size={16} className="text-emerald-400 shrink-0 mt-0.5" />
+                          ) : (
+                            <Circle size={16} className="text-slate-500 shrink-0 mt-0.5" />
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <p className={`text-sm ${result.completed ? 'text-emerald-300' : 'text-white'}`}>{obj.title}</p>
+                            {!result.completed && (
+                              <p className="text-xs text-slate-400 mt-1">{obj.hint}</p>
+                            )}
+                          </div>
+                          <span className="text-xs text-amber-400">{obj.points}pts</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="p-4 bg-pink-500/10 border border-pink-500/30 rounded-xl">
+                <div className="flex items-center gap-2 mb-2">
+                  <Lightbulb size={16} className="text-pink-400" />
+                  <span className="text-sm font-medium text-pink-300">Quick Guide</span>
+                </div>
+                <ul className="space-y-2 text-xs text-slate-300">
+                  <li className="flex items-start gap-2">
+                    <span className="text-pink-400">1.</span>
+                    <span>Click components in the IDMZ panel to enable them</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-pink-400">2.</span>
+                    <span>Enable both firewalls for defense in depth</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-pink-400">3.</span>
+                    <span>Data diode prevents any IT commands reaching OT</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-pink-400">4.</span>
+                    <span>Jump server provides secure remote access</span>
+                  </li>
+                </ul>
+              </div>
+
+              {idmzProgress === idmzObjectives.length && (
+                <div className="p-4 bg-emerald-500/20 border border-emerald-500/30 rounded-xl text-center">
+                  <Award className="mx-auto text-amber-400 mb-2" size={32} />
+                  <p className="text-emerald-300 font-medium">All IDMZ objectives complete!</p>
+                  <p className="text-sm text-slate-400 mt-1">Your network architecture is secure.</p>
+                </div>
+              )}
             </div>
           </div>
         </div>
