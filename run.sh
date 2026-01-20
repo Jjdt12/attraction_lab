@@ -77,8 +77,8 @@ install_python_deps() {
 }
 
 start_plcs() {
-    echo "[STARTING] OpenPLC containers (Main, Safety, Effects)..."
-    $COMPOSE_CMD up -d plc-main plc-safety plc-effects
+    echo "[STARTING] OpenPLC containers (Ride, Safety, Show)..."
+    $COMPOSE_CMD up -d plc-ride plc-safety plc-show
     echo "[OK] PLC containers started"
 }
 
@@ -150,11 +150,11 @@ echo "  Backend Services:"
 echo "    WebSocket:      ws://localhost:8765"
 echo ""
 echo "  PLC Dashboards (login: openplc / openplc):"
-echo "    Main PLC:       http://localhost:8080"
+echo "    Ride PLC:       http://localhost:8080"
 echo "    Safety PLC:     http://localhost:8081"
-echo "    Effects PLC:    http://localhost:8082"
+echo "    Show PLC:       http://localhost:8082"
 echo ""
-echo "  Modbus TCP: 502 (Main), 503 (Safety), 504 (Effects)"
+echo "  Modbus TCP: 502 (Ride), 503 (Safety), 504 (Show)"
 echo ""
 echo "  Press Ctrl+C to stop everything"
 echo "============================================"
