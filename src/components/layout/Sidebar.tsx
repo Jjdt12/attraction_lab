@@ -27,6 +27,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Monitor,
+  GraduationCap,
+  Crosshair,
 } from 'lucide-react';
 import type { ViewType } from '../../App';
 
@@ -54,6 +56,13 @@ const navSections: NavSection[] = [
     items: [
       { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard size={18} /> },
       { id: 'attraction-hmi', label: 'Attraction HMI', icon: <Monitor size={18} /> },
+    ],
+  },
+  {
+    title: 'Security Training',
+    items: [
+      { id: 'security-training', label: 'Training Dashboard', icon: <GraduationCap size={18} /> },
+      { id: 'defense-validator', label: 'Defense Validator', icon: <Crosshair size={18} /> },
     ],
   },
   {

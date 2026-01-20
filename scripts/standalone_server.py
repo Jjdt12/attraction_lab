@@ -24,6 +24,10 @@ from plc_modbus_map import (
     COILS, INPUT_REGISTERS, HOLDING_REGISTERS, HOLDING_REGISTERS_DINT,
     COIL_RANGE, HOLDING_REGISTER_RANGES
 )
+from security_enforcement import (
+    check_modbus_operation, get_security_status, get_recent_alerts,
+    security_enforcer, WRITE_FUNCTION_CODES
+)
 
 # Get project paths
 SCRIPT_DIR = Path(__file__).parent
@@ -269,19 +273,35 @@ def write_input_register_to_plc(plc_id: str, address: int, value: int) -> dict:
         return {"success": False, "error": str(e), "plc": plc_id}
 
 
-def write_coil(address: int, value: bool) -> dict:
-    """Write to Modbus coil - writes to MAIN and SAFETY PLCs for safety-related coils"""
+async def write_coil_async(address: int, value: bool, source_ip: str = "127.0.0.1") -> dict:
+    """Write to Modbus coil with security enforcement"""
     if not modbus_client:
         return {"success": False, "error": "PLC not connected"}
 
-    # Safety-related coils that need to be mirrored to SAFETY PLC
-    safety_coils = [0, 3, 4]  # master_enable, emergency_stop, safety_gate_closed
+    safety_coils = [0, 3, 4]
+    coil_name = COIL_NAMES.get(address, f"coil_{address}")
+
+    enforcement = await check_modbus_operation(
+        operation="WRITE_COIL",
+        source_ip=source_ip,
+        function_code=5,
+        address=address,
+        value=value,
+    )
+
+    if not enforcement.allowed:
+        print(f"🛡️ [BLOCKED] {coil_name} write blocked by {enforcement.blocked_by}")
+        return {
+            "success": False,
+            "error": f"Blocked by security: {enforcement.blocked_by}",
+            "blocked": True,
+            "blocked_by": enforcement.blocked_by,
+            "defense_layer": enforcement.defense_layer,
+        }
 
     try:
-        coil_name = COIL_NAMES.get(address, f"coil_{address}")
         print(f"✍️  [WRITE] Writing {coil_name} (coil {address}) = {value}")
 
-        # Always write to MAIN PLC
         result = modbus_client.write_coil(address=address, value=value)
         if not result or result.isError():
             print(f"❌ [WRITE] Failed: {coil_name}")
@@ -290,16 +310,14 @@ def write_coil(address: int, value: bool) -> dict:
         print(f"✅ [WRITE] Success: {coil_name} = {value} (on MAIN)")
         asyncio.create_task(log_modbus_operation("MAIN", "WRITE_COIL", address, value))
 
-        # --- FIX: Immediately mirror safety coils to SAFETY PLC ---
         if address in safety_coils and 'SAFETY' in modbus_clients:
             try:
-                # Map MAIN coil address to SAFETY coil address
                 safety_addr = -1
-                if address == 0:  # master_enable
+                if address == 0:
                     safety_addr = 0
-                elif address == 3: # emergency_stop_button
+                elif address == 3:
                     safety_addr = 1
-                elif address == 4: # safety_gate_closed
+                elif address == 4:
                     safety_addr = 2
 
                 if safety_addr != -1:
@@ -311,12 +329,18 @@ def write_coil(address: int, value: bool) -> dict:
                         print(f"❌ [MIRROR] Failed to mirror {coil_name} to SAFETY")
             except Exception as e:
                 print(f"❌ [MIRROR] Exception mirroring to SAFETY: {e}")
-        # --- End of Fix ---
 
         return {"success": True, "address": address, "value": value}
     except Exception as e:
         print(f"❌ [WRITE] Exception writing {coil_name}: {e}")
         return {"success": False, "error": str(e)}
+
+
+def write_coil(address: int, value: bool) -> dict:
+    """Synchronous wrapper for backward compatibility"""
+    return asyncio.get_event_loop().run_until_complete(
+        write_coil_async(address, value, "127.0.0.1")
+    )
 
 
 def read_coil(address: int) -> dict:
@@ -334,10 +358,29 @@ def read_coil(address: int) -> dict:
         return {"success": False, "error": str(e), "value": False}
 
 
-def write_register(address: int, value: int) -> dict:
-    """Write to Modbus holding register"""
+async def write_register_async(address: int, value: int, source_ip: str = "127.0.0.1") -> dict:
+    """Write to Modbus holding register with security enforcement"""
     if not modbus_client:
         return {"success": False, "error": "PLC not connected"}
+
+    enforcement = await check_modbus_operation(
+        operation="WRITE_REGISTER",
+        source_ip=source_ip,
+        function_code=6,
+        address=address,
+        value=value,
+    )
+
+    if not enforcement.allowed:
+        reg_name = REGISTER_NAMES.get(address, f"register_{address}")
+        print(f"🛡️ [BLOCKED] {reg_name} write blocked by {enforcement.blocked_by}")
+        return {
+            "success": False,
+            "error": f"Blocked by security: {enforcement.blocked_by}",
+            "blocked": True,
+            "blocked_by": enforcement.blocked_by,
+            "defense_layer": enforcement.defense_layer,
+        }
 
     try:
         result = modbus_client.write_register(address=address, value=value)
@@ -348,6 +391,13 @@ def write_register(address: int, value: int) -> dict:
             return {"success": False, "error": "Write failed"}
     except Exception as e:
         return {"success": False, "error": str(e)}
+
+
+def write_register(address: int, value: int) -> dict:
+    """Synchronous wrapper for backward compatibility"""
+    return asyncio.get_event_loop().run_until_complete(
+        write_register_async(address, value, "127.0.0.1")
+    )
 
 
 def read_register(address: int, count: int = 1) -> dict:
@@ -943,10 +993,11 @@ async def handle_websocket(websocket):
             elif action == "write_coil":
                 address = data.get("address")
                 value = data.get("value")
-                result = write_coil(address, value)
+                source_ip = data.get("source_ip", "127.0.0.1")
+                result = await write_coil_async(address, value, source_ip)
 
-                if address == 2 and value == True:
-                    write_coil(1, False)
+                if result.get("success") and address == 2 and value == True:
+                    await write_coil_async(1, False, source_ip)
                     print("🛑 [STOP] Cleared start_command after stop")
 
                 await websocket.send(json.dumps({
@@ -999,7 +1050,8 @@ async def handle_websocket(websocket):
             elif action == "write_register":
                 address = data.get("address")
                 value = data.get("value")
-                result = write_register(address, value)
+                source_ip = data.get("source_ip", "127.0.0.1")
+                result = await write_register_async(address, value, source_ip)
                 await websocket.send(json.dumps({
                     "type": "write_result",
                     "result": result
@@ -1029,6 +1081,29 @@ async def handle_websocket(websocket):
                     "connected": is_plc_connected,
                     "plc_host": current_plc_host,
                     "plc_port": current_plc_port,
+                }))
+
+            elif action == "get_security_status":
+                status = get_security_status()
+                await websocket.send(json.dumps({
+                    "type": "security_status",
+                    "status": status,
+                }))
+
+            elif action == "get_security_alerts":
+                limit = data.get("limit", 50)
+                alerts = get_recent_alerts(limit)
+                await websocket.send(json.dumps({
+                    "type": "security_alerts",
+                    "alerts": alerts,
+                }))
+
+            elif action == "reload_security_config":
+                await security_enforcer.load_config_from_db()
+                status = get_security_status()
+                await websocket.send(json.dumps({
+                    "type": "security_config_reloaded",
+                    "status": status,
                 }))
 
     except websockets.exceptions.ConnectionClosed:

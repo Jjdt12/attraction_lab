@@ -27,11 +27,16 @@ import { Glossary } from './components/education/Glossary';
 import { InterviewMode } from './components/education/InterviewMode';
 import { Dashboard } from './components/Dashboard';
 import { AttractionHMI } from './components/hmi/AttractionHMI';
+import { SecurityTrainingDashboard } from './components/training/SecurityTrainingDashboard';
+import { DefenseValidator } from './components/training/DefenseValidator';
 import { LabEnvironmentProvider } from './contexts/LabEnvironmentContext';
+import { SecurityProvider } from './contexts/SecurityContext';
 
 export type ViewType =
   | 'dashboard'
   | 'attraction-hmi'
+  | 'security-training'
+  | 'defense-validator'
   | 'purdue-model'
   | 'idmz-designer'
   | 'network-topology'
@@ -67,6 +72,10 @@ function App() {
         return <Dashboard onNavigate={setCurrentView} />;
       case 'attraction-hmi':
         return <AttractionHMI />;
+      case 'security-training':
+        return <SecurityTrainingDashboard />;
+      case 'defense-validator':
+        return <DefenseValidator />;
       case 'purdue-model':
         return <PurdueModel />;
       case 'idmz-designer':
@@ -122,20 +131,22 @@ function App() {
 
   return (
     <LabEnvironmentProvider>
-      <div className="min-h-screen bg-slate-950 flex">
-        <Sidebar
-          currentView={currentView}
-          onViewChange={setCurrentView}
-          collapsed={sidebarCollapsed}
-          onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
-        />
-        <div className={`flex-1 flex flex-col transition-all duration-300 ${sidebarCollapsed ? 'ml-16' : 'ml-64'}`}>
-          <TopBar currentView={currentView} />
-          <main className="flex-1 p-6 overflow-auto">
-            {renderView()}
-          </main>
+      <SecurityProvider>
+        <div className="min-h-screen bg-slate-950 flex">
+          <Sidebar
+            currentView={currentView}
+            onViewChange={setCurrentView}
+            collapsed={sidebarCollapsed}
+            onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
+          />
+          <div className={`flex-1 flex flex-col transition-all duration-300 ${sidebarCollapsed ? 'ml-16' : 'ml-64'}`}>
+            <TopBar currentView={currentView} />
+            <main className="flex-1 p-6 overflow-auto">
+              {renderView()}
+            </main>
+          </div>
         </div>
-      </div>
+      </SecurityProvider>
     </LabEnvironmentProvider>
   );
 }
