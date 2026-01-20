@@ -15,12 +15,19 @@ import {
   Play,
   CheckCircle,
   XCircle,
+  BookOpen,
+  Trophy,
+  Skull,
+  GraduationCap,
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { FirewallRuleEditor, type FirewallRule } from './FirewallRuleEditor';
 import { ProtocolFilterBuilder, type ProtocolFilter } from './ProtocolFilterBuilder';
 import { IDSSignatureBuilder, type IDSSignature } from './IDSSignatureBuilder';
 import { ACLEditor, type AccessControlEntry } from './ACLEditor';
+import { SecurityTutorialGuide } from './SecurityTutorialGuide';
+import { LearningObjectives } from './LearningObjectives';
+import { AttackScenarios } from './AttackScenarios';
 
 interface SecurityScore {
   totalScore: number;
@@ -281,7 +288,7 @@ function AttackTestPanel({
 }
 
 export function SecurityTrainingDashboard() {
-  const [activeTab, setActiveTab] = useState<'overview' | 'firewall' | 'protocol' | 'ids' | 'acl'>('overview');
+  const [activeTab, setActiveTab] = useState<'learn' | 'objectives' | 'attacks' | 'overview' | 'firewall' | 'protocol' | 'ids' | 'acl'>('learn');
   const [isLoading, setIsLoading] = useState(true);
   const [configId, setConfigId] = useState<string | null>(null);
 
@@ -593,11 +600,14 @@ export function SecurityTrainingDashboard() {
 
   const isVulnerable = score.totalScore === 0;
   const tabs = [
-    { id: 'overview', label: 'Overview', icon: Shield },
-    { id: 'firewall', label: 'Firewall Rules', icon: Layers, count: firewallRules.length },
-    { id: 'protocol', label: 'Protocol Filters', icon: Filter, count: protocolFilters.length },
-    { id: 'ids', label: 'IDS Signatures', icon: Eye, count: idsSignatures.length },
-    { id: 'acl', label: 'Access Control', icon: Lock, count: aclEntries.length },
+    { id: 'learn', label: 'Tutorial', icon: BookOpen },
+    { id: 'objectives', label: 'Objectives', icon: Trophy },
+    { id: 'attacks', label: 'Attack Scenarios', icon: Skull },
+    { id: 'overview', label: 'Test & Build', icon: Shield },
+    { id: 'firewall', label: 'Firewall', icon: Layers, count: firewallRules.length },
+    { id: 'protocol', label: 'Protocol', icon: Filter, count: protocolFilters.length },
+    { id: 'ids', label: 'IDS', icon: Eye, count: idsSignatures.length },
+    { id: 'acl', label: 'ACL', icon: Lock, count: aclEntries.length },
   ] as const;
 
   return (
@@ -783,6 +793,24 @@ export function SecurityTrainingDashboard() {
           onSaveEntries={saveAclEntries}
           onValidate={validateConfig}
         />
+      )}
+
+      {activeTab === 'learn' && (
+        <SecurityTutorialGuide />
+      )}
+
+      {activeTab === 'objectives' && (
+        <LearningObjectives
+          firewallRules={firewallRules}
+          protocolFilters={protocolFilters}
+          idsSignatures={idsSignatures}
+          aclEntries={aclEntries}
+          onNavigateToSection={(section) => setActiveTab(section as typeof activeTab)}
+        />
+      )}
+
+      {activeTab === 'attacks' && (
+        <AttackScenarios />
       )}
     </div>
   );
