@@ -18,6 +18,7 @@ import {
   Activity,
   Target,
   TrendingUp,
+  Layers,
 } from 'lucide-react';
 import { useSecurity, DefenseRule, SecurityScore } from '../../contexts/SecurityContext';
 
