@@ -29,10 +29,19 @@ interface Challenge {
   orderIndex: number;
 }
 
+interface DefenseRecommendation {
+  ruleId: string;
+  name: string;
+  description: string;
+  ruleType: string;
+  enabled: boolean;
+}
+
 interface ValidationDisplayResult extends DefenseValidationResult {
   challengeTitle?: string;
   challengeDescription?: string;
   challengeDifficulty?: string;
+  recommendedDefenses?: DefenseRecommendation[];
 }
 
 function DefenseLayerIndicator({
@@ -92,16 +101,34 @@ function DefenseLayerIndicator({
   );
 }
 
+const ruleTypeLabels: Record<string, string> = {
+  firewall: 'Firewall Rule',
+  protocol_filter: 'Protocol Filter',
+  ids_signature: 'IDS Signature',
+  acl: 'Access Control',
+  rate_limit: 'Rate Limit',
+};
+
+const ruleTypeColors: Record<string, string> = {
+  firewall: 'text-blue-400 bg-blue-500/10 border-blue-500/30',
+  protocol_filter: 'text-cyan-400 bg-cyan-500/10 border-cyan-500/30',
+  ids_signature: 'text-amber-400 bg-amber-500/10 border-amber-500/30',
+  acl: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30',
+  rate_limit: 'text-pink-400 bg-pink-500/10 border-pink-500/30',
+};
+
 function ChallengeCard({
   challenge,
   onValidate,
   validationResult,
   isValidating,
+  onEnableRule,
 }: {
   challenge: Challenge;
   onValidate: () => void;
   validationResult?: ValidationDisplayResult;
   isValidating: boolean;
+  onEnableRule: (ruleId: string) => void;
 }) {
   const difficultyColors: Record<string, string> = {
     easy: 'text-green-400 bg-green-500/10',
@@ -206,6 +233,48 @@ function ChallengeCard({
               icon={<Target size={16} />}
             />
           </div>
+
+          {!validationResult.blocked && validationResult.recommendedDefenses && validationResult.recommendedDefenses.length > 0 && (
+            <div className="mt-4 p-3 bg-slate-800/70 rounded-lg border border-slate-600">
+              <div className="flex items-center gap-2 mb-3">
+                <ShieldAlert size={16} className="text-amber-400" />
+                <span className="text-sm font-medium text-amber-300">Recommended Defenses</span>
+              </div>
+              <p className="text-xs text-slate-400 mb-3">
+                Enable any of these rules to block this attack:
+              </p>
+              <div className="space-y-2">
+                {validationResult.recommendedDefenses.map((defense) => (
+                  <div
+                    key={defense.ruleId}
+                    className={`flex items-center justify-between p-2 rounded-lg border ${ruleTypeColors[defense.ruleType] || 'bg-slate-700'}`}
+                  >
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-medium opacity-70">
+                          {ruleTypeLabels[defense.ruleType] || defense.ruleType}
+                        </span>
+                      </div>
+                      <p className="text-sm font-medium truncate">{defense.name}</p>
+                      <p className="text-xs opacity-60 truncate">{defense.description}</p>
+                    </div>
+                    {defense.enabled ? (
+                      <span className="ml-2 px-2 py-1 bg-emerald-500/20 text-emerald-300 text-xs rounded">
+                        Enabled
+                      </span>
+                    ) : (
+                      <button
+                        onClick={() => onEnableRule(defense.ruleId)}
+                        className="ml-2 px-2 py-1 bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 text-xs rounded transition-colors"
+                      >
+                        Enable
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -213,15 +282,28 @@ function ChallengeCard({
 }
 
 export function DefenseValidator() {
-  const { validateDefenses, score, config, rules } = useSecurity();
+  const { validateDefenses, score, config, rules, toggleRule, loadConfiguration } = useSecurity();
   const [challenges, setChallenges] = useState<Challenge[]>([]);
   const [validationResults, setValidationResults] = useState<Record<string, ValidationDisplayResult>>({});
   const [validatingId, setValidatingId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [allDefenseRules, setAllDefenseRules] = useState<DefenseRecommendation[]>([]);
+  const [ruleBlocksChallenge, setRuleBlocksChallenge] = useState<Record<string, string[]>>({});
 
   useEffect(() => {
     loadChallenges();
+    loadDefenseRules();
   }, []);
+
+  useEffect(() => {
+    setAllDefenseRules(rules.map(r => ({
+      ruleId: r.id,
+      name: r.name,
+      description: r.description,
+      ruleType: r.ruleType,
+      enabled: r.enabled,
+    })));
+  }, [rules]);
 
   const loadChallenges = async () => {
     setIsLoading(true);
@@ -248,11 +330,42 @@ export function DefenseValidator() {
     }
   };
 
+  const loadDefenseRules = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('defense_rules')
+        .select('id, name, description, rule_type, enabled, blocks_challenges');
+
+      if (error) throw error;
+
+      const blocksMapping: Record<string, string[]> = {};
+      data?.forEach(rule => {
+        if (rule.blocks_challenges) {
+          rule.blocks_challenges.forEach((challengeKey: string) => {
+            if (!blocksMapping[challengeKey]) {
+              blocksMapping[challengeKey] = [];
+            }
+            blocksMapping[challengeKey].push(rule.id);
+          });
+        }
+      });
+      setRuleBlocksChallenge(blocksMapping);
+    } catch (err) {
+      console.error('Error loading defense rules:', err);
+    }
+  };
+
+  const getRecommendedDefenses = (challengeKey: string): DefenseRecommendation[] => {
+    const blockingRuleIds = ruleBlocksChallenge[challengeKey] || [];
+    return allDefenseRules.filter(r => blockingRuleIds.includes(r.ruleId));
+  };
+
   const handleValidate = async (challenge: Challenge) => {
     setValidatingId(challenge.id);
     try {
       const challengeKey = `challenge_${String(challenge.orderIndex).padStart(2, '0')}`;
       const result = await validateDefenses(challengeKey);
+      const recommendedDefenses = getRecommendedDefenses(challengeKey);
 
       setValidationResults(prev => ({
         ...prev,
@@ -261,12 +374,38 @@ export function DefenseValidator() {
           challengeTitle: challenge.title,
           challengeDescription: challenge.description,
           challengeDifficulty: challenge.difficulty,
+          recommendedDefenses,
         },
       }));
     } catch (err) {
       console.error('Error validating defense:', err);
     } finally {
       setValidatingId(null);
+    }
+  };
+
+  const handleEnableRule = async (ruleId: string) => {
+    try {
+      await toggleRule(ruleId, true);
+      setAllDefenseRules(prev => prev.map(r =>
+        r.ruleId === ruleId ? { ...r, enabled: true } : r
+      ));
+      Object.keys(validationResults).forEach(challengeId => {
+        const result = validationResults[challengeId];
+        if (result.recommendedDefenses) {
+          setValidationResults(prev => ({
+            ...prev,
+            [challengeId]: {
+              ...prev[challengeId],
+              recommendedDefenses: prev[challengeId].recommendedDefenses?.map(d =>
+                d.ruleId === ruleId ? { ...d, enabled: true } : d
+              ),
+            },
+          }));
+        }
+      });
+    } catch (err) {
+      console.error('Error enabling rule:', err);
     }
   };
 
@@ -359,6 +498,7 @@ export function DefenseValidator() {
                 onValidate={() => handleValidate(challenge)}
                 validationResult={validationResults[challenge.id]}
                 isValidating={validatingId === challenge.id}
+                onEnableRule={handleEnableRule}
               />
             ))}
           </div>
