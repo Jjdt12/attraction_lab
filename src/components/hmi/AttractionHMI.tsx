@@ -47,6 +47,7 @@ export function AttractionHMI() {
     plcStates,
     error,
     getStateName,
+    writeCoil,
   } = usePlcConnection();
 
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -98,6 +99,19 @@ export function AttractionHMI() {
           <ConnectionBadge status={connectionStatus} error={error} />
         </div>
       </div>
+
+      <OperatorControlPanel
+        masterEnable={masterEnable}
+        emergencyStop={emergencyStop}
+        safetyGate={safetyGate}
+        stateName={stateName}
+        connected={connectionStatus === 'connected'}
+        onMasterToggle={() => writeCoil('main', 0, !masterEnable)}
+        onStart={() => writeCoil('main', 1, true)}
+        onStop={() => writeCoil('main', 2, true)}
+        onEmergencyStop={() => writeCoil('main', 3, !emergencyStop)}
+        onSafetyGateToggle={() => writeCoil('main', 4, !safetyGate)}
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
         <div className="bg-slate-900 border border-slate-800 rounded-xl p-4">
@@ -445,6 +459,141 @@ function TrackVisualization({ position, events, mainPlc }: TrackVisualizationPro
         <span>240</span>
         <span>Zone 3</span>
         <span>360</span>
+      </div>
+    </div>
+  );
+}
+
+interface OperatorControlPanelProps {
+  masterEnable: boolean;
+  emergencyStop: boolean;
+  safetyGate: boolean;
+  stateName: string;
+  connected: boolean;
+  onMasterToggle: () => void;
+  onStart: () => void;
+  onStop: () => void;
+  onEmergencyStop: () => void;
+  onSafetyGateToggle: () => void;
+}
+
+function OperatorControlPanel({
+  masterEnable,
+  emergencyStop,
+  safetyGate,
+  stateName,
+  connected,
+  onMasterToggle,
+  onStart,
+  onStop,
+  onEmergencyStop,
+  onSafetyGateToggle,
+}: OperatorControlPanelProps) {
+  const canStart = masterEnable && safetyGate && !emergencyStop && stateName === 'IDLE';
+  const canStop = stateName === 'RUNNING' || stateName === 'STARTING';
+
+  return (
+    <div className="bg-slate-900 border border-slate-800 rounded-xl p-4">
+      <div className="flex items-center gap-2 mb-4">
+        <Play size={18} className="text-emerald-400" />
+        <h3 className="text-sm font-semibold text-white">Operator Control Panel</h3>
+        {!connected && (
+          <span className="ml-auto text-xs text-amber-400 bg-amber-500/10 px-2 py-1 rounded">
+            Offline
+          </span>
+        )}
+      </div>
+
+      <div className="flex flex-wrap gap-4 items-center">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={onMasterToggle}
+            disabled={!connected}
+            className={`relative w-16 h-8 rounded-full transition-all ${
+              masterEnable
+                ? 'bg-emerald-500'
+                : 'bg-slate-700'
+            } ${!connected ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+          >
+            <div
+              className={`absolute top-1 w-6 h-6 bg-white rounded-full shadow transition-all ${
+                masterEnable ? 'left-9' : 'left-1'
+              }`}
+            />
+          </button>
+          <span className="text-sm text-slate-300">Master Enable</span>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <button
+            onClick={onSafetyGateToggle}
+            disabled={!connected}
+            className={`relative w-16 h-8 rounded-full transition-all ${
+              safetyGate
+                ? 'bg-emerald-500'
+                : 'bg-slate-700'
+            } ${!connected ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+          >
+            <div
+              className={`absolute top-1 w-6 h-6 bg-white rounded-full shadow transition-all ${
+                safetyGate ? 'left-9' : 'left-1'
+              }`}
+            />
+          </button>
+          <span className="text-sm text-slate-300">Safety Gate</span>
+        </div>
+
+        <div className="h-10 w-px bg-slate-700" />
+
+        <button
+          onClick={onStart}
+          disabled={!connected || !canStart}
+          className={`flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition-all ${
+            canStart && connected
+              ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-500/20'
+              : 'bg-slate-800 text-slate-500 cursor-not-allowed'
+          }`}
+        >
+          <Play size={18} />
+          START
+        </button>
+
+        <button
+          onClick={onStop}
+          disabled={!connected || !canStop}
+          className={`flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition-all ${
+            canStop && connected
+              ? 'bg-amber-600 hover:bg-amber-500 text-white shadow-lg shadow-amber-500/20'
+              : 'bg-slate-800 text-slate-500 cursor-not-allowed'
+          }`}
+        >
+          <Square size={18} />
+          STOP
+        </button>
+
+        <button
+          onClick={onEmergencyStop}
+          disabled={!connected}
+          className={`flex items-center gap-2 px-6 py-3 rounded-lg font-bold transition-all ${
+            emergencyStop
+              ? 'bg-red-600 text-white animate-pulse shadow-lg shadow-red-500/40'
+              : connected
+              ? 'bg-red-700 hover:bg-red-600 text-white shadow-lg shadow-red-500/20'
+              : 'bg-slate-800 text-slate-500 cursor-not-allowed'
+          }`}
+        >
+          <AlertOctagon size={18} />
+          E-STOP
+        </button>
+
+        {!canStart && !canStop && connected && (
+          <div className="text-xs text-slate-500 ml-2">
+            {!masterEnable && 'Enable Master'}
+            {masterEnable && !safetyGate && 'Close Safety Gate'}
+            {masterEnable && safetyGate && emergencyStop && 'Release E-Stop'}
+            {masterEnable && safetyGate && !emergencyStop && stateName !== 'IDLE' && `State: ${stateName}`}
+          </div>
+        )}
       </div>
     </div>
   );
