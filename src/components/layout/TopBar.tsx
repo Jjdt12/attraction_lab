@@ -8,6 +8,7 @@ interface TopBarProps {
 
 const viewTitles: Record<ViewType, { title: string; subtitle: string }> = {
   dashboard: { title: 'Dashboard', subtitle: 'Overview of your ICS security architecture' },
+  'attraction-hmi': { title: 'Attraction HMI', subtitle: 'Live PLC monitoring and control' },
   'purdue-model': { title: 'Purdue Model', subtitle: 'Interactive reference architecture' },
   'idmz-designer': { title: 'IDMZ Designer', subtitle: 'Configure the Industrial DMZ' },
   'network-topology': { title: 'Network Topology', subtitle: 'Live architecture visualization' },
