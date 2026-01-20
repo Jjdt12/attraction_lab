@@ -141,7 +141,7 @@ export function usePlcConnection(wsUrl: string = 'ws://localhost:8765') {
           setConnectionStatus('connected');
           setError(null);
           try {
-            ws?.send(JSON.stringify({ type: 'connect_plc' }));
+            ws?.send(JSON.stringify({ action: 'connect_all_plcs' }));
           } catch (e) {
             console.warn('Failed to send initial message:', e);
           }
@@ -152,8 +152,9 @@ export function usePlcConnection(wsUrl: string = 'ws://localhost:8765') {
           try {
             const data = JSON.parse(event.data);
 
-            if (data.type === 'coil_update') {
-              const plcKey = data.plc === 'main' ? 'main' : data.plc === 'safety' ? 'safety' : 'effects';
+            if (data.type === 'coil_change' || data.type === 'coil_update') {
+              const plcKey = (data.plc?.toLowerCase() === 'safety') ? 'safety'
+                : (data.plc?.toLowerCase() === 'effects') ? 'effects' : 'main';
               setPlcStates(prev => ({
                 ...prev,
                 [plcKey]: {
@@ -163,8 +164,9 @@ export function usePlcConnection(wsUrl: string = 'ws://localhost:8765') {
                   lastUpdate: Date.now(),
                 },
               }));
-            } else if (data.type === 'register_update') {
-              const plcKey = data.plc === 'main' ? 'main' : data.plc === 'safety' ? 'safety' : 'effects';
+            } else if (data.type === 'register_change' || data.type === 'register_update' || data.type === 'dint_change') {
+              const plcKey = (data.plc?.toLowerCase() === 'safety') ? 'safety'
+                : (data.plc?.toLowerCase() === 'effects') ? 'effects' : 'main';
               setPlcStates(prev => ({
                 ...prev,
                 [plcKey]: {
@@ -173,6 +175,28 @@ export function usePlcConnection(wsUrl: string = 'ws://localhost:8765') {
                   registers: { ...prev[plcKey].registers, [data.address]: data.value },
                   lastUpdate: Date.now(),
                 },
+              }));
+            } else if (data.type === 'event_change') {
+              setPlcStates(prev => ({
+                ...prev,
+                effects: {
+                  ...prev.effects,
+                  connected: true,
+                  coils: { ...prev.effects.coils, [data.address]: data.value },
+                  lastUpdate: Date.now(),
+                },
+              }));
+            } else if (data.type === 'connection_status') {
+              setPlcStates(prev => ({
+                ...prev,
+                main: { ...prev.main, connected: data.connected ?? prev.main.connected },
+              }));
+            } else if (data.type === 'multi_plc_connect_result') {
+              setPlcStates(prev => ({
+                ...prev,
+                main: { ...prev.main, connected: data.results?.MAIN ?? prev.main.connected },
+                safety: { ...prev.safety, connected: data.results?.SAFETY ?? prev.safety.connected },
+                effects: { ...prev.effects, connected: data.results?.EFFECTS ?? prev.effects.connected },
               }));
             } else if (data.type === 'initial_state') {
               const plcKey = data.plc === 'main' ? 'main' : data.plc === 'safety' ? 'safety' : 'effects';

@@ -862,7 +862,7 @@ async def handle_websocket(websocket):
                 })
 
             elif action == "connect_plc":
-                host = data.get("host")
+                host = data.get("host") or "localhost"
                 port = data.get("port", 502)
                 success = init_modbus(host, port)
                 await websocket.send(json.dumps({
