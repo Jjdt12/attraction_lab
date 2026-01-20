@@ -21,16 +21,19 @@ import {
 } from 'lucide-react';
 import { usePlcConnection } from '../../hooks/usePlcConnection';
 
+const TRACK_POSITIONS = 26;
+const POSITIONS_PER_SCENE = 3;
+
 const EVENT_CONFIG = [
-  { name: 'Loading Gate', icon: CircleDot, color: 'cyan' },
-  { name: 'Safety Interlock', icon: Shield, color: 'emerald' },
-  { name: 'Launch', icon: Zap, color: 'amber' },
-  { name: 'Photo Flash', icon: Camera, color: 'blue' },
-  { name: 'Mid Brake', icon: Square, color: 'orange' },
-  { name: 'Track Switch', icon: Activity, color: 'teal' },
-  { name: 'Final Brake', icon: Square, color: 'red' },
-  { name: 'Station', icon: MapPin, color: 'emerald' },
-  { name: 'Unload', icon: CircleDot, color: 'cyan' },
+  { name: 'Loading Gate', icon: CircleDot, color: 'cyan', position: 1 },
+  { name: 'Safety Interlock', icon: Shield, color: 'emerald', position: 4 },
+  { name: 'Launch', icon: Zap, color: 'amber', position: 7 },
+  { name: 'Photo Flash', icon: Camera, color: 'blue', position: 10 },
+  { name: 'Mid Brake', icon: Square, color: 'orange', position: 13 },
+  { name: 'Track Switch', icon: Activity, color: 'teal', position: 16 },
+  { name: 'Final Brake', icon: Square, color: 'red', position: 19 },
+  { name: 'Station', icon: MapPin, color: 'emerald', position: 22 },
+  { name: 'Unload', icon: CircleDot, color: 'cyan', position: 25 },
 ];
 
 const STATE_COLORS: Record<string, string> = {
@@ -82,7 +85,8 @@ export function AttractionHMI() {
   const zone2Enable = mainPlc.coils[6] ?? false;
   const zone3Enable = mainPlc.coils[7] ?? false;
 
-  const currentZone = position < 120 ? 1 : position < 240 ? 2 : 3;
+  const currentZone = position <= 8 ? 1 : position <= 17 ? 2 : 3;
+  const currentScene = Math.floor(position / POSITIONS_PER_SCENE) + 1;
 
   return (
     <div className="space-y-6">
@@ -140,18 +144,18 @@ export function AttractionHMI() {
           </div>
           <div className="flex items-baseline gap-2 mb-2">
             <span className="text-3xl font-bold text-white">{position}</span>
-            <span className="text-slate-400">/ 360</span>
+            <span className="text-slate-400">/ {TRACK_POSITIONS}</span>
           </div>
           <div className="w-full h-2 bg-slate-800 rounded-full overflow-hidden mb-3">
             <div
               className="h-full bg-gradient-to-r from-cyan-500 to-emerald-500 transition-all duration-200"
-              style={{ width: `${(position / 360) * 100}%` }}
+              style={{ width: `${(position / TRACK_POSITIONS) * 100}%` }}
             />
           </div>
           <div className="flex items-center gap-2">
             <Gauge size={14} className="text-amber-400" />
             <span className="text-sm text-slate-300">Speed: {speed}</span>
-            <span className="text-xs text-slate-500">Zone {currentZone}</span>
+            <span className="text-xs text-slate-500">Scene {currentScene} / Zone {currentZone}</span>
           </div>
         </div>
 
@@ -193,9 +197,9 @@ export function AttractionHMI() {
             <h3 className="text-sm font-semibold text-white">PLC Status</h3>
           </div>
           <div className="space-y-2">
-            <PlcStatusRow name="Main PLC" connected={mainPlc.connected} port={502} />
+            <PlcStatusRow name="Ride Control" connected={mainPlc.connected} port={502} />
             <PlcStatusRow name="Safety PLC" connected={safetyPlc.connected} port={503} />
-            <PlcStatusRow name="Effects PLC" connected={effectsPlc.connected} port={504} />
+            <PlcStatusRow name="Show Control" connected={effectsPlc.connected} port={504} />
           </div>
           <div className="mt-3 pt-3 border-t border-slate-800 text-xs text-slate-500">
             Last update: {mainPlc.lastUpdate ? new Date(mainPlc.lastUpdate).toLocaleTimeString() : 'Never'}
@@ -214,19 +218,22 @@ export function AttractionHMI() {
               zone={1}
               enabled={zone1Enable}
               active={currentZone === 1}
-              range="0-119"
+              range="0-8"
+              scenes="Scenes 1-3"
             />
             <ZoneStatus
               zone={2}
               enabled={zone2Enable}
               active={currentZone === 2}
-              range="120-239"
+              range="9-17"
+              scenes="Scenes 4-6"
             />
             <ZoneStatus
               zone={3}
               enabled={zone3Enable}
               active={currentZone === 3}
-              range="240-359"
+              range="18-26"
+              scenes="Scenes 7-9"
             />
           </div>
         </div>
@@ -374,11 +381,13 @@ function ZoneStatus({
   enabled,
   active,
   range,
+  scenes,
 }: {
   zone: number;
   enabled: boolean;
   active: boolean;
   range: string;
+  scenes: string;
 }) {
   return (
     <div
@@ -392,7 +401,7 @@ function ZoneStatus({
     >
       <div>
         <p className="text-sm font-medium text-white">Zone {zone}</p>
-        <p className="text-xs text-slate-400">Positions {range}</p>
+        <p className="text-xs text-slate-400">Pos {range} ({scenes})</p>
       </div>
       <div className="text-right">
         <p className={`text-xs font-medium ${enabled ? 'text-emerald-400' : 'text-red-400'}`}>
@@ -411,57 +420,62 @@ interface TrackVisualizationProps {
 }
 
 function TrackVisualization({ position, events, mainPlc }: TrackVisualizationProps) {
-  const eventPositions = [20, 60, 100, 140, 180, 220, 260, 300, 340];
-
   return (
-    <div className="relative h-24">
+    <div className="relative h-28">
       <div className="absolute inset-x-0 top-1/2 h-3 bg-slate-800 rounded-full -translate-y-1/2">
         <div
           className="absolute top-0 left-0 h-full bg-gradient-to-r from-cyan-500/30 to-transparent rounded-full transition-all duration-200"
-          style={{ width: `${(position / 360) * 100}%` }}
+          style={{ width: `${(position / TRACK_POSITIONS) * 100}%` }}
         />
       </div>
 
-      {[0, 120, 240].map((zoneStart, i) => (
+      {[0, 9, 18].map((zoneStart, i) => (
         <div
           key={i}
           className="absolute top-1/2 w-0.5 h-6 bg-slate-600 -translate-y-1/2"
-          style={{ left: `${(zoneStart / 360) * 100}%` }}
+          style={{ left: `${(zoneStart / TRACK_POSITIONS) * 100}%` }}
         />
       ))}
 
-      {eventPositions.map((pos, index) => {
+      {events.map((event, index) => {
         const activeCoil = 17 + index;
         const isActive = mainPlc.coils[activeCoil] ?? false;
         return (
           <div
             key={index}
-            className={`absolute top-1/2 w-4 h-4 rounded-full border-2 -translate-x-1/2 -translate-y-1/2 transition-all ${
-              isActive
-                ? 'bg-cyan-400 border-cyan-400 scale-125'
-                : 'bg-slate-700 border-slate-600'
-            }`}
-            style={{ left: `${(pos / 360) * 100}%` }}
-            title={events[index].name}
-          />
+            className="absolute top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center"
+            style={{ left: `${(event.position / TRACK_POSITIONS) * 100}%` }}
+          >
+            <div
+              className={`w-4 h-4 rounded-full border-2 transition-all ${
+                isActive
+                  ? 'bg-cyan-400 border-cyan-400 scale-125'
+                  : 'bg-slate-700 border-slate-600'
+              }`}
+              title={event.name}
+            />
+            <span className="text-[9px] text-slate-500 mt-5 whitespace-nowrap max-w-12 truncate">
+              {event.name.split(' ')[0]}
+            </span>
+          </div>
         );
       })}
 
       <div
         className="absolute top-1/2 w-6 h-6 bg-emerald-500 rounded-full border-2 border-white shadow-lg -translate-x-1/2 -translate-y-1/2 transition-all duration-200 z-10"
-        style={{ left: `${(position / 360) * 100}%` }}
+        style={{ left: `${(position / TRACK_POSITIONS) * 100}%` }}
       >
         <div className="absolute inset-0 bg-emerald-400 rounded-full animate-ping opacity-50" />
       </div>
 
       <div className="absolute bottom-0 left-0 right-0 flex justify-between text-xs text-slate-500 px-1">
         <span>0</span>
-        <span>Zone 1</span>
-        <span>120</span>
-        <span>Zone 2</span>
-        <span>240</span>
-        <span>Zone 3</span>
-        <span>360</span>
+        <span className="text-cyan-500/50">Z1</span>
+        <span>9</span>
+        <span className="text-cyan-500/50">Z2</span>
+        <span>18</span>
+        <span className="text-cyan-500/50">Z3</span>
+        <span>26</span>
       </div>
     </div>
   );
