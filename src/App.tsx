@@ -5,9 +5,8 @@ import ControlPanel from './components/ControlPanel';
 import CoilStatus from './components/CoilStatus';
 import PLCStateMonitor from './components/PLCStateMonitor';
 import RideEventsMonitor from './components/RideEventsMonitor';
-import FlagNotificationManager from './components/FlagNotificationManager';
+import SecurityArchitecture from './components/SecurityArchitecture';
 import { useWebSocketSimulation } from './hooks/useWebSocketSimulation';
-import { useAdvancedChallengeDetection } from './hooks/useAdvancedChallengeDetection';
 import { ALL_EVENTS } from './types/rideEvents';
 import { TabNavigation, TabType } from './components/TabNavigation';
 import { AlarmPanel, AlarmList } from './components/AlarmPanel';
@@ -17,12 +16,11 @@ import { NetworkMonitor } from './components/NetworkMonitor';
 import { TrendChart, useTrendData } from './components/TrendChart';
 import { DocumentationViewer } from './components/DocumentationViewer';
 import { MultiPLCStatus } from './components/MultiPLCStatus';
-import { useMultiPLCConnection } from './hooks/useMultiPLCConnection';
 import { useAlarmSystem } from './hooks/useAlarmSystem';
 import { ProcessSimulator } from './utils/processSimulation';
+import type { PLCConnection } from './hooks/useMultiPLCConnection';
 
 function App() {
-  const [flagCapture, setFlagCapture] = useState<{ title: string; points: number } | null>(null);
   const [activeTab, setActiveTab] = useState<TabType>('overview');
   const [processSimulator] = useState(() => new ProcessSimulator());
   const {
@@ -34,7 +32,6 @@ function App() {
     plcConnected,
     plcHost,
     plcPort,
-    attackActive,
     coilStates,
     speedSetpoint,
     state: plcState,
@@ -55,15 +52,13 @@ function App() {
     clearModbusOperations,
   } = useWebSocketSimulation();
 
-  const multiPLC = useMultiPLCConnection();
+  useAlarmSystem();
 
-  // Convert multiPLCStatus to format expected by MultiPLCStatus component
-  const plcsForDisplay = [
-    { name: 'MAIN' as const, ...multiPLCStatus.MAIN, error: null, lastHeartbeat: Date.now() },
-    { name: 'SAFETY' as const, ...multiPLCStatus.SAFETY, error: null, lastHeartbeat: Date.now() },
-    { name: 'EFFECTS' as const, ...multiPLCStatus.EFFECTS, error: null, lastHeartbeat: Date.now() },
+  const plcsForDisplay: PLCConnection[] = [
+    { name: 'MAIN', ...multiPLCStatus.MAIN, error: null, lastHeartbeat: Date.now() },
+    { name: 'SAFETY', ...multiPLCStatus.SAFETY, error: null, lastHeartbeat: Date.now() },
+    { name: 'EFFECTS', ...multiPLCStatus.EFFECTS, error: null, lastHeartbeat: Date.now() },
   ];
-  const alarmSystem = useAlarmSystem();
 
   const positionTrend = useTrendData(60);
   const speedTrend = useTrendData(60);
@@ -83,7 +78,7 @@ function App() {
     speedSetpoint,
     cycleCounter,
     carPosition,
-    coilStates[27] || false,  // brake_engaged (QX1.11)
+    coilStates[27] || false,
     runtimeHours
   );
 
@@ -95,10 +90,8 @@ function App() {
     return () => clearInterval(interval);
   }, [processVars.bearingTempCelsius, processVars.motorCurrentAmps]);
 
-  // Convert PLC active event numbers (1-9) to event IDs for UI
   const activeEvents = useMemo(() => {
     const events = new Set<string>();
-    // Use real event data from Safety PLC
     plcActiveEvents.forEach(eventNum => {
       const event = ALL_EVENTS.find(e => e.eventNumber === eventNum);
       if (event) {
@@ -108,37 +101,10 @@ function App() {
     return events;
   }, [plcActiveEvents]);
 
-  useAdvancedChallengeDetection({
-    sessionId,
-    carPosition,
-    flashLight,
-    rideRunning,
-    attackActive,
-    coilStates,
-    emergencyStop: coilStates[3] || false,      // Coil 3 = emergency_stop_button (QX0.3)
-    safetyGateClosed: coilStates[4] || false,   // Coil 4 = safety_gate_closed (QX0.4)
-    state: plcState,
-    runtimeHours,
-    maintenanceFlag,
-    speedSetpoint,
-    zones: {
-      zone1: coilStates[5] !== false,   // Coil 5 = zone_1_enable (QX0.5)
-      zone2: coilStates[6] !== false,   // Coil 6 = zone_2_enable (QX0.6)
-      zone3: coilStates[7] !== false,   // Coil 7 = zone_3_enable (QX0.7)
-    },
-    onFlagCapture: (title: string, points: number) => {
-      console.log('[App] Flag captured:', title, points);
-      setFlagCapture({ title, points });
-      // Don't clear immediately - let the notification manager handle it
-      setTimeout(() => setFlagCapture(null), 500);
-    },
-  });
-
   return (
-    <div className="min-h-screen bg-gray-950 text-gray-100">
-      <FlagNotificationManager trigger={flagCapture} />
+    <div className="min-h-screen bg-slate-950 text-slate-100">
       <AlarmPanel />
-      <div className="container mx-auto px-4 py-8 pt-24">
+      <div className="container mx-auto px-4 py-6 pt-20">
         <Header
           wsConnected={wsConnected}
           plcConnected={plcConnected}
@@ -153,71 +119,71 @@ function App() {
 
         {activeTab === 'overview' && (
           <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
-          <div className="xl:col-span-3 space-y-6">
-            <AttractionVisualizer
-              carPosition={carPosition}
-              activeEvents={activeEvents}
-              rideRunning={rideRunning}
-              trackLength={trackLength}
-              coilStates={coilStates}
-            />
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <CoilStatus
-                flashLight={flashLight}
+            <div className="xl:col-span-3 space-y-6">
+              <AttractionVisualizer
+                carPosition={carPosition}
+                activeEvents={activeEvents}
+                rideRunning={rideRunning}
+                trackLength={trackLength}
                 coilStates={coilStates}
               />
-              <PLCStateMonitor
-                state={plcState}
-                speedSetpoint={speedSetpoint}
-                safetyOk={coilStates[0] && !coilStates[3] && coilStates[4]}
-                emergencyStop={coilStates[3] || false}
-                safetyGate={coilStates[4] || false}
-                masterEnable={coilStates[0] || false}
-                motorRunning={coilStates[26] || false}
-                brakeEngaged={coilStates[27] || false}
-                runtimeHours={runtimeHours}
-                cycleCounter={cycleCounter}
-                maintenanceFlag={maintenanceFlag}
-                lastErrorCode={lastErrorCode}
-                zones={{
-                  zone1: coilStates[5] !== false,
-                  zone2: coilStates[6] !== false,
-                  zone3: coilStates[7] !== false,
-                }}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <CoilStatus
+                  flashLight={flashLight}
+                  coilStates={coilStates}
+                />
+                <PLCStateMonitor
+                  state={plcState}
+                  speedSetpoint={speedSetpoint}
+                  safetyOk={coilStates[0] && !coilStates[3] && coilStates[4]}
+                  emergencyStop={coilStates[3] || false}
+                  safetyGate={coilStates[4] || false}
+                  masterEnable={coilStates[0] || false}
+                  motorRunning={coilStates[26] || false}
+                  brakeEngaged={coilStates[27] || false}
+                  runtimeHours={runtimeHours}
+                  cycleCounter={cycleCounter}
+                  maintenanceFlag={maintenanceFlag}
+                  lastErrorCode={lastErrorCode}
+                  zones={{
+                    zone1: coilStates[5] !== false,
+                    zone2: coilStates[6] !== false,
+                    zone3: coilStates[7] !== false,
+                  }}
+                />
+              </div>
+            </div>
+
+            <div className="space-y-6">
+              <ControlPanel
+                rideRunning={rideRunning}
+                wsConnected={wsConnected}
+                plcConnected={plcConnected}
+                coilStates={coilStates}
+                onStart={startRide}
+                onStop={stopRide}
+                onReset={resetRide}
+                onConnectPLC={connectToPLC}
+                onEmergencyStop={triggerEmergencyStop}
+                onSetSafetyConditions={setSafetyConditions}
+              />
+              <RideEventsMonitor
+                activeEvents={activeEvents}
+                allEvents={ALL_EVENTS}
+                rideRunning={rideRunning}
               />
             </div>
           </div>
-
-          <div className="space-y-6">
-            <ControlPanel
-              rideRunning={rideRunning}
-              wsConnected={wsConnected}
-              plcConnected={plcConnected}
-              coilStates={coilStates}
-              onStart={startRide}
-              onStop={stopRide}
-              onReset={resetRide}
-              onConnectPLC={connectToPLC}
-              onEmergencyStop={triggerEmergencyStop}
-              onSetSafetyConditions={setSafetyConditions}
-            />
-            <RideEventsMonitor
-              activeEvents={activeEvents}
-              allEvents={ALL_EVENTS}
-              rideRunning={rideRunning}
-            />
-          </div>
-        </div>
         )}
 
         {activeTab === 'diagnostics' && (
           <div className="space-y-6">
             <MultiPLCStatus
               plcs={plcsForDisplay}
-              onConnect={() => {/* Auto-connect handles this */}}
-              onDisconnect={() => {/* Not implemented yet */}}
-              onConnectAll={() => {/* Auto-connect handles this */}}
-              onDisconnectAll={() => {/* Not implemented yet */}}
+              onConnect={() => {}}
+              onDisconnect={() => {}}
+              onConnectAll={() => {}}
+              onDisconnectAll={() => {}}
             />
             <SystemHealthDashboard
               processVars={processVars}
@@ -255,7 +221,7 @@ function App() {
               title="Vehicle Position"
               data={positionTrend.data}
               unit="pos"
-              color="#3b82f6"
+              color="#06b6d4"
               minValue={0}
               maxValue={27}
             />
@@ -270,7 +236,7 @@ function App() {
             <TrendChart
               title="Bearing Temperature"
               data={tempTrend.data}
-              unit="°C"
+              unit="deg C"
               color="#f59e0b"
               minValue={0}
               maxValue={100}
@@ -288,29 +254,77 @@ function App() {
 
         {activeTab === 'alarms' && (
           <div className="space-y-6">
-            <div className="bg-gray-800 border border-gray-700 rounded-lg p-6">
-              <h2 className="text-xl font-bold text-white mb-4">Active Alarms</h2>
+            <div className="bg-slate-900 border border-slate-700 rounded-xl p-6">
+              <h2 className="text-lg font-bold text-white mb-4">Active Alarms</h2>
               <AlarmList showHistory={false} />
             </div>
-            <div className="bg-gray-800 border border-gray-700 rounded-lg p-6">
-              <h2 className="text-xl font-bold text-white mb-4">Alarm History</h2>
+            <div className="bg-slate-900 border border-slate-700 rounded-xl p-6">
+              <h2 className="text-lg font-bold text-white mb-4">Alarm History</h2>
               <AlarmList showHistory={true} />
             </div>
           </div>
         )}
 
         {activeTab === 'events' && (
-          <div className="bg-gray-800 border border-gray-700 rounded-lg p-6 h-[calc(100vh-250px)]">
+          <div className="bg-slate-900 border border-slate-700 rounded-xl p-6 h-[calc(100vh-250px)]">
             <EventLog />
           </div>
         )}
 
         {activeTab === 'network' && (
-          <div className="bg-gray-800 border border-gray-700 rounded-lg p-6 h-[calc(100vh-250px)]">
+          <div className="bg-slate-900 border border-slate-700 rounded-xl p-6 h-[calc(100vh-250px)]">
             <NetworkMonitor
               operations={modbusOperations}
               onClear={clearModbusOperations}
             />
+          </div>
+        )}
+
+        {activeTab === 'security' && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2">
+              <div className="bg-slate-900 border border-slate-700 rounded-xl p-6">
+                <h2 className="text-lg font-bold text-white mb-4">Security Overview</h2>
+                <p className="text-sm text-slate-400 mb-6">
+                  This lab environment demonstrates industrial control system security architecture.
+                  The attraction simulation uses real Modbus TCP/IP communication with PLCs,
+                  providing hands-on experience with ICS protocols and security considerations.
+                </p>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="p-4 bg-slate-800/50 rounded-lg border border-slate-700/50">
+                    <h3 className="text-sm font-bold text-cyan-400 mb-2">Protocol Analysis</h3>
+                    <p className="text-xs text-slate-500">
+                      Monitor Modbus TCP traffic in the Network tab to understand register/coil operations
+                    </p>
+                  </div>
+                  <div className="p-4 bg-slate-800/50 rounded-lg border border-slate-700/50">
+                    <h3 className="text-sm font-bold text-cyan-400 mb-2">Safety Systems</h3>
+                    <p className="text-xs text-slate-500">
+                      Observe interlock behavior and safety PLC redundancy in the Diagnostics tab
+                    </p>
+                  </div>
+                  <div className="p-4 bg-slate-800/50 rounded-lg border border-slate-700/50">
+                    <h3 className="text-sm font-bold text-cyan-400 mb-2">State Monitoring</h3>
+                    <p className="text-xs text-slate-500">
+                      Track PLC state machine transitions and zone control logic in real-time
+                    </p>
+                  </div>
+                  <div className="p-4 bg-slate-800/50 rounded-lg border border-slate-700/50">
+                    <h3 className="text-sm font-bold text-cyan-400 mb-2">Event Correlation</h3>
+                    <p className="text-xs text-slate-500">
+                      Analyze system events and alarms to understand operational patterns
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div>
+              <SecurityArchitecture
+                wsConnected={wsConnected}
+                plcConnected={plcConnected}
+                coilStates={coilStates}
+              />
+            </div>
           </div>
         )}
 

@@ -11,57 +11,36 @@ interface CoilItemProps {
   label: string;
   description: string;
   value: boolean;
-  color?: 'green' | 'amber' | 'blue' | 'slate';
 }
 
 type PLCTab = 'MAIN' | 'SAFETY' | 'EFFECTS';
 
-function CoilItem({ address, label, description, value, color = 'slate' }: CoilItemProps) {
-  const colorClasses = {
-    green: {
-      text: 'text-green-600 dark:text-green-400',
-      bg: 'bg-green-500',
-      shadow: 'shadow-green-500/50',
-    },
-    amber: {
-      text: 'text-amber-600 dark:text-amber-400',
-      bg: 'bg-amber-500',
-      shadow: 'shadow-amber-500/50',
-    },
-    blue: {
-      text: 'text-blue-600 dark:text-blue-400',
-      bg: 'bg-blue-500',
-      shadow: 'shadow-blue-500/50',
-    },
-    slate: {
-      text: 'text-slate-600 dark:text-slate-400',
-      bg: 'bg-slate-500',
-      shadow: 'shadow-slate-500/50',
-    },
-  };
-
-  const colors = colorClasses[color];
-
+function CoilItem({ label, description, value }: CoilItemProps) {
   return (
     <div
-      className="flex flex-col items-center justify-center p-2 bg-slate-50 dark:bg-slate-700/50 rounded-lg border border-slate-200 dark:border-slate-600 hover:border-slate-300 dark:hover:border-slate-500 transition-all min-h-[60px] group relative"
+      className={`flex flex-col items-center justify-center p-2 rounded-lg border transition-all min-h-[52px] group relative ${
+        value
+          ? 'bg-cyan-500/10 border-cyan-500/30'
+          : 'bg-slate-800/30 border-slate-700/50 hover:bg-slate-800/50'
+      }`}
       title={description}
     >
-      <div className="flex items-center gap-2 mb-1">
-        <div className={`w-2.5 h-2.5 rounded-full transition-colors ${value ? `${colors.bg} shadow-lg ${colors.shadow}` : 'bg-slate-300 dark:bg-slate-600'}`} />
-        <span className="text-sm font-bold text-slate-900 dark:text-white">{label}</span>
+      <div className="flex items-center gap-1.5 mb-0.5">
+        <div className={`w-2 h-2 rounded-full transition-all ${
+          value ? 'bg-cyan-400 shadow-lg shadow-cyan-400/50' : 'bg-slate-600'
+        }`} />
+        <span className="text-xs font-mono font-bold text-white">{label}</span>
       </div>
-      <span className={`text-xs font-mono font-semibold ${value ? colors.text : 'text-slate-400 dark:text-slate-500'}`}>
+      <span className={`text-[9px] font-mono font-medium ${value ? 'text-cyan-400' : 'text-slate-500'}`}>
         {value ? 'ON' : 'OFF'}
       </span>
-      <div className="absolute hidden group-hover:block bottom-full mb-2 px-2 py-1 bg-slate-900 text-white text-xs rounded whitespace-nowrap z-10">
+      <div className="absolute hidden group-hover:block bottom-full mb-1 px-2 py-1 bg-slate-800 text-white text-[10px] rounded whitespace-nowrap z-10 border border-slate-700">
         {description}
       </div>
     </div>
   );
 }
 
-// Coil definitions for each PLC
 const COIL_DEFINITIONS: Record<PLCTab, { address: number; label: string; description: string }[]> = {
   MAIN: [
     { address: 0, label: '0', description: 'Master Enable' },
@@ -136,61 +115,54 @@ const COIL_DEFINITIONS: Record<PLCTab, { address: number; label: string; descrip
   ],
 };
 
-export default function CoilStatus({ flashLight, coilStates }: CoilStatusProps) {
+export default function CoilStatus({ coilStates }: CoilStatusProps) {
   const [isExpanded, setIsExpanded] = useState(true);
   const [activeTab, setActiveTab] = useState<PLCTab>('MAIN');
 
-  const getTabColor = (tab: PLCTab) => {
+  const getTabColor = (tab: PLCTab, isActive: boolean) => {
+    if (!isActive) return 'text-slate-500 border-transparent hover:text-slate-400';
     switch (tab) {
       case 'MAIN':
         return 'text-green-400 border-green-400';
       case 'SAFETY':
-        return 'text-orange-400 border-orange-400';
+        return 'text-amber-400 border-amber-400';
       case 'EFFECTS':
-        return 'text-purple-400 border-purple-400';
+        return 'text-cyan-400 border-cyan-400';
     }
   };
 
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 overflow-hidden transition-colors">
+    <div className="bg-slate-900 rounded-xl border border-slate-700 overflow-hidden">
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full bg-gradient-to-r from-slate-800 to-slate-700 dark:from-slate-900 dark:to-slate-800 px-6 py-4 hover:from-slate-700 hover:to-slate-600 dark:hover:from-slate-800 dark:hover:to-slate-700 transition-colors"
+        className="w-full bg-slate-800/50 px-4 py-3 border-b border-slate-700/50 flex items-center justify-between hover:bg-slate-800 transition-colors"
       >
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Activity className="w-5 h-5 text-blue-400" />
-            <h2 className="text-xl font-semibold text-white">Modbus Coil States</h2>
-          </div>
-          {isExpanded ? (
-            <ChevronUp className="w-5 h-5 text-slate-400" />
-          ) : (
-            <ChevronDown className="w-5 h-5 text-slate-400" />
-          )}
+        <div className="flex items-center gap-2">
+          <Activity className="w-4 h-4 text-cyan-400" />
+          <h3 className="text-sm font-bold text-white">Modbus Coil States</h3>
         </div>
+        {isExpanded ? (
+          <ChevronUp className="w-4 h-4 text-slate-400" />
+        ) : (
+          <ChevronDown className="w-4 h-4 text-slate-400" />
+        )}
       </button>
 
       {isExpanded && (
-        <div className="p-6">
-          {/* PLC Tabs */}
-          <div className="flex gap-2 mb-4 border-b border-slate-200 dark:border-slate-700">
+        <div className="p-4">
+          <div className="flex gap-1 mb-4 border-b border-slate-700/50 pb-2">
             {(['MAIN', 'SAFETY', 'EFFECTS'] as PLCTab[]).map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`px-4 py-2 font-semibold transition-all ${
-                  activeTab === tab
-                    ? `${getTabColor(tab)} border-b-2`
-                    : 'text-slate-400 hover:text-slate-300'
-                }`}
+                className={`px-3 py-1.5 text-xs font-medium rounded-t transition-all border-b-2 ${getTabColor(tab, activeTab === tab)}`}
               >
-                {tab} PLC
+                {tab}
               </button>
             ))}
           </div>
 
-          {/* Coil Grid */}
-          <div className="grid grid-cols-6 gap-2">
+          <div className="grid grid-cols-6 gap-1.5">
             {COIL_DEFINITIONS[activeTab].map((coil) => (
               <CoilItem
                 key={coil.address}
@@ -198,18 +170,16 @@ export default function CoilStatus({ flashLight, coilStates }: CoilStatusProps) 
                 label={coil.label}
                 description={coil.description}
                 value={coilStates[coil.address] || false}
-                color={coilStates[coil.address] ? "blue" : "slate"}
               />
             ))}
           </div>
 
-          <div className="mt-4 p-3 bg-slate-50 dark:bg-slate-700/50 rounded-lg border border-slate-200 dark:border-slate-600">
-            <p className="text-xs text-slate-600 dark:text-slate-400">
-              <strong>{activeTab} PLC:</strong> {
-                activeTab === 'MAIN' ? 'Main ride control system (Port 502)' :
-                activeTab === 'SAFETY' ? 'Safety monitoring and interlocks (Port 503)' :
-                'Show effects and lighting (Port 504)'
-              }
+          <div className="mt-3 p-2 bg-slate-800/30 rounded-lg border border-slate-700/50">
+            <p className="text-[10px] text-slate-500">
+              <span className="font-medium text-slate-400">{activeTab}:</span>{' '}
+              {activeTab === 'MAIN' ? 'Main ride control (Port 502)' :
+               activeTab === 'SAFETY' ? 'Safety monitoring (Port 503)' :
+               'Show effects (Port 504)'}
             </p>
           </div>
         </div>

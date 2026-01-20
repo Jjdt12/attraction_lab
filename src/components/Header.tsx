@@ -1,6 +1,5 @@
-import { FlaskConical, Circle, Activity, Trophy, ChevronDown, ChevronUp, FileText, Terminal, Sun, Moon, BookOpen } from 'lucide-react';
+import { Cpu, Activity, ChevronDown, ChevronUp, Sun, Moon, Server, Shield, Zap } from 'lucide-react';
 import { useState } from 'react';
-import CTFChallenges from './CTFChallenges';
 import { useTheme } from '../contexts/ThemeContext';
 
 interface HeaderProps {
@@ -11,175 +10,144 @@ interface HeaderProps {
   sessionId: string | null;
 }
 
-export default function Header({ wsConnected, plcConnected, plcHost, plcPort, sessionId }: HeaderProps) {
+export default function Header({ wsConnected, plcConnected, plcHost, plcPort }: HeaderProps) {
   const [showConnectionDetails, setShowConnectionDetails] = useState(false);
-  const [showChallenges, setShowChallenges] = useState(false);
   const { theme, toggleTheme } = useTheme();
 
   const allConnected = wsConnected && plcConnected;
 
   return (
-    <>
-      <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl p-6 border border-slate-200 dark:border-slate-700 mb-6 transition-colors">
+    <div className="bg-slate-900 border-b border-slate-700 rounded-xl mb-6 overflow-hidden">
+      <div className="bg-gradient-to-r from-slate-800 via-slate-800 to-slate-900 px-6 py-4">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center shadow-lg">
-              <FlaskConical className="w-7 h-7 text-white" />
+          <div className="flex items-center gap-4">
+            <div className="relative">
+              <div className="w-14 h-14 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-lg flex items-center justify-center shadow-lg shadow-cyan-500/20">
+                <Cpu className="w-8 h-8 text-white" />
+              </div>
+              <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-slate-800 ${allConnected ? 'bg-green-500' : 'bg-red-500'}`} />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
-                Attraction Technology Lab
+              <h1 className="text-2xl font-bold text-white tracking-tight">
+                ICS Security Engineering Lab
               </h1>
+              <p className="text-sm text-slate-400">
+                Industrial Control System Training Environment
+              </p>
             </div>
           </div>
 
           <div className="flex items-center gap-3">
+            <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800/50 border border-slate-700">
+              <Shield className="w-4 h-4 text-cyan-400" />
+              <span className="text-xs font-medium text-slate-300">Security Training Mode</span>
+            </div>
+
             <button
               onClick={toggleTheme}
-              className="p-2 rounded-lg bg-slate-100 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
+              className="p-2.5 rounded-lg bg-slate-800 border border-slate-700 hover:bg-slate-700 transition-colors"
               aria-label="Toggle theme"
             >
               {theme === 'light' ? (
-                <Moon className="w-5 h-5 text-slate-700 dark:text-slate-300" />
+                <Moon className="w-5 h-5 text-slate-300" />
               ) : (
-                <Sun className="w-5 h-5 text-slate-700 dark:text-slate-300" />
-              )}
-            </button>
-            <a
-              href="/wiki/index.html"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 hover:bg-purple-100 dark:hover:bg-purple-900/30 transition-colors"
-            >
-              <BookOpen className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-              <span className="text-sm font-semibold text-purple-900 dark:text-purple-300">Project Wiki</span>
-            </a>
-            <a
-              href="/ATTRACTION_DOCS.html"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"
-            >
-              <FileText className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-              <span className="text-sm font-semibold text-blue-900 dark:text-blue-300">Attraction Documentation</span>
-            </a>
-
-            <a
-              href="/EXPLOIT_HELP.html"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors"
-            >
-              <Terminal className="w-5 h-5 text-red-600 dark:text-red-400" />
-              <span className="text-sm font-semibold text-red-900 dark:text-red-300">Help</span>
-            </a>
-
-            <button
-              onClick={() => setShowChallenges(!showChallenges)}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 hover:bg-amber-100 dark:hover:bg-amber-900/30 transition-colors"
-            >
-              <Trophy className="w-5 h-5 text-amber-600 dark:text-amber-400" />
-              <span className="text-sm font-semibold text-amber-900 dark:text-amber-300">CTF Challenges</span>
-              {showChallenges ? (
-                <ChevronUp className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-              ) : (
-                <ChevronDown className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                <Sun className="w-5 h-5 text-slate-300" />
               )}
             </button>
 
             <button
               onClick={() => setShowConnectionDetails(!showConnectionDetails)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors ${
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-lg border transition-all ${
                 allConnected
-                  ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800 hover:bg-green-100 dark:hover:bg-green-900/30'
-                  : 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800 hover:bg-red-100 dark:hover:bg-red-900/30'
+                  ? 'bg-green-500/10 border-green-500/30 hover:bg-green-500/20'
+                  : 'bg-red-500/10 border-red-500/30 hover:bg-red-500/20'
               }`}
             >
-              <Circle
-                className={`w-3 h-3 ${
-                  allConnected ? 'fill-green-500 text-green-500' : 'fill-red-500 text-red-500'
-                }`}
-              />
-              <span className={`text-sm font-semibold ${
-                allConnected ? 'text-green-900 dark:text-green-300' : 'text-red-900 dark:text-red-300'
-              }`}>
-                {allConnected ? 'Connected' : 'Disconnected'}
-              </span>
+              <div className="flex items-center gap-2">
+                <div className={`w-2 h-2 rounded-full ${allConnected ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`} />
+                <span className={`text-sm font-semibold ${allConnected ? 'text-green-400' : 'text-red-400'}`}>
+                  {allConnected ? 'ONLINE' : 'OFFLINE'}
+                </span>
+              </div>
               {showConnectionDetails ? (
-                <ChevronUp className={`w-4 h-4 ${allConnected ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`} />
+                <ChevronUp className={`w-4 h-4 ${allConnected ? 'text-green-400' : 'text-red-400'}`} />
               ) : (
-                <ChevronDown className={`w-4 h-4 ${allConnected ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`} />
+                <ChevronDown className={`w-4 h-4 ${allConnected ? 'text-green-400' : 'text-red-400'}`} />
               )}
             </button>
           </div>
         </div>
-
-        {showConnectionDetails && (
-          <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
-            <div className="flex items-center gap-2 mb-3">
-              <Activity className="w-4 h-4 text-slate-700 dark:text-slate-300" />
-              <h3 className="text-sm font-bold text-slate-900 dark:text-white">Connection Status</h3>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-700/50">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300">WebSocket Server</span>
-                  <div className="flex items-center gap-2">
-                    <Circle
-                      className={`w-2 h-2 ${
-                        wsConnected ? 'fill-green-500 text-green-500' : 'fill-red-500 text-red-500'
-                      }`}
-                    />
-                    <span className={`text-sm font-medium ${wsConnected ? 'text-green-700 dark:text-green-400' : 'text-red-700 dark:text-red-400'}`}>
-                      {wsConnected ? 'Connected' : 'Disconnected'}
-                    </span>
-                  </div>
-                </div>
-                <div className="mt-1 text-xs text-slate-500 dark:text-slate-400 font-mono">
-                  {import.meta.env.VITE_WS_URL || 'ws://localhost:8765'}
-                </div>
-              </div>
-
-              <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-700/50">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300">PLC Modbus</span>
-                  <div className="flex items-center gap-2">
-                    <Circle
-                      className={`w-2 h-2 ${
-                        plcConnected ? 'fill-green-500 text-green-500' : 'fill-red-500 text-red-500'
-                      }`}
-                    />
-                    <span className={`text-sm font-medium ${plcConnected ? 'text-green-700 dark:text-green-400' : 'text-red-700 dark:text-red-400'}`}>
-                      {plcConnected ? 'Connected' : 'Disconnected'}
-                    </span>
-                  </div>
-                </div>
-                <div className="mt-1 text-xs text-slate-500 dark:text-slate-400 font-mono">
-                  {plcHost && plcPort ? `${plcHost}:${plcPort}` : 'Not configured'}
-                </div>
-              </div>
-            </div>
-
-            {!wsConnected && (
-              <div className="mt-3 p-3 rounded-lg bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800">
-                <p className="text-sm text-yellow-800 dark:text-yellow-300">
-                  Start the server with:
-                </p>
-                <code className="block mt-2 text-xs bg-yellow-100 dark:bg-yellow-900/30 p-2 rounded font-mono text-yellow-900 dark:text-yellow-200">
-                  cd scripts && ./start.sh
-                </code>
-              </div>
-            )}
-          </div>
-        )}
       </div>
 
-      {showChallenges && (
-        <div className="mb-6">
-          <CTFChallenges sessionId={sessionId} />
+      {showConnectionDetails && (
+        <div className="px-6 py-4 bg-slate-900/50 border-t border-slate-700/50">
+          <div className="flex items-center gap-2 mb-4">
+            <Activity className="w-4 h-4 text-cyan-400" />
+            <h3 className="text-sm font-bold text-white">System Connections</h3>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="p-4 rounded-lg bg-slate-800/50 border border-slate-700/50">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <Server className="w-4 h-4 text-slate-400" />
+                  <span className="text-sm font-medium text-slate-300">WebSocket Gateway</span>
+                </div>
+                <div className={`w-2 h-2 rounded-full ${wsConnected ? 'bg-green-500' : 'bg-red-500'}`} />
+              </div>
+              <div className="text-xs text-slate-500 font-mono">
+                {import.meta.env.VITE_WS_URL || 'ws://localhost:8765'}
+              </div>
+              <div className={`mt-2 text-xs font-medium ${wsConnected ? 'text-green-400' : 'text-red-400'}`}>
+                {wsConnected ? 'Connected' : 'Disconnected'}
+              </div>
+            </div>
+
+            <div className="p-4 rounded-lg bg-slate-800/50 border border-slate-700/50">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <Cpu className="w-4 h-4 text-slate-400" />
+                  <span className="text-sm font-medium text-slate-300">Main PLC (Modbus)</span>
+                </div>
+                <div className={`w-2 h-2 rounded-full ${plcConnected ? 'bg-green-500' : 'bg-red-500'}`} />
+              </div>
+              <div className="text-xs text-slate-500 font-mono">
+                {plcHost && plcPort ? `${plcHost}:${plcPort}` : 'Not configured'}
+              </div>
+              <div className={`mt-2 text-xs font-medium ${plcConnected ? 'text-green-400' : 'text-red-400'}`}>
+                {plcConnected ? 'Connected' : 'Disconnected'}
+              </div>
+            </div>
+
+            <div className="p-4 rounded-lg bg-slate-800/50 border border-slate-700/50">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <Zap className="w-4 h-4 text-slate-400" />
+                  <span className="text-sm font-medium text-slate-300">Protocol Status</span>
+                </div>
+                <div className={`w-2 h-2 rounded-full ${allConnected ? 'bg-green-500' : 'bg-amber-500'}`} />
+              </div>
+              <div className="text-xs text-slate-500 font-mono">
+                Modbus TCP/IP
+              </div>
+              <div className={`mt-2 text-xs font-medium ${allConnected ? 'text-green-400' : 'text-amber-400'}`}>
+                {allConnected ? 'Active' : 'Waiting...'}
+              </div>
+            </div>
+          </div>
+
+          {!wsConnected && (
+            <div className="mt-4 p-3 rounded-lg bg-amber-500/10 border border-amber-500/30">
+              <p className="text-sm text-amber-300 font-medium mb-1">
+                Start the backend server to enable communication:
+              </p>
+              <code className="block text-xs bg-slate-900 p-2 rounded font-mono text-amber-200">
+                cd scripts && ./start.sh
+              </code>
+            </div>
+          )}
         </div>
       )}
-    </>
+    </div>
   );
 }

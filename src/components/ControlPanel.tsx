@@ -1,4 +1,4 @@
-import { Play, Square, Settings, ShieldAlert, CheckCircle2, XCircle, AlertTriangle, RotateCcw } from 'lucide-react';
+import { Play, Square, Settings, ShieldAlert, CheckCircle2, XCircle, AlertTriangle, RotateCcw, Gauge } from 'lucide-react';
 import { useState } from 'react';
 
 interface ControlPanelProps {
@@ -30,9 +30,9 @@ export default function ControlPanel({
   const [plcHost, setPlcHost] = useState('localhost');
   const [plcPort, setPlcPort] = useState('502');
 
-  const masterEnable = coilStates[0] || false;      // Coil 0 = master_enable (QX0.0)
-  const emergencyStop = coilStates[3] || false;     // Coil 3 = emergency_stop_button (QX0.3)
-  const safetyGate = coilStates[4] || false;        // Coil 4 = safety_gate_closed (QX0.4)
+  const masterEnable = coilStates[0] || false;
+  const emergencyStop = coilStates[3] || false;
+  const safetyGate = coilStates[4] || false;
 
   const safetyChecksPass = masterEnable && !emergencyStop && safetyGate;
   const canStart = wsConnected && plcConnected && !rideRunning && safetyChecksPass;
@@ -46,208 +46,219 @@ export default function ControlPanel({
   };
 
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl p-6 border border-slate-200 dark:border-slate-700 transition-colors">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-bold text-slate-900 dark:text-white">Control Panel</h3>
+    <div className="bg-slate-900 rounded-xl border border-slate-700 overflow-hidden">
+      <div className="bg-slate-800/50 px-4 py-3 border-b border-slate-700/50 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Gauge className="w-4 h-4 text-cyan-400" />
+          <h3 className="text-sm font-bold text-white">Control Panel</h3>
+        </div>
         {wsConnected && (
           <button
             onClick={() => setShowConfig(!showConfig)}
-            className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+            className={`p-1.5 rounded-md transition-colors ${
+              showConfig ? 'bg-cyan-500/20 text-cyan-400' : 'hover:bg-slate-700 text-slate-400'
+            }`}
             title="PLC Configuration"
           >
-            <Settings className="w-5 h-5 text-slate-600 dark:text-slate-400" />
+            <Settings className="w-4 h-4" />
           </button>
         )}
       </div>
 
-      {showConfig && (
-        <div className="mb-4 p-4 bg-slate-50 dark:bg-slate-700/50 rounded-lg space-y-3">
-          <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-              PLC Host
-            </label>
-            <input
-              type="text"
-              value={plcHost}
-              onChange={(e) => setPlcHost(e.target.value)}
-              disabled={rideRunning}
-              className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-slate-100 dark:disabled:bg-slate-700 disabled:cursor-not-allowed"
-              placeholder="e.g., 192.168.1.100 or localhost"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-              PLC Port
-            </label>
-            <input
-              type="number"
-              value={plcPort}
-              onChange={(e) => setPlcPort(e.target.value)}
-              disabled={rideRunning}
-              className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-slate-100 dark:disabled:bg-slate-700 disabled:cursor-not-allowed"
-              placeholder="502"
-            />
-          </div>
-          <button
-            onClick={handleConnect}
-            disabled={rideRunning || !plcHost}
-            className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:bg-slate-300 dark:disabled:bg-slate-700 disabled:cursor-not-allowed transition-colors"
-          >
-            Connect to PLC
-          </button>
-        </div>
-      )}
-
-      <div className="space-y-4">
-        {plcConnected && !rideRunning && (
-          <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">
-              Pre-Start Safety Checklist
-            </label>
-            <div className="space-y-2 mb-3">
-              <div className={`flex items-center gap-2 p-2 rounded-lg ${
-                safetyGate ? 'bg-green-50 dark:bg-green-900/20' : 'bg-red-50 dark:bg-red-900/20'
-              }`}>
-                {safetyGate ? (
-                  <CheckCircle2 className="w-4 h-4 text-green-600" />
-                ) : (
-                  <XCircle className="w-4 h-4 text-red-600" />
-                )}
-                <span className={`text-sm font-medium ${
-                  safetyGate ? 'text-green-900 dark:text-green-300' : 'text-red-900 dark:text-red-300'
-                }`}>
-                  Safety Gate Closed
-                </span>
-              </div>
-              <div className={`flex items-center gap-2 p-2 rounded-lg ${
-                masterEnable ? 'bg-green-50 dark:bg-green-900/20' : 'bg-red-50 dark:bg-red-900/20'
-              }`}>
-                {masterEnable ? (
-                  <CheckCircle2 className="w-4 h-4 text-green-600" />
-                ) : (
-                  <XCircle className="w-4 h-4 text-red-600" />
-                )}
-                <span className={`text-sm font-medium ${
-                  masterEnable ? 'text-green-900 dark:text-green-300' : 'text-red-900 dark:text-red-300'
-                }`}>
-                  Master Enable Active
-                </span>
-              </div>
-              <div className={`flex items-center gap-2 p-2 rounded-lg ${
-                !emergencyStop ? 'bg-green-50 dark:bg-green-900/20' : 'bg-red-50 dark:bg-red-900/20'
-              }`}>
-                {!emergencyStop ? (
-                  <CheckCircle2 className="w-4 h-4 text-green-600" />
-                ) : (
-                  <XCircle className="w-4 h-4 text-red-600" />
-                )}
-                <span className={`text-sm font-medium ${
-                  !emergencyStop ? 'text-green-900 dark:text-green-300' : 'text-red-900 dark:text-red-300'
-                }`}>
-                  Emergency Stop Clear
-                </span>
-              </div>
+      <div className="p-4 space-y-4">
+        {showConfig && (
+          <div className="p-3 bg-slate-800/50 rounded-lg border border-slate-700/50 space-y-3">
+            <div>
+              <label className="block text-[10px] font-medium text-slate-400 uppercase tracking-wider mb-1">
+                PLC Host
+              </label>
+              <input
+                type="text"
+                value={plcHost}
+                onChange={(e) => setPlcHost(e.target.value)}
+                disabled={rideRunning}
+                className="w-full px-3 py-2 text-sm bg-slate-900 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 disabled:opacity-50"
+                placeholder="192.168.1.100"
+              />
+            </div>
+            <div>
+              <label className="block text-[10px] font-medium text-slate-400 uppercase tracking-wider mb-1">
+                PLC Port
+              </label>
+              <input
+                type="number"
+                value={plcPort}
+                onChange={(e) => setPlcPort(e.target.value)}
+                disabled={rideRunning}
+                className="w-full px-3 py-2 text-sm bg-slate-900 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 disabled:opacity-50"
+                placeholder="502"
+              />
             </div>
             <button
-              onClick={onSetSafetyConditions}
-              disabled={safetyChecksPass}
-              className={`w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors mb-3 ${
-                safetyChecksPass
-                  ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 cursor-default'
-                  : 'bg-blue-600 text-white hover:bg-blue-700'
-              }`}
+              onClick={handleConnect}
+              disabled={rideRunning || !plcHost}
+              className="w-full px-3 py-2 text-sm font-medium bg-cyan-600 text-white rounded-lg hover:bg-cyan-500 disabled:bg-slate-700 disabled:text-slate-500 transition-colors"
             >
-              {safetyChecksPass ? (
-                <>
-                  <CheckCircle2 className="w-4 h-4" />
-                  All Safety Checks Passed
-                </>
-              ) : (
-                <>
-                  <AlertTriangle className="w-4 h-4" />
-                  Initialize Safety Systems
-                </>
-              )}
+              Connect to PLC
             </button>
           </div>
         )}
 
-        <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
-          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-            Ride Control
-          </label>
-          <div className="flex gap-2 mb-2">
+        {plcConnected && !rideRunning && (
+          <div className="space-y-3">
+            <div className="text-[10px] font-medium text-slate-400 uppercase tracking-wider">
+              Safety Interlock Status
+            </div>
+            <div className="space-y-2">
+              <div className={`flex items-center gap-2 p-2 rounded-lg border ${
+                safetyGate
+                  ? 'bg-green-500/10 border-green-500/30'
+                  : 'bg-red-500/10 border-red-500/30'
+              }`}>
+                {safetyGate ? (
+                  <CheckCircle2 className="w-4 h-4 text-green-400" />
+                ) : (
+                  <XCircle className="w-4 h-4 text-red-400" />
+                )}
+                <span className={`text-xs font-medium ${safetyGate ? 'text-green-300' : 'text-red-300'}`}>
+                  Safety Gate
+                </span>
+                <span className={`ml-auto text-[10px] font-mono ${safetyGate ? 'text-green-400' : 'text-red-400'}`}>
+                  {safetyGate ? 'CLOSED' : 'OPEN'}
+                </span>
+              </div>
+              <div className={`flex items-center gap-2 p-2 rounded-lg border ${
+                masterEnable
+                  ? 'bg-green-500/10 border-green-500/30'
+                  : 'bg-red-500/10 border-red-500/30'
+              }`}>
+                {masterEnable ? (
+                  <CheckCircle2 className="w-4 h-4 text-green-400" />
+                ) : (
+                  <XCircle className="w-4 h-4 text-red-400" />
+                )}
+                <span className={`text-xs font-medium ${masterEnable ? 'text-green-300' : 'text-red-300'}`}>
+                  Master Enable
+                </span>
+                <span className={`ml-auto text-[10px] font-mono ${masterEnable ? 'text-green-400' : 'text-red-400'}`}>
+                  {masterEnable ? 'ACTIVE' : 'INACTIVE'}
+                </span>
+              </div>
+              <div className={`flex items-center gap-2 p-2 rounded-lg border ${
+                !emergencyStop
+                  ? 'bg-green-500/10 border-green-500/30'
+                  : 'bg-red-500/10 border-red-500/30'
+              }`}>
+                {!emergencyStop ? (
+                  <CheckCircle2 className="w-4 h-4 text-green-400" />
+                ) : (
+                  <XCircle className="w-4 h-4 text-red-400" />
+                )}
+                <span className={`text-xs font-medium ${!emergencyStop ? 'text-green-300' : 'text-red-300'}`}>
+                  E-Stop Status
+                </span>
+                <span className={`ml-auto text-[10px] font-mono ${!emergencyStop ? 'text-green-400' : 'text-red-400'}`}>
+                  {!emergencyStop ? 'CLEAR' : 'ACTIVE'}
+                </span>
+              </div>
+            </div>
+
+            {!safetyChecksPass && (
+              <button
+                onClick={onSetSafetyConditions}
+                className="w-full flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium bg-amber-600 text-white rounded-lg hover:bg-amber-500 transition-colors"
+              >
+                <AlertTriangle className="w-4 h-4" />
+                Initialize Safety Systems
+              </button>
+            )}
+
+            {safetyChecksPass && (
+              <div className="flex items-center gap-2 p-2 bg-green-500/10 border border-green-500/30 rounded-lg">
+                <CheckCircle2 className="w-4 h-4 text-green-400" />
+                <span className="text-xs font-medium text-green-300">All Safety Checks Passed</span>
+              </div>
+            )}
+          </div>
+        )}
+
+        <div className="space-y-3">
+          <div className="text-[10px] font-medium text-slate-400 uppercase tracking-wider">
+            Ride Operations
+          </div>
+          <div className="grid grid-cols-2 gap-2">
             <button
               onClick={onStart}
               disabled={!canStart}
-              className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg font-medium transition-all ${
+              className={`flex items-center justify-center gap-2 px-3 py-3 rounded-lg font-medium text-sm transition-all ${
                 canStart
-                  ? 'bg-green-600 text-white hover:bg-green-700 shadow-md hover:shadow-lg'
-                  : 'bg-slate-100 dark:bg-slate-700 text-slate-400 dark:text-slate-500 cursor-not-allowed'
+                  ? 'bg-green-600 text-white hover:bg-green-500 shadow-lg shadow-green-600/20'
+                  : 'bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-700'
               }`}
             >
-              <Play className="w-5 h-5" />
-              Start Ride
+              <Play className="w-4 h-4" />
+              Start
             </button>
 
             <button
               onClick={onStop}
               disabled={!rideRunning}
-              className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg font-medium transition-all ${
+              className={`flex items-center justify-center gap-2 px-3 py-3 rounded-lg font-medium text-sm transition-all ${
                 rideRunning
-                  ? 'bg-red-600 text-white hover:bg-red-700 shadow-md hover:shadow-lg'
-                  : 'bg-slate-100 dark:bg-slate-700 text-slate-400 dark:text-slate-500 cursor-not-allowed'
+                  ? 'bg-amber-600 text-white hover:bg-amber-500 shadow-lg shadow-amber-600/20'
+                  : 'bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-700'
               }`}
             >
-              <Square className="w-5 h-5" />
-              Stop Ride
+              <Square className="w-4 h-4" />
+              Stop
             </button>
           </div>
+
           <button
             onClick={onReset}
             disabled={!plcConnected}
-            className={`w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
+            className={`w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg font-medium text-sm transition-all ${
               plcConnected
-                ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-md hover:shadow-lg'
-                : 'bg-slate-100 dark:bg-slate-700 text-slate-400 dark:text-slate-500 cursor-not-allowed'
+                ? 'bg-slate-700 text-white hover:bg-slate-600 border border-slate-600'
+                : 'bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-700'
             }`}
           >
             <RotateCcw className="w-4 h-4" />
-            Reset Attraction
+            Reset System
           </button>
-          {!wsConnected && (
-            <div className="mt-3 text-sm text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-3">
-              WebSocket server must be running to configure PLC
-            </div>
-          )}
-          {wsConnected && !plcConnected && (
-            <div className="mt-3 text-sm text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-3">
-              Configure and connect to your PLC using the settings button above
-            </div>
-          )}
-          {!safetyChecksPass && plcConnected && !rideRunning && (
-            <div className="mt-3 text-sm text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-3">
-              <strong>Safety Check Required:</strong> Initialize safety systems before starting the ride
-            </div>
-          )}
         </div>
 
+        {!wsConnected && (
+          <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg">
+            <p className="text-xs text-amber-300">
+              WebSocket server required for PLC communication
+            </p>
+          </div>
+        )}
+
+        {wsConnected && !plcConnected && (
+          <div className="p-3 bg-cyan-500/10 border border-cyan-500/30 rounded-lg">
+            <p className="text-xs text-cyan-300">
+              Configure PLC connection using the settings button above
+            </p>
+          </div>
+        )}
+
         {plcConnected && (
-          <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+          <div className="pt-3 border-t border-slate-700/50">
+            <div className="text-[10px] font-medium text-slate-400 uppercase tracking-wider mb-3">
               Emergency Control
-            </label>
+            </div>
             <button
               onClick={onEmergencyStop}
-              disabled={!plcConnected}
-              className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg font-medium bg-red-600 text-white hover:bg-red-700 shadow-md hover:shadow-lg transition-all disabled:bg-slate-300 dark:disabled:bg-slate-700 disabled:cursor-not-allowed"
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg font-bold text-sm bg-red-600 text-white hover:bg-red-500 shadow-lg shadow-red-600/30 transition-all border-2 border-red-500"
             >
               <ShieldAlert className="w-5 h-5" />
-              Emergency Stop
+              EMERGENCY STOP
             </button>
-            <div className="mt-2 text-xs text-slate-500 dark:text-slate-400 text-center">
+            <p className="text-[10px] text-slate-500 text-center mt-2">
               Immediately halts all ride operations
-            </div>
+            </p>
           </div>
         )}
       </div>

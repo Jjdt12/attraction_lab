@@ -1,4 +1,3 @@
-import React from 'react';
 import {
   LayoutDashboard,
   Wrench,
@@ -6,10 +5,11 @@ import {
   AlertCircle,
   Network,
   BookOpen,
-  Activity
+  Activity,
+  Shield
 } from 'lucide-react';
 
-export type TabType = 'overview' | 'diagnostics' | 'trends' | 'alarms' | 'network' | 'docs' | 'events';
+export type TabType = 'overview' | 'diagnostics' | 'trends' | 'alarms' | 'network' | 'docs' | 'events' | 'security';
 
 interface TabNavigationProps {
   activeTab: TabType;
@@ -24,19 +24,20 @@ export function TabNavigation({ activeTab, onTabChange }: TabNavigationProps) {
     { id: 'alarms', label: 'Alarms', icon: <AlertCircle className="h-4 w-4" /> },
     { id: 'events', label: 'Event Log', icon: <Activity className="h-4 w-4" /> },
     { id: 'network', label: 'Network', icon: <Network className="h-4 w-4" /> },
-    { id: 'docs', label: 'Documentation', icon: <BookOpen className="h-4 w-4" /> },
+    { id: 'security', label: 'Security', icon: <Shield className="h-4 w-4" /> },
+    { id: 'docs', label: 'Docs', icon: <BookOpen className="h-4 w-4" /> },
   ];
 
   return (
-    <div className="flex gap-2 overflow-x-auto pb-2">
+    <div className="flex gap-1 overflow-x-auto pb-2 bg-slate-900/50 p-1 rounded-xl">
       {tabs.map(tab => (
         <button
           key={tab.id}
           onClick={() => onTabChange(tab.id)}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold whitespace-nowrap transition-colors ${
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium text-sm whitespace-nowrap transition-all ${
             activeTab === tab.id
-              ? 'bg-blue-600 text-white'
-              : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+              ? 'bg-cyan-600 text-white shadow-lg shadow-cyan-600/20'
+              : 'bg-transparent text-slate-400 hover:bg-slate-800 hover:text-slate-300'
           }`}
         >
           {tab.icon}

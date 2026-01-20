@@ -1,5 +1,5 @@
 import { RIDE_ZONES } from '../types/rideEvents';
-import { Shield, ShieldCheck, Zap, Camera, Gauge, GitBranch, Octagon, Target, DoorOpen, Lightbulb, Volume2, Wind, Sparkles } from 'lucide-react';
+import { Shield, ShieldCheck, Zap, Camera, Gauge, GitBranch, Octagon, Target, DoorOpen, Lightbulb, Volume2, Wind, Sparkles, Train, MapPin } from 'lucide-react';
 
 interface AttractionVisualizerProps {
   carPosition: number;
@@ -9,81 +9,55 @@ interface AttractionVisualizerProps {
   coilStates: boolean[];
 }
 
-// Effect icons and their coil mappings from Effects PLC
 interface EffectConfig {
   name: string;
   icon: any;
   coil: number;
   color: string;
-  positions: [number, number]; // Position range where this effect is active
+  positions: [number, number];
 }
 
-// Match the PLC logic exactly from attraction_control_effects.st
-// Zone 1 (pos 0-5): Audio 1, Show Lighting
-// Zone 2 Early (pos 6-11): Audio 2, Fog, Strobe, Laser, Show Lighting
-// Zone 2 Late (pos 12-17): Audio 3, Fog, Laser, Show Lighting
-// Zone 3 (pos 18-26): Audio 1, Show Lighting
 const EFFECTS_CONFIG: EffectConfig[] = [
   { name: 'Show Lighting', icon: Lightbulb, coil: 60, color: 'yellow', positions: [0, 26] },
-  { name: 'Audio 1', icon: Volume2, coil: 61, color: 'blue', positions: [0, 5] }, // Zone 1 and Zone 3 (handled specially)
-  { name: 'Audio 2', icon: Volume2, coil: 62, color: 'purple', positions: [6, 11] },
-  { name: 'Audio 3', icon: Volume2, coil: 63, color: 'cyan', positions: [12, 17] },
-  { name: 'Fog Machine', icon: Wind, coil: 64, color: 'slate', positions: [6, 17] },
+  { name: 'Audio Ch.1', icon: Volume2, coil: 61, color: 'blue', positions: [0, 5] },
+  { name: 'Audio Ch.2', icon: Volume2, coil: 62, color: 'cyan', positions: [6, 11] },
+  { name: 'Audio Ch.3', icon: Volume2, coil: 63, color: 'teal', positions: [12, 17] },
+  { name: 'Fog System', icon: Wind, coil: 64, color: 'slate', positions: [6, 17] },
   { name: 'Strobe', icon: Sparkles, coil: 65, color: 'white', positions: [6, 11] },
-  { name: 'Laser', icon: Zap, coil: 66, color: 'red', positions: [6, 17] },
-  { name: 'Flash', icon: Camera, coil: 28, color: 'yellow', positions: [9, 11] },
+  { name: 'Laser Array', icon: Zap, coil: 66, color: 'red', positions: [6, 17] },
+  { name: 'Photo Flash', icon: Camera, coil: 28, color: 'amber', positions: [9, 11] },
 ];
 
-// Helper to get effect color classes (Tailwind doesn't support dynamic colors)
 const getEffectColorClasses = (color: string, isActive: boolean) => {
-  if (!isActive) {
-    return 'bg-slate-700/40 border border-slate-600/50';
-  }
+  if (!isActive) return 'bg-slate-800 border-slate-700';
 
   const colorMap: Record<string, string> = {
-    'yellow': 'bg-yellow-500/80 shadow-lg shadow-yellow-500/50',
-    'blue': 'bg-blue-500/80 shadow-lg shadow-blue-500/50',
-    'purple': 'bg-purple-500/80 shadow-lg shadow-purple-500/50',
-    'cyan': 'bg-cyan-500/80 shadow-lg shadow-cyan-500/50',
-    'slate': 'bg-slate-500/80 shadow-lg shadow-slate-500/50',
-    'white': 'bg-white/80 shadow-lg shadow-white/50',
-    'red': 'bg-red-500/80 shadow-lg shadow-red-500/50',
+    'yellow': 'bg-yellow-500/20 border-yellow-500/50 shadow-yellow-500/20',
+    'blue': 'bg-blue-500/20 border-blue-500/50 shadow-blue-500/20',
+    'cyan': 'bg-cyan-500/20 border-cyan-500/50 shadow-cyan-500/20',
+    'teal': 'bg-teal-500/20 border-teal-500/50 shadow-teal-500/20',
+    'slate': 'bg-slate-500/20 border-slate-500/50 shadow-slate-500/20',
+    'white': 'bg-white/20 border-white/50 shadow-white/20',
+    'red': 'bg-red-500/20 border-red-500/50 shadow-red-500/20',
+    'amber': 'bg-amber-500/20 border-amber-500/50 shadow-amber-500/20',
   };
-  return colorMap[color] || 'bg-slate-500/80 shadow-lg shadow-slate-500/50';
+  return colorMap[color] || 'bg-slate-500/20 border-slate-500/50';
 };
 
-const getEffectPanelColorClasses = (color: string, shouldBeActive: boolean) => {
-  if (!shouldBeActive) {
-    return 'bg-slate-700/40 border border-slate-600/50';
-  }
+const getIndicatorColor = (color: string, isActive: boolean) => {
+  if (!isActive) return 'bg-slate-600';
 
   const colorMap: Record<string, string> = {
-    'yellow': 'bg-yellow-500/80 shadow-lg shadow-yellow-500/30',
-    'blue': 'bg-blue-500/80 shadow-lg shadow-blue-500/30',
-    'purple': 'bg-purple-500/80 shadow-lg shadow-purple-500/30',
-    'cyan': 'bg-cyan-500/80 shadow-lg shadow-cyan-500/30',
-    'slate': 'bg-slate-500/80 shadow-lg shadow-slate-500/30',
-    'white': 'bg-white/80 shadow-lg shadow-white/30',
-    'red': 'bg-red-500/80 shadow-lg shadow-red-500/30',
+    'yellow': 'bg-yellow-400',
+    'blue': 'bg-blue-400',
+    'cyan': 'bg-cyan-400',
+    'teal': 'bg-teal-400',
+    'slate': 'bg-slate-400',
+    'white': 'bg-white',
+    'red': 'bg-red-400',
+    'amber': 'bg-amber-400',
   };
-  return colorMap[color] || 'bg-slate-500/80 shadow-lg shadow-slate-500/30';
-};
-
-const getEffectIndicatorClasses = (color: string, shouldBeActive: boolean) => {
-  if (!shouldBeActive) {
-    return 'bg-slate-600';
-  }
-
-  const colorMap: Record<string, string> = {
-    'yellow': 'bg-yellow-400 shadow-lg shadow-yellow-400/50 animate-pulse',
-    'blue': 'bg-blue-400 shadow-lg shadow-blue-400/50 animate-pulse',
-    'purple': 'bg-purple-400 shadow-lg shadow-purple-400/50 animate-pulse',
-    'cyan': 'bg-cyan-400 shadow-lg shadow-cyan-400/50 animate-pulse',
-    'slate': 'bg-slate-400 shadow-lg shadow-slate-400/50 animate-pulse',
-    'white': 'bg-white shadow-lg shadow-white/50 animate-pulse',
-    'red': 'bg-red-400 shadow-lg shadow-red-400/50 animate-pulse',
-  };
-  return colorMap[color] || 'bg-slate-400 shadow-lg shadow-slate-400/50 animate-pulse';
+  return colorMap[color] || 'bg-slate-400';
 };
 
 export default function AttractionVisualizer({
@@ -94,11 +68,11 @@ export default function AttractionVisualizer({
 }: AttractionVisualizerProps) {
   const getZoneColor = (zoneId: number) => {
     const colors = {
-      1: 'from-blue-500/30 to-blue-600/40',
-      2: 'from-violet-500/30 to-violet-600/40',
-      3: 'from-rose-500/30 to-rose-600/40',
+      1: 'from-blue-600/20 to-blue-700/30 border-blue-500/30',
+      2: 'from-cyan-600/20 to-cyan-700/30 border-cyan-500/30',
+      3: 'from-teal-600/20 to-teal-700/30 border-teal-500/30',
     };
-    return colors[zoneId as keyof typeof colors] || 'from-slate-500/30 to-slate-600/40';
+    return colors[zoneId as keyof typeof colors] || 'from-slate-600/20 to-slate-700/30 border-slate-500/30';
   };
 
   const getEventIcon = (iconName: string) => {
@@ -116,24 +90,15 @@ export default function AttractionVisualizer({
     return iconMap[iconName] || Shield;
   };
 
-  // Special check for effects with multiple ranges (like Audio 1 in Zone 1 and Zone 3)
   const isEffectInRange = (effect: EffectConfig, pos: number) => {
-    // Audio 1 (coil 61) is active in Zone 1 (0-5) AND Zone 3 (18-26)
     if (effect.coil === 61) {
       return (pos >= 0 && pos <= 5) || (pos >= 18 && pos <= 26);
     }
-    // All other effects use their defined range
     return pos >= effect.positions[0] && pos <= effect.positions[1];
   };
 
-  // Get active effects - only show effects where the CAR currently is
   const getActiveEffectsAtPosition = (pos: number) => {
-    // Effects are only active when the car is in their position range
-    // Not when just viewing that position on the track
-    if (pos !== carPosition) {
-      return [];
-    }
-
+    if (pos !== carPosition) return [];
     return EFFECTS_CONFIG.filter(effect => {
       const isInRange = isEffectInRange(effect, pos);
       const isActive = coilStates[effect.coil] || false;
@@ -141,67 +106,54 @@ export default function AttractionVisualizer({
     });
   };
 
-  // Get potential effects at position (even if not active)
-  const getPotentialEffectsAtPosition = (pos: number) => {
-    return EFFECTS_CONFIG.filter(effect =>
-      isEffectInRange(effect, pos)
-    );
-  };
-
   const renderZoneRow = (zone: typeof RIDE_ZONES[0]) => {
     const positions = [];
     for (let pos = zone.start; pos <= zone.end; pos++) {
       const isCarHere = carPosition === pos;
-
       const event = zone.events.find(e => pos >= e.position[0] && pos <= e.position[1]);
       const isEventActive = event ? activeEvents.has(event.id) : false;
       const isEventPosition = !!event;
       const EventIcon = event ? getEventIcon(event.icon) : null;
-
-      // Get effects at this position
       const activeEffects = getActiveEffectsAtPosition(pos);
       const hasActiveEffects = activeEffects.length > 0;
 
       positions.push(
-        <div key={pos} className="flex flex-col items-center gap-2">
-          {/* Position indicator */}
+        <div key={pos} className="flex flex-col items-center gap-1">
           <div
-            className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 border-2 relative ${
+            className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all duration-300 border relative ${
               isCarHere
-                ? 'bg-gradient-to-br from-white to-slate-200 border-slate-400 shadow-xl scale-110'
+                ? 'bg-gradient-to-br from-cyan-400 to-blue-500 border-cyan-300 shadow-lg shadow-cyan-500/40 scale-110'
                 : isEventPosition
-                ? `bg-gradient-to-br from-slate-700 to-slate-800 border-slate-600 ${
-                    isEventActive ? 'shadow-lg shadow-blue-500/50 ring-2 ring-blue-400' : ''
+                ? `bg-slate-800/80 border-slate-600 ${
+                    isEventActive ? 'ring-2 ring-cyan-400/50' : ''
                   }`
-                : 'bg-gradient-to-br from-slate-700 to-slate-800 border-slate-600'
+                : 'bg-slate-800/50 border-slate-700/50'
             }`}
           >
             {isCarHere && (
-              <div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 shadow-lg animate-pulse" />
+              <Train className="w-5 h-5 text-white" />
             )}
             {isEventPosition && !isCarHere && EventIcon && (
               <EventIcon
-                className={`w-5 h-5 transition-all ${
-                  isEventActive ? 'text-blue-400 animate-pulse' : 'text-slate-400'
+                className={`w-4 h-4 transition-all ${
+                  isEventActive ? 'text-cyan-400' : 'text-slate-500'
                 }`}
               />
             )}
-            {/* Active effects indicator */}
             {hasActiveEffects && (
-              <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-yellow-400 border-2 border-slate-900 flex items-center justify-center">
-                <span className="text-[10px] font-bold text-slate-900">{activeEffects.length}</span>
+              <div className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-amber-400 border border-slate-900 flex items-center justify-center">
+                <span className="text-[8px] font-bold text-slate-900">{activeEffects.length}</span>
               </div>
             )}
           </div>
-          {/* Position number */}
-          <div className="text-[10px] text-slate-500 font-mono">{pos}</div>
+          <div className="text-[9px] text-slate-500 font-mono">{pos}</div>
         </div>
       );
 
       if (pos < zone.end) {
         positions.push(
-          <div key={`line-${pos}`} className="flex items-center">
-            <div className="w-8 h-0.5 bg-slate-600" />
+          <div key={`line-${pos}`} className="flex items-center self-start mt-5">
+            <div className="w-3 h-px bg-slate-600" />
           </div>
         );
       }
@@ -210,152 +162,151 @@ export default function AttractionVisualizer({
     return (
       <div
         key={zone.id}
-        className={`relative bg-gradient-to-r ${getZoneColor(zone.id)} rounded-xl p-6 border border-slate-700/50`}
+        className={`relative bg-gradient-to-r ${getZoneColor(zone.id)} rounded-lg p-4 border`}
       >
-        <div className="absolute top-2 left-4 text-xs font-bold text-slate-300">
-          {zone.name}
+        <div className="absolute top-1 left-3 flex items-center gap-1.5">
+          <MapPin className="w-3 h-3 text-slate-400" />
+          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+            {zone.name}
+          </span>
         </div>
-        <div className="flex items-center justify-center gap-1 pt-6">
+        <div className="flex items-center justify-center gap-0.5 pt-4">
           {positions}
         </div>
       </div>
     );
   };
 
+  const currentZone = carPosition <= 8 ? 'Zone 1' : carPosition <= 17 ? 'Zone 2' : 'Zone 3';
+  const activeEffectsCount = getActiveEffectsAtPosition(carPosition).length;
+
   return (
-    <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 rounded-2xl shadow-2xl p-8 border border-slate-700 dark:border-slate-800">
-      <div className="flex gap-6">
-        {/* Main ride visualization */}
-        <div className="flex-1">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h2 className="text-2xl font-bold text-white">Attraction Lab</h2>
-              <p className="text-sm text-slate-400 dark:text-slate-500">
-                {rideRunning ? 'Ride in Operation' : 'Ride Standby'}
-              </p>
-            </div>
-            <div className={`px-4 py-2 rounded-lg font-bold text-sm ${
+    <div className="bg-slate-900 rounded-xl border border-slate-700 overflow-hidden">
+      <div className="bg-slate-800/50 px-6 py-4 border-b border-slate-700/50">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
               rideRunning
-                ? 'bg-green-500/20 text-green-400 border border-green-500/30'
-                : 'bg-slate-700/50 text-slate-400 border border-slate-600'
+                ? 'bg-green-500/20 border border-green-500/30'
+                : 'bg-slate-700/50 border border-slate-600/30'
             }`}>
-              {rideRunning ? 'ACTIVE' : 'STANDBY'}
+              <Train className={`w-5 h-5 ${rideRunning ? 'text-green-400' : 'text-slate-500'}`} />
+            </div>
+            <div>
+              <h2 className="text-lg font-bold text-white">Attraction Track Layout</h2>
+              <p className="text-xs text-slate-400">Real-time vehicle and effects monitoring</p>
             </div>
           </div>
+          <div className={`px-4 py-2 rounded-lg font-mono text-sm border ${
+            rideRunning
+              ? 'bg-green-500/10 text-green-400 border-green-500/30'
+              : 'bg-slate-700/50 text-slate-400 border-slate-600'
+          }`}>
+            {rideRunning ? 'RUNNING' : 'STANDBY'}
+          </div>
+        </div>
+      </div>
 
-          <div className="space-y-4 mb-6">
+      <div className="p-6">
+        <div className="flex gap-6">
+          <div className="flex-1 space-y-3">
             {RIDE_ZONES.map(zone => renderZoneRow(zone))}
-          </div>
 
-          <div className="grid grid-cols-3 gap-4 p-6 bg-slate-800/50 dark:bg-slate-900/50 rounded-xl border border-slate-700/50 dark:border-slate-800/50">
-            <div className="text-center">
-              <div className="text-xs text-slate-400 dark:text-slate-500 mb-1">Car Position</div>
-              <div className="text-3xl font-bold text-white">{carPosition}</div>
-            </div>
-            <div className="text-center">
-              <div className="text-xs text-slate-400 dark:text-slate-500 mb-1">Active Effects</div>
-              <div className="text-2xl font-bold text-yellow-400">{getActiveEffectsAtPosition(carPosition).length}</div>
-            </div>
-            <div className="text-center">
-              <div className="text-xs text-slate-400 dark:text-slate-500 mb-1">Ride Status</div>
-              <div className={`text-2xl font-bold ${rideRunning ? 'text-green-400' : 'text-slate-400 dark:text-slate-500'}`}>
-                {rideRunning ? 'RUN' : 'STOP'}
+            <div className="grid grid-cols-4 gap-3 mt-6">
+              <div className="bg-slate-800/50 rounded-lg p-3 border border-slate-700/50 text-center">
+                <div className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Position</div>
+                <div className="text-2xl font-mono font-bold text-cyan-400">{carPosition}</div>
+              </div>
+              <div className="bg-slate-800/50 rounded-lg p-3 border border-slate-700/50 text-center">
+                <div className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Zone</div>
+                <div className="text-lg font-bold text-white">{currentZone}</div>
+              </div>
+              <div className="bg-slate-800/50 rounded-lg p-3 border border-slate-700/50 text-center">
+                <div className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Effects</div>
+                <div className="text-2xl font-mono font-bold text-amber-400">{activeEffectsCount}</div>
+              </div>
+              <div className="bg-slate-800/50 rounded-lg p-3 border border-slate-700/50 text-center">
+                <div className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Status</div>
+                <div className={`text-lg font-bold ${rideRunning ? 'text-green-400' : 'text-slate-500'}`}>
+                  {rideRunning ? 'ACTIVE' : 'IDLE'}
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Active Effects Dashboard */}
-        <div className="w-80 space-y-4">
-          {/* Currently Active Effects */}
-          <div className="bg-slate-800/50 dark:bg-slate-900/50 rounded-xl p-4 border border-slate-700/50 dark:border-slate-800/50">
-            <h3 className="text-sm font-bold text-slate-300 mb-3 flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-yellow-400" />
-              Active Now
-            </h3>
-            <div className="space-y-2">
-              {EFFECTS_CONFIG.filter(effect => {
-                const isActive = coilStates[effect.coil] || false;
-                const isInRange = isEffectInRange(effect, carPosition);
-                return isActive && isInRange;
-              }).map(effect => {
-                const EffectIcon = effect.icon;
-                return (
-                  <div
-                    key={effect.coil}
-                    className="flex items-center gap-3 p-3 rounded-lg bg-slate-700/80 border border-slate-600 animate-in fade-in slide-in-from-right-2 duration-300"
-                  >
-                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all ${getEffectPanelColorClasses(effect.color, true)}`}>
-                      <EffectIcon className="w-5 h-5 text-white" />
+          <div className="w-64 space-y-4">
+            <div className="bg-slate-800/30 rounded-lg p-4 border border-slate-700/50">
+              <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                <Sparkles className="w-3 h-3 text-amber-400" />
+                Active Effects
+              </h3>
+              <div className="space-y-2 max-h-40 overflow-y-auto">
+                {EFFECTS_CONFIG.filter(effect => {
+                  const isActive = coilStates[effect.coil] || false;
+                  const isInRange = isEffectInRange(effect, carPosition);
+                  return isActive && isInRange;
+                }).map(effect => {
+                  const EffectIcon = effect.icon;
+                  return (
+                    <div
+                      key={effect.coil}
+                      className={`flex items-center gap-2 p-2 rounded-lg border transition-all ${getEffectColorClasses(effect.color, true)}`}
+                    >
+                      <EffectIcon className="w-4 h-4 text-white" />
+                      <span className="text-xs font-medium text-white flex-1">{effect.name}</span>
+                      <div className={`w-2 h-2 rounded-full animate-pulse ${getIndicatorColor(effect.color, true)}`} />
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="text-sm font-bold text-white truncate">
-                        {effect.name}
-                      </div>
-                      <div className="text-xs text-slate-400">
-                        Position {effect.positions[0]}-{effect.positions[1]}
-                      </div>
-                    </div>
-                    <div className={`w-3 h-3 rounded-full ${getEffectIndicatorClasses(effect.color, true)}`} />
+                  );
+                })}
+                {EFFECTS_CONFIG.filter(effect => {
+                  const isActive = coilStates[effect.coil] || false;
+                  const isInRange = isEffectInRange(effect, carPosition);
+                  return isActive && isInRange;
+                }).length === 0 && (
+                  <div className="text-center py-4 text-slate-500">
+                    <Sparkles className="w-6 h-6 mx-auto mb-1 opacity-30" />
+                    <p className="text-[10px]">No active effects</p>
                   </div>
-                );
-              })}
-              {EFFECTS_CONFIG.filter(effect => {
-                const isActive = coilStates[effect.coil] || false;
-                const isInRange = carPosition >= effect.positions[0] && carPosition <= effect.positions[1];
-                return isActive && isInRange;
-              }).length === 0 && (
-                <div className="text-center py-8 text-slate-500">
-                  <Sparkles className="w-8 h-8 mx-auto mb-2 opacity-30" />
-                  <p className="text-xs">No effects active</p>
-                </div>
-              )}
+                )}
+              </div>
             </div>
-          </div>
 
-          {/* All Available Effects */}
-          <div className="bg-slate-800/50 dark:bg-slate-900/50 rounded-xl p-4 border border-slate-700/50 dark:border-slate-800/50">
-            <h3 className="text-sm font-bold text-slate-300 mb-3 flex items-center gap-2">
-              <Sparkles className="w-4 h-4" />
-              All Show Effects
-            </h3>
-            <div className="space-y-1.5 max-h-96 overflow-y-auto">
-              {EFFECTS_CONFIG.map(effect => {
-                const isActive = coilStates[effect.coil] || false;
-                const isInRange = carPosition >= effect.positions[0] && carPosition <= effect.positions[1];
-                const shouldBeActive = isActive && isInRange;
-                const EffectIcon = effect.icon;
+            <div className="bg-slate-800/30 rounded-lg p-4 border border-slate-700/50">
+              <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">
+                Effects System
+              </h3>
+              <div className="space-y-1.5 max-h-56 overflow-y-auto">
+                {EFFECTS_CONFIG.map(effect => {
+                  const isActive = coilStates[effect.coil] || false;
+                  const isInRange = isEffectInRange(effect, carPosition);
+                  const shouldBeActive = isActive && isInRange;
+                  const EffectIcon = effect.icon;
 
-                return (
-                  <div
-                    key={effect.coil}
-                    className={`flex items-center gap-2 p-2 rounded-lg transition-all ${
-                      shouldBeActive
-                        ? 'bg-slate-700/60 border border-slate-600/50'
-                        : 'bg-slate-800/20 border border-transparent'
-                    }`}
-                  >
-                    <div className={`w-7 h-7 rounded-md flex items-center justify-center transition-all ${getEffectPanelColorClasses(effect.color, shouldBeActive)}`}>
-                      <EffectIcon
-                        className={`w-3.5 h-3.5 transition-all ${
-                          shouldBeActive ? 'text-white' : 'text-slate-500'
-                        }`}
-                      />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className={`text-xs font-medium truncate transition-colors ${
-                        shouldBeActive ? 'text-white' : 'text-slate-400'
-                      }`}>
-                        {effect.name}
+                  return (
+                    <div
+                      key={effect.coil}
+                      className={`flex items-center gap-2 p-2 rounded-md transition-all ${
+                        shouldBeActive
+                          ? 'bg-slate-700/50 border border-slate-600/50'
+                          : 'bg-transparent border border-transparent'
+                      }`}
+                    >
+                      <div className={`w-6 h-6 rounded flex items-center justify-center border ${getEffectColorClasses(effect.color, shouldBeActive)}`}>
+                        <EffectIcon className={`w-3 h-3 ${shouldBeActive ? 'text-white' : 'text-slate-500'}`} />
                       </div>
-                      <div className="text-[10px] text-slate-500">
-                        Pos {effect.positions[0]}-{effect.positions[1]}
+                      <div className="flex-1 min-w-0">
+                        <div className={`text-[10px] font-medium truncate ${shouldBeActive ? 'text-white' : 'text-slate-500'}`}>
+                          {effect.name}
+                        </div>
+                        <div className="text-[8px] text-slate-600">
+                          Pos {effect.positions[0]}-{effect.positions[1]}
+                        </div>
                       </div>
+                      <div className={`w-1.5 h-1.5 rounded-full ${shouldBeActive ? getIndicatorColor(effect.color, true) : 'bg-slate-700'}`} />
                     </div>
-                    <div className={`w-2 h-2 rounded-full transition-all ${getEffectIndicatorClasses(effect.color, shouldBeActive)}`} />
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
           </div>
         </div>
