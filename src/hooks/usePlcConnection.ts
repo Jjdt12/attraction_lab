@@ -132,7 +132,6 @@ export function usePlcConnection(wsUrl: string = 'ws://localhost:8765') {
       if (ws?.readyState === WebSocket.OPEN) return;
 
       setConnectionStatus('connecting');
-      setError(null);
 
       try {
         ws = new WebSocket(wsUrl);
@@ -141,7 +140,11 @@ export function usePlcConnection(wsUrl: string = 'ws://localhost:8765') {
           if (!mounted) return;
           setConnectionStatus('connected');
           setError(null);
-          ws?.send(JSON.stringify({ type: 'connect_plc' }));
+          try {
+            ws?.send(JSON.stringify({ type: 'connect_plc' }));
+          } catch (e) {
+            console.warn('Failed to send initial message:', e);
+          }
         };
 
         ws.onmessage = (event) => {
@@ -211,34 +214,40 @@ export function usePlcConnection(wsUrl: string = 'ws://localhost:8765') {
 
         ws.onerror = () => {
           if (!mounted) return;
-          setConnectionStatus('error');
-          setError('WebSocket connection error');
+          setConnectionStatus('disconnected');
         };
 
         ws.onclose = () => {
           if (!mounted) return;
           setConnectionStatus('disconnected');
           ws = null;
+          wsRef.current = null;
           reconnectTimeout = window.setTimeout(attemptConnect, 5000);
         };
 
         wsRef.current = ws;
-      } catch {
+      } catch (e) {
+        console.warn('WebSocket creation failed:', e);
         if (!mounted) return;
-        setConnectionStatus('error');
-        setError('Failed to create WebSocket connection');
+        setConnectionStatus('disconnected');
+        reconnectTimeout = window.setTimeout(attemptConnect, 5000);
       }
     };
 
-    attemptConnect();
+    const initTimeout = setTimeout(attemptConnect, 100);
 
     return () => {
       mounted = false;
+      clearTimeout(initTimeout);
       if (reconnectTimeout) {
         clearTimeout(reconnectTimeout);
       }
       if (ws) {
-        ws.close();
+        try {
+          ws.close();
+        } catch {
+          // ignore
+        }
       }
       wsRef.current = null;
     };
