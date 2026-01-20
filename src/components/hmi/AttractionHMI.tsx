@@ -17,6 +17,7 @@ import {
   Settings,
   Shield,
   Timer,
+  RotateCcw,
 } from 'lucide-react';
 import { usePlcConnection } from '../../hooks/usePlcConnection';
 
@@ -48,6 +49,7 @@ export function AttractionHMI() {
     error,
     getStateName,
     writeCoil,
+    resetRide,
   } = usePlcConnection();
 
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -111,6 +113,7 @@ export function AttractionHMI() {
         onStop={() => writeCoil('main', 2, true)}
         onEmergencyStop={() => writeCoil('main', 3, !emergencyStop)}
         onSafetyGateToggle={() => writeCoil('main', 4, !safetyGate)}
+        onReset={resetRide}
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
@@ -475,6 +478,7 @@ interface OperatorControlPanelProps {
   onStop: () => void;
   onEmergencyStop: () => void;
   onSafetyGateToggle: () => void;
+  onReset: () => void;
 }
 
 function OperatorControlPanel({
@@ -488,9 +492,11 @@ function OperatorControlPanel({
   onStop,
   onEmergencyStop,
   onSafetyGateToggle,
+  onReset,
 }: OperatorControlPanelProps) {
   const canStart = masterEnable && safetyGate && !emergencyStop && stateName === 'IDLE';
   const canStop = stateName === 'RUNNING' || stateName === 'STARTING';
+  const canReset = stateName === 'IDLE' || stateName === 'STOPPING';
 
   return (
     <div className="bg-slate-900 border border-slate-800 rounded-xl p-4">
@@ -584,6 +590,21 @@ function OperatorControlPanel({
         >
           <AlertOctagon size={18} />
           E-STOP
+        </button>
+
+        <div className="h-10 w-px bg-slate-700" />
+
+        <button
+          onClick={onReset}
+          disabled={!connected || !canReset}
+          className={`flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition-all ${
+            canReset && connected
+              ? 'bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-500/20'
+              : 'bg-slate-800 text-slate-500 cursor-not-allowed'
+          }`}
+        >
+          <RotateCcw size={18} />
+          RESET
         </button>
 
         {!canStart && !canStop && connected && (

@@ -944,10 +944,49 @@ async def handle_websocket(websocket):
                 address = data.get("address")
                 value = data.get("value")
                 result = write_coil(address, value)
+
+                if address == 2 and value == True:
+                    write_coil(1, False)
+                    print("🛑 [STOP] Cleared start_command after stop")
+
                 await websocket.send(json.dumps({
                     "type": "write_result",
                     "result": result
                 }))
+
+            elif action == "reset_ride":
+                if modbus_client:
+                    try:
+                        modbus_client.write_coil(1, False)
+                        modbus_client.write_coil(2, False)
+                        modbus_client.write_register(1025, 0)
+                        modbus_client.write_register(1039, 0)
+                        modbus_client.write_coil(0, True)
+                        modbus_client.write_coil(3, False)
+                        modbus_client.write_coil(4, True)
+                        modbus_client.write_coil(5, True)
+                        modbus_client.write_coil(6, True)
+                        modbus_client.write_coil(7, True)
+
+                        print("🔄 [RESET] Ride reset to initial conditions")
+                        await websocket.send(json.dumps({
+                            "type": "reset_result",
+                            "success": True,
+                            "message": "Ride reset to initial conditions"
+                        }))
+                    except Exception as e:
+                        print(f"❌ [RESET] Error: {e}")
+                        await websocket.send(json.dumps({
+                            "type": "reset_result",
+                            "success": False,
+                            "error": str(e)
+                        }))
+                else:
+                    await websocket.send(json.dumps({
+                        "type": "reset_result",
+                        "success": False,
+                        "error": "PLC not connected"
+                    }))
 
             elif action == "read_coil":
                 address = data.get("address")

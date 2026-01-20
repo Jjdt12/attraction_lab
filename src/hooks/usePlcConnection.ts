@@ -122,6 +122,14 @@ export function usePlcConnection(wsUrl: string = 'ws://localhost:8765') {
     }
   }, []);
 
+  const resetRide = useCallback(() => {
+    if (wsRef.current?.readyState === WebSocket.OPEN) {
+      wsRef.current.send(JSON.stringify({
+        action: 'reset_ride',
+      }));
+    }
+  }, []);
+
   useEffect(() => {
     let mounted = true;
     let ws: WebSocket | null = null;
@@ -288,6 +296,7 @@ export function usePlcConnection(wsUrl: string = 'ws://localhost:8765') {
     error,
     writeCoil,
     writeRegister,
+    resetRide,
     getCoilName,
     getRegisterName,
     getStateName,
