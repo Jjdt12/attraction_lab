@@ -1,10 +1,14 @@
 # Attraction Technology Security Lab
 
-A comprehensive web-based training platform for learning ICS/OT cybersecurity through hands-on practice with realistic attraction control systems. This interactive learning environment combines security training, architecture design, compliance assessment, and live attack/defense scenarios.
+A self-contained, modular web-based training platform for learning ICS/OT cybersecurity through hands-on practice with realistic attraction control systems. This interactive learning environment combines security training, architecture design, compliance assessment, and live attack/defense scenarios.
 
 ## Overview
 
 This platform provides an immersive learning experience for securing industrial control systems in the entertainment and attractions industry. It features a simulated multi-PLC attraction control system with real-time monitoring, interactive security configuration, and guided training modules.
+
+**Deployment Modes:**
+- **Standalone Mode** - Runs completely locally with Python backend (no cloud dependencies)
+- **Cloud-Enhanced Mode** - Optional Supabase integration for persistence and multi-user features
 
 **Key Learning Areas:**
 - ICS/OT Security Architecture & Design
@@ -153,20 +157,175 @@ This platform provides an immersive learning experience for securing industrial 
 - Lucide React (icons)
 
 **Backend & Services:**
-- Supabase (PostgreSQL database + Realtime subscriptions)
-- Edge Functions (serverless functions)
-- Row Level Security (RLS) for data protection
-- WebSocket for real-time PLC communication
+- Python backend for PLC simulation and WebSocket server
+- Modbus TCP protocol implementation
+- Real-time WebSocket communication
+- Supabase (optional) - PostgreSQL database + Realtime subscriptions
+- Edge Functions (optional) - Serverless functions for cloud mode
+- Row Level Security (optional) - RLS for data protection in cloud mode
 
 **Simulation & Control:**
-- Python backend for PLC simulation
-- Modbus TCP protocol implementation
-- OpenPLC Runtime (optional for advanced users)
 - Multi-PLC coordination logic
+- Realistic Modbus TCP protocol
+- OpenPLC Runtime (optional for advanced users)
 
-## Database Schema
+## Architecture
 
-The platform uses Supabase PostgreSQL with the following key tables:
+The platform supports two deployment modes:
+
+### Standalone Mode (Recommended for Quick Start)
+
+```
+┌─────────────────────┐
+│   Web Browser       │  ← User interface
+│   localhost:8080    │
+└──────────┬──────────┘
+           │ HTTP + WebSocket
+           ▼
+┌─────────────────────┐
+│  Python Backend     │  ← All-in-one server
+│  standalone_server  │  - Serves web UI
+└──────────┬──────────┘  - WebSocket server
+           │ Modbus TCP   - PLC simulation
+           ▼
+┌─────────────────────┐
+│   PLC Simulator     │  ← Industrial controller
+│  (optional)         │
+└─────────────────────┘
+```
+
+**Benefits:**
+- No cloud dependencies
+- Works completely offline
+- Single Python script to run
+- Perfect for workshops and isolated environments
+
+### Cloud-Enhanced Mode (Optional)
+
+```
+┌─────────────────────┐
+│   Web Browser       │
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│   React Frontend    │
+│   (Vite dev server) │
+└──────────┬──────────┘
+           │
+           ├─────────────────────┐
+           │                     │
+           ▼                     ▼
+┌─────────────────────┐  ┌─────────────────────┐
+│  Supabase Cloud     │  │  Python Backend     │
+│  - Database         │  │  - PLC Simulator    │
+│  - Auth (optional)  │  │  - WebSocket        │
+│  - Realtime         │  │  - Modbus TCP       │
+└─────────────────────┘  └─────────────────────┘
+```
+
+**Benefits:**
+- Persistent storage of configurations
+- Multi-user support with authentication
+- Progress tracking across sessions
+- Real-time collaboration features
+- Historical data analysis
+
+## Getting Started
+
+### Option 1: Standalone Mode (Quickest)
+
+**Prerequisites:**
+- Python 3.8+
+- pip (Python package manager)
+
+**Steps:**
+
+1. **Clone the repository**
+```bash
+git clone <repository-url>
+cd attraction-security-lab
+```
+
+2. **Install Python dependencies**
+```bash
+cd scripts
+pip install -r requirements.txt
+```
+
+3. **Run the system**
+```bash
+python standalone_server.py
+```
+
+4. **Access the interface**
+Open browser to `http://localhost:8080`
+
+That's it! The system is fully functional without any cloud services.
+
+See [SETUP.md](SETUP.md) for detailed standalone mode instructions.
+
+### Option 2: Cloud-Enhanced Mode
+
+**Prerequisites:**
+- Node.js 18+ and npm
+- Python 3.8+ and pip
+- Modern web browser (Chrome, Firefox, Edge)
+- Internet connection
+- Supabase account (free tier available)
+
+**Steps:**
+
+1. **Clone the repository**
+```bash
+git clone <repository-url>
+cd attraction-security-lab
+```
+
+2. **Install frontend dependencies**
+```bash
+npm install
+```
+
+3. **Install Python dependencies**
+```bash
+cd scripts
+pip install -r requirements.txt
+cd ..
+```
+
+4. **Set up environment variables**
+
+Create or edit `.env` file:
+```
+VITE_SUPABASE_URL=<your-supabase-url>
+VITE_SUPABASE_ANON_KEY=<your-supabase-anon-key>
+```
+
+5. **Run database migrations**
+
+Migrations in `supabase/migrations/` will be applied automatically when you deploy to Supabase.
+
+6. **Run the application**
+
+Terminal 1 - Frontend:
+```bash
+npm run dev
+```
+
+Terminal 2 - Python Backend:
+```bash
+cd scripts
+python standalone_server.py
+```
+
+7. **Access the interface**
+- Frontend: `http://localhost:5173`
+- Backend API: `http://localhost:8080`
+
+## Database Schema (Cloud Mode Only)
+
+When using Supabase, the platform provides persistent storage:
 
 **Core Tables:**
 - `lab_sessions` - Training session management
@@ -186,54 +345,6 @@ The platform uses Supabase PostgreSQL with the following key tables:
 - `modbus_events` - Protocol-level communication logs
 - `process_trends` - Time-series process data
 - `system_health_log` - Equipment health tracking
-
-## Getting Started
-
-### Prerequisites
-
-- Node.js 18+ and npm
-- Modern web browser (Chrome, Firefox, Edge)
-- Internet connection (for Supabase services)
-
-### Installation
-
-1. **Clone the repository**
-```bash
-git clone <repository-url>
-cd attraction-security-lab
-```
-
-2. **Install dependencies**
-```bash
-npm install
-```
-
-3. **Set up environment variables**
-
-The `.env` file should contain:
-```
-VITE_SUPABASE_URL=<your-supabase-url>
-VITE_SUPABASE_ANON_KEY=<your-supabase-anon-key>
-```
-
-4. **Run database migrations**
-
-Migrations are located in `supabase/migrations/` and will be applied automatically when you deploy to Supabase.
-
-### Running the Application
-
-**Development mode:**
-```bash
-npm run dev
-```
-
-**Production build:**
-```bash
-npm run build
-npm run preview
-```
-
-The application will be available at `http://localhost:5173` (dev) or `http://localhost:4173` (preview).
 
 ## Navigation Guide
 
@@ -328,12 +439,14 @@ The platform includes realistic attack scenarios based on real-world incidents:
 - Cybersecurity degree programs
 - Engineering curriculum integration
 - Research and thesis projects
+- Standalone mode ideal for air-gapped lab environments
 
 **Corporate Training:**
 - Employee security awareness
 - Operator training programs
 - Security team skill development
 - Red team / blue team exercises
+- No internet required for sensitive environments
 
 **Certification Prep:**
 - GICSP (Global Industrial Cyber Security Professional)
@@ -346,6 +459,24 @@ The platform includes realistic attack scenarios based on real-world incidents:
 - Skill building and practice
 - Portfolio project showcase
 - CTF preparation
+
+## Deployment Flexibility
+
+**Standalone Mode is ideal for:**
+- Quick demos and presentations
+- Workshops with limited internet
+- Air-gapped training environments
+- Single-user learning
+- Portable USB stick distribution
+- Conferences and trade shows
+
+**Cloud-Enhanced Mode is ideal for:**
+- Multi-user classrooms
+- Progress tracking across sessions
+- Remote learning environments
+- Team collaboration
+- Long-term data analysis
+- Managed training programs
 
 ## Contributing
 
