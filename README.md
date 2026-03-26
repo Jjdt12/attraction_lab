@@ -1,315 +1,380 @@
-# Attraction Technology Virtual Lab
+# Attraction Technology Security Lab
 
-![Attraction Technology Lab Interface](public/image%20copy.png)
-
-A comprehensive web-based virtual lab for testing attraction control systems, Modbus/PLC communication, and ICS/Show Control cybersecurity scenarios with **10 CTF challenges**.
+A comprehensive web-based training platform for learning ICS/OT cybersecurity through hands-on practice with realistic attraction control systems. This interactive learning environment combines security training, architecture design, compliance assessment, and live attack/defense scenarios.
 
 ## Overview
 
-This project simulates a realistic industrial attraction control system with:
-- **Three-PLC distributed architecture** (Main, Safety, Effects)
-- 26-position track with 9 proximity sensors
-- Advanced state machine (Idle, Starting, Running, Stopping, Emergency)
-- Real-time Modbus TCP communication with OpenPLC
-- Safety interlock system with independent Safety PLC
-- Position-based show effects and lighting scenes
-- 10 CTF challenges ranging from easy to hard
-- Process variable simulation (motor current, hydraulic pressure, temperature)
-- Speed control and position tracking
+This platform provides an immersive learning experience for securing industrial control systems in the entertainment and attractions industry. It features a simulated multi-PLC attraction control system with real-time monitoring, interactive security configuration, and guided training modules.
 
-## Architecture
+**Key Learning Areas:**
+- ICS/OT Security Architecture & Design
+- Network Segmentation & Defense-in-Depth
+- Protocol Security (Modbus TCP)
+- Safety Instrumented Systems (SIS)
+- Attack Scenarios & Defense Strategies
+- Compliance Frameworks (IEC 62443, NIST CSF)
+- Real-world Incident Analysis (TRITON/TRISIS)
 
-### Multi-PLC System
+## Core Features
 
-```
-┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
-│   MAIN PLC      │     │   SAFETY PLC    │     │  EFFECTS PLC    │
-│   Port 502      │     │   Port 503      │     │   Port 504      │
-├─────────────────┤     ├─────────────────┤     ├─────────────────┤
-│ • Sequencing    │     │ • Safety Gates  │     │ • Show Lighting │
-│ • Position      │     │ • E-Stops       │     │ • Audio         │
-│ • Speed Control │     │ • Interlocks    │     │ • Effects       │
-│ • Zone Logic    │     │ • Event Safety  │     │ • Fog/Strobe    │
-└─────────────────┘     └─────────────────┘     └─────────────────┘
-         │                       │                       │
-         └───────────────────────┴───────────────────────┘
-                                 │
-                        ┌────────▼────────┐
-                        │  HMI Interface  │
-                        │  Port 3000      │
-                        └─────────────────┘
-```
+### 🎓 Interactive Training Modules
 
-**See `MULTI_PLC_ARCHITECTURE.md` for detailed architecture documentation.**
+**Security Training Dashboard**
+- Hands-on labs for building ICS security controls
+- Firewall rule editor with real-time validation
+- Protocol filter builder for Modbus security
+- IDS signature creation and testing
+- ACL (Access Control List) configuration
+- Defense effectiveness scoring and feedback
 
-### Web Interface (React + TypeScript)
-- **AttractionVisualizer**: Visual representation of the attraction with vehicle and lights
-- **ControlPanel**: Attraction control interface
-- **MultiPLCStatus**: Connection status for all three PLCs
-- **SystemHealthDashboard**: Real-time diagnostics and process variables
-- **ShowEventsMonitor**: 9 proximity sensor event tracking
-- **TrendChart**: Live charts for position, speed, temperature, current
-- **AlarmPanel**: Active alarms and alarm history
-- **NetworkMonitor**: Modbus traffic analysis
-- **CTFChallenges**: Real-time challenge tracking with points system
-- **DocumentationViewer**: In-universe operator manuals and service bulletins
+**Architecture Training**
+- Purdue Model visualization and design
+- Industrial DMZ (IDMZ) configuration
+- Network topology designer
+- Zone-based segmentation editor
+- Real-time architecture validation
 
-### Standalone Server (Python)
-- **standalone_server.py**: All-in-one server serving web interface, WebSocket, and Modbus
-- Maintains persistent Modbus TCP connection to Main PLC (port 502)
-- Handles WebSocket connections from web interface
-- Bridges browser ↔ PLC communication
-- Logs events to Supabase database
+**Educational Content**
+- SAIC vs CIA security priorities comparison
+- Modbus protocol deep-dive reference
+- ICS/OT security glossary
+- Interview preparation mode with Q&A scenarios
+- Best practices and industry standards
 
-### Database (Supabase PostgreSQL)
-- `lab_sessions`: Tracks individual lab sessions with scenario types
-- `modbus_events`: Logs all Modbus communication (reads/writes)
-- `attraction_states`: Records attraction state snapshots over time
-- `security_alerts`: Security event logging and anomaly detection
-- `challenges`: CTF challenge definitions with difficulty and points
-- `challenge_completions`: Tracks completed challenges per session
+### 🛡️ Security Configuration Tools
 
-### Python Scripts
-Located in `/scripts`:
-- **standalone_server.py**: Integrated web + WebSocket + Modbus server (started via start.sh)
-- **upload_multi_plc.py**: Automated deployment of all three PLC programs
-- **probe.py**: Diagnostic tool for Modbus testing
-- **plc_modbus_map.py**: Memory map definitions for Modbus communication
+**Firewall Management**
+- Create zone-based firewall rules
+- Configure source/destination policies
+- Test rule effectiveness against attacks
+- Visualize traffic flow and blocking
 
-### PLC Programs
-Three separate Structured Text programs:
-- **attraction_control_main.st**: Main sequencing, position tracking, speed control, zone logic
-- **attraction_control_safety.st**: Safety interlocks, event-based safety checks, alarm generation
-- **attraction_control_effects.st**: Show lighting scenes, audio triggers, special effects
+**Protocol Security**
+- Define allowed Modbus function codes
+- Configure address range restrictions
+- Set rate limiting policies
+- Protocol-level access control
 
-## CTF Challenges
+**Access Control Lists (ACLs)**
+- Role-based access control design
+- Resource-level permissions
+- Subject/resource/operation policies
+- Priority-based rule evaluation
 
-### Easy Challenges (100-150 points)
-1. **Lights Out** - Prevent flash light activation using MitM attack
-2. **Emergency Override** - Trigger emergency stop via Modbus
+**Authentication & Authorization**
+- Multi-factor authentication design
+- Certificate-based authentication
+- Session management configuration
+- Identity and access management (IAM) policies
 
-### Medium Challenges (150-250 points)
-3. **Stealth Mode** - Keep ride running for 3 laps without flashing
-4. **Traffic Analysis** - Intercept and log 10+ Modbus commands
-5. **Zone Manipulation** - Disable attraction zones during operation
-6. **Runtime Manipulation** - Trigger maintenance flag through counter manipulation
+### 🔬 Testing & Simulation
 
-### Hard Challenges (300-400 points)
-7. **Speed Control** - Modify ride speed through register manipulation
-8. **Safety Bypass** - Start ride with safety gate open
-9. **State Machine Attack** - Force PLC into maintenance mode
-10. **Full Laps Silent** - Complete 3 laps without any flash light activations
+**Scenario Simulator**
+- Test security controls against real attacks
+- Simulate multi-stage attack campaigns
+- Measure defense effectiveness
+- Track attack success rates and blocked attempts
 
-**Total Points Available: 2,350**
+**Attack Testing Suite**
+- Lateral movement simulation
+- Protocol-specific attack vectors
+- Safety system manipulation tests
+- State machine exploitation
 
-See `ATTACK_GUIDE.md` for detailed attack vectors and methods.
+**Performance Analysis**
+- Latency impact measurement
+- Network performance monitoring
+- Security overhead analysis
+- Real-time vs safety-critical timing
+
+### ⚠️ Safety Systems
+
+**SIS Protection Panel**
+- Safety Instrumented System configuration
+- Independent safety logic design
+- TRITON/TRISIS attack defense
+- SIL (Safety Integrity Level) compliance
+
+**Fail-Safe Design**
+- Redundancy configuration
+- Fault tolerance planning
+- Graceful degradation strategies
+- Emergency shutdown procedures
+
+### 📊 Compliance & Assessment
+
+**IEC 62443 Assessment**
+- Security level maturity evaluation
+- Foundational Requirements mapping
+- Gap identification and remediation
+- Compliance reporting
+
+**NIST Cybersecurity Framework**
+- Five function mapping (Identify, Protect, Detect, Respond, Recover)
+- Control implementation tracking
+- Maturity assessment
+- Framework alignment
+
+**Gap Analysis**
+- Current vs target state comparison
+- Risk prioritization
+- Remediation roadmap
+- Progress tracking
+
+**Recommendations Engine**
+- AI-powered security recommendations
+- Risk-based prioritization
+- Implementation guidance
+- Best practice suggestions
+
+### 🎮 Live Attraction HMI
+
+**Real-Time Control Interface**
+- Monitor 3-PLC distributed system (Main, Safety, Effects)
+- Track vehicle position across 26-position track
+- Control attraction states (Idle, Starting, Running, Stopping, Emergency)
+- Manage safety interlocks and emergency stops
+- Configure show effects and lighting
+- View system health metrics
+
+**System Monitoring**
+- Live Modbus communication tracking
+- PLC connection status for all 3 PLCs
+- Safety system health monitoring
+- Show control effects visualization
+- Event timeline and logging
+
+## Technology Stack
+
+**Frontend:**
+- React 18 with TypeScript
+- Vite (build tool)
+- Tailwind CSS (styling)
+- Lucide React (icons)
+
+**Backend & Services:**
+- Supabase (PostgreSQL database + Realtime subscriptions)
+- Edge Functions (serverless functions)
+- Row Level Security (RLS) for data protection
+- WebSocket for real-time PLC communication
+
+**Simulation & Control:**
+- Python backend for PLC simulation
+- Modbus TCP protocol implementation
+- OpenPLC Runtime (optional for advanced users)
+- Multi-PLC coordination logic
+
+## Database Schema
+
+The platform uses Supabase PostgreSQL with the following key tables:
+
+**Core Tables:**
+- `lab_sessions` - Training session management
+- `security_configurations` - User-defined security setups
+- `defense_rules` - Firewall, protocol filters, IDS signatures, ACLs
+- `attack_logs` - Attack attempt tracking and analysis
+- `security_scores` - Defense effectiveness metrics
+
+**Challenge System:**
+- `challenges` - CTF-style security challenges
+- `challenge_completions` - Progress tracking
+- `system_events` - Real-time event logging
+- `alarm_history` - Alarm tracking and acknowledgment
+
+**Attraction Simulation:**
+- `attraction_states` - Historical state snapshots
+- `modbus_events` - Protocol-level communication logs
+- `process_trends` - Time-series process data
+- `system_health_log` - Equipment health tracking
 
 ## Getting Started
 
 ### Prerequisites
-- Node.js 18+
-- Python 3.8+
-- Docker (for OpenPLC)
-  - **Windows**: Install [Docker Desktop](https://www.docker.com/products/docker-desktop)
-  - **macOS**: Install [Docker Desktop](https://www.docker.com/products/docker-desktop)
-  - **Linux**: Install Docker Engine using your package manager
 
-### Installation & Setup
+- Node.js 18+ and npm
+- Modern web browser (Chrome, Firefox, Edge)
+- Internet connection (for Supabase services)
 
-Run the automated installation script for your operating system:
+### Installation
 
-#### Linux / macOS
+1. **Clone the repository**
 ```bash
-bash install.sh
+git clone <repository-url>
+cd attraction-security-lab
 ```
 
-#### Windows (Command Prompt or PowerShell)
-```cmd
-install.bat
-```
-
-#### Windows (Git Bash)
+2. **Install dependencies**
 ```bash
-bash install.sh
+npm install
 ```
 
-This will:
-- Install Node.js dependencies
-- Build the web interface
-- Create a Python virtual environment
-- Install Python dependencies
+3. **Set up environment variables**
 
-Environment variables are pre-configured in `.env` - no setup needed!
+The `.env` file should contain:
+```
+VITE_SUPABASE_URL=<your-supabase-url>
+VITE_SUPABASE_ANON_KEY=<your-supabase-anon-key>
+```
 
-### Running the Lab
+4. **Run database migrations**
 
-#### Linux / macOS
+Migrations are located in `supabase/migrations/` and will be applied automatically when you deploy to Supabase.
 
-1. **Activate the Python virtual environment:**
+### Running the Application
+
+**Development mode:**
 ```bash
-source venv/bin/activate
+npm run dev
 ```
 
-2. **Start Everything (3 OpenPLC containers + WebSocket Server):**
+**Production build:**
 ```bash
-cd scripts && bash start.sh
+npm run build
+npm run preview
 ```
 
-#### Windows (Command Prompt or PowerShell)
+The application will be available at `http://localhost:5173` (dev) or `http://localhost:4173` (preview).
 
-1. **Activate the Python virtual environment:**
-```cmd
-venv\Scripts\activate
-```
+## Navigation Guide
 
-2. **Start Everything:**
-```cmd
-cd scripts
-start.bat
-```
+The application uses a sidebar navigation system with the following sections:
 
-#### Windows (Git Bash)
+**📊 Dashboard** - Overview and quick access to all features
 
-1. **Activate the Python virtual environment:**
-```bash
-source venv/Scripts/activate
-```
+**🎯 Training**
+- Security Training Lab - Hands-on security configuration
+- Defense Validator - Test your security setup
+- Architecture Training - Network design and segmentation
 
-2. **Start Everything:**
-```bash
-cd scripts && bash start.sh
-```
+**🏗️ Architecture**
+- Purdue Model - Industrial control system reference architecture
+- IDMZ Designer - Industrial DMZ configuration
+- Network Topology - Visual network designer
+- Zone Editor - Segmentation configuration
 
----
+**🛡️ Security**
+- Firewall Manager - Zone-based firewall rules
+- Protocol Security - Modbus protocol policies
+- Access Control - Role-based access control
+- Authentication - Identity and access management
 
-The startup script will:
-- Start 3 OpenPLC containers with Docker (Main, Safety, Effects)
-- Upload and compile all three PLC programs
-- Start all PLC runtimes
-- Launch the integrated web server with WebSocket support
+**⚠️ Safety**
+- SIS Protection - Safety Instrumented System configuration
+- Fail-Safe Simulator - Fault tolerance testing
+- TRITON Defense - Attack-specific defenses
+- Redundancy Config - High availability design
 
-**Open in Browser:**
-- **SCADA HMI:** http://localhost:3000 (main operator interface)
-- The lab will **automatically connect** to Main PLC at localhost:502
-- The system will auto-initialize with safe baseline conditions
-- Click the **Help** button in the header to read the attraction documentation and get started!
+**🧪 Testing**
+- Scenario Simulator - Attack simulation environment
+- Lateral Movement - Network traversal testing
+- Protocol Attacks - Modbus-specific attack vectors
+- Latency Analysis - Performance impact measurement
 
-  ![Help Button](public/image%20copy%20copy.png)
+**📋 Compliance**
+- IEC 62443 Assessment - Industry standard evaluation
+- NIST CSF Mapping - Framework alignment
+- Gap Analysis - Security posture evaluation
+- Recommendations - Improvement suggestions
 
-**PLC Access Points:**
-| Interface | URL | Credentials |
-|-----------|-----|-------------|
-| Main PLC Admin | http://localhost:8080 | openplc / openplc |
-| Safety PLC Admin | http://localhost:8081 | openplc / openplc |
-| Effects PLC Admin | http://localhost:8082 | openplc / openplc |
+**📚 Education**
+- SAIC vs CIA - IT vs OT security priorities
+- Protocol Reference - Modbus protocol guide
+- Glossary - ICS/OT terminology
+- Interview Mode - Job interview preparation
 
-**Modbus TCP Ports:**
-- Main PLC: localhost:502
-- Safety PLC: localhost:503
-- Effects PLC: localhost:504
+**🎮 Live System**
+- Attraction HMI - Real-time control interface
 
-#### Attack Scenarios
+## Learning Path
 
-Attack scripts are available in `/ext_attacks` with examples for each CTF challenge. These demonstrate various attack vectors:
+**Recommended progression for new users:**
 
-```bash
-# Example: Zone manipulation attack
-python ext_attacks/challenge_03_zone_manipulation.py
+1. **Start with Education** → SAIC vs CIA to understand OT security fundamentals
+2. **Learn Architecture** → Purdue Model and IDMZ Designer
+3. **Build Defenses** → Security Training Lab to configure controls
+4. **Test Your Skills** → Defense Validator and Scenario Simulator
+5. **Assess Compliance** → IEC 62443 and NIST CSF mapping
+6. **Advanced Practice** → Attack testing and live HMI interaction
 
-# Example: Safety bypass attack
-python ext_attacks/challenge_05_safety_bypass.py
+## Attack Scenarios
 
-# Example: State machine attack
-python ext_attacks/challenge_06_state_machine_attack.py
-```
+The platform includes realistic attack scenarios based on real-world incidents:
 
-See `ext_attacks/README.md` for documentation on all available attack scripts.
+- **Safety System Bypass** - TRITON/TRISIS-style attacks on SIS
+- **Register Scanning** - Reconnaissance and enumeration
+- **Motor Manipulation** - Physical process control
+- **Stealth Operations** - Evading detection systems
+- **Lateral Movement** - Network traversal and pivoting
+- **Protocol Manipulation** - Modbus function code abuse
+- **State Machine Attacks** - Logic manipulation
+- **Multi-Stage Campaigns** - Coordinated attack chains
 
-## Features
+## Security Best Practices Covered
 
-- **Three-PLC Distributed Architecture** - Realistic industrial control system structure
-- **Real-time PLC Simulation** - Advanced state machine with 26-position tracking
-- **Live Modbus Monitoring** - Watch all coil/register reads and writes across PLCs
-- **CTF Challenge System** - 10 challenges with automatic detection and scoring
-- **Automated Setup** - One-command deployment with Docker and Python
-- **Complete Logging** - All events stored in Supabase for analysis
-- **Professional SCADA HMI** - Production-quality interface with tabbed navigation
-- **Independent Safety System** - Dedicated Safety PLC with event-based checks
-- **Show Effects Control** - Separate Effects PLC for lighting and audio
-- **Process Variable Simulation** - Motor current, hydraulic pressure, temperature monitoring
-- **Multiple Attack Vectors** - Multi-PLC coordination, zone control, state manipulation
-- **Educational Attack Scripts** - Pre-built examples for each challenge
+- **Network Segmentation** - Purdue Model Levels 0-4
+- **Defense in Depth** - Layered security controls
+- **Protocol Security** - Function code and address filtering
+- **Authentication** - Multi-factor and certificate-based
+- **Intrusion Detection** - Pattern and anomaly-based signatures
+- **Safety Independence** - Separate SIS from control systems
+- **Least Privilege** - Role-based access control
+- **Monitoring & Logging** - Comprehensive visibility
+- **Incident Response** - Detection, analysis, and remediation
 
-## Use Cases
+## Educational Use Cases
 
-- **ICS/SCADA Security Training** - Learn real-world attack and defense techniques
-- **Modbus Protocol Education** - Understand industrial communication protocols
-- **Red Team Exercises** - Practice offensive security in safe environment
-- **Blue Team Training** - Detect and respond to ICS attacks
-- **CTF Competitions** - Built-in scoring and challenge tracking
-- **Attraction Control Learning** - Understand theme park ride safety systems
+**Academic Institutions:**
+- ICS security courses and labs
+- Cybersecurity degree programs
+- Engineering curriculum integration
+- Research and thesis projects
 
-## Technology Stack
+**Corporate Training:**
+- Employee security awareness
+- Operator training programs
+- Security team skill development
+- Red team / blue team exercises
 
-- React 18 + TypeScript
-- Vite
-- Tailwind CSS
-- Supabase (PostgreSQL + Realtime)
-- Lucide React (icons)
-- Python + pymodbus
-- OpenPLC Runtime (Docker)
+**Certification Prep:**
+- GICSP (Global Industrial Cyber Security Professional)
+- GRID (GIAC Response and Industrial Defense)
+- ICS/OT security certifications
+- Job interview preparation
 
-## PLC Memory Maps
+**Self-Directed Learning:**
+- Career development
+- Skill building and practice
+- Portfolio project showcase
+- CTF preparation
 
-### Main PLC (Port 502)
-**Coils:**
-- %QX0.0-0.2: `master_enable`, `emergency_stop_button`, `safety_gate_closed`
-- %QX0.5-0.7: `zone_1_enable`, `zone_2_enable`, `zone_3_enable`
-- %QX1.0-1.1: `start_command`, `stop_command`
-- %QX1.5: `motor_running`
+## Contributing
 
-**Registers:**
-- %MW0: `speed_setpoint` (0-100%)
-- %MW1: `current_position` (0-25 track positions)
-- %MW2: `state` (0=Idle, 1=Starting, 2=Running, 3=Stopping, 4=Emergency)
-- %MW3: `current_speed` (calculated speed)
-- %MW5-14: Process variables (current, pressure, temperature, brake wear, vibration)
-- %MW80-88: Proximity sensors 1-9 (position detection)
+Contributions are welcome! Areas for enhancement:
 
-### Safety PLC (Port 503)
-**Coils:**
-- %QX0.0-0.2: Safety inputs (master_enable, e-stop, gate)
-- %QX1.0-2.0: Event enables (9 events)
-- %QX2.1-3.1: Event active flags (9 events)
-
-**Registers:**
-- %MW10-11: Current position/speed from Main PLC
-- %MW20-28: Event counters (9 events)
-- %MW30: `alarm_register`
-- %MW31: `stealth_counter`
-- %MW50: `safety_violation_count`
-- %MW100: `safety_ok_reg` (safety status for Main PLC)
-
-### Effects PLC (Port 504)
-**Coils:**
-- %QX10.0-10.3: Lighting scenes 1-4
-- %QX11.0-11.2: Audio channels 1-3
-- %QX12.0-12.3: Special effects (fog, strobe, laser, photo)
-
-**Registers:**
-- %MW60: `current_lighting_scene`
-- %MW61: `active_audio_channel`
-- %MW62: `position_from_main`
-- %MW70-73: Effect runtime counters
-
-**See `MULTI_PLC_ARCHITECTURE.md` and `ATTACK_GUIDE.md` for complete memory maps and attack techniques.**
-
-## Security Notes
-
-This is a **defensive security training tool** for learning about ICS/SCADA vulnerabilities. All attack scenarios are demonstrated in an isolated environment for educational purposes only.
-
-**Do not** use these techniques on production systems or systems you don't own.
+- Additional attack scenarios
+- New training modules
+- Enhanced visualization
+- Protocol support expansion
+- Compliance framework updates
+- Documentation improvements
 
 ## License
 
 MIT
+
+## Disclaimer
+
+This is an **educational platform for defensive security training**. All attack scenarios and techniques are demonstrated in an isolated, simulated environment for learning purposes only.
+
+**Do not** use these techniques on production systems, systems you don't own, or without explicit authorization. Unauthorized access to computer systems is illegal.
+
+## Support & Documentation
+
+- **In-App Help** - Click any "?" icon for contextual help
+- **Training Modules** - Step-by-step guided learning
+- **Glossary** - Comprehensive ICS/OT terminology
+- **Protocol Reference** - Detailed Modbus documentation
+
+## Acknowledgments
+
+Built with inspiration from real-world ICS security research, NIST guidelines, IEC 62443 standards, and lessons learned from incidents like TRITON/TRISIS, Stuxnet, and other notable ICS attacks.
