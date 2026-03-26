@@ -21,7 +21,7 @@ This platform provides an immersive learning experience for securing industrial 
 
 ## Core Features
 
-### 🎓 Interactive Training Modules
+### Interactive Training Modules
 
 **Security Training Dashboard**
 - Hands-on labs for building ICS security controls
@@ -45,7 +45,7 @@ This platform provides an immersive learning experience for securing industrial 
 - Interview preparation mode with Q&A scenarios
 - Best practices and industry standards
 
-### 🛡️ Security Configuration Tools
+### Security Configuration Tools
 
 **Firewall Management**
 - Create zone-based firewall rules
@@ -71,7 +71,7 @@ This platform provides an immersive learning experience for securing industrial 
 - Session management configuration
 - Identity and access management (IAM) policies
 
-### 🔬 Testing & Simulation
+### Testing & Simulation
 
 **Scenario Simulator**
 - Test security controls against real attacks
@@ -91,7 +91,7 @@ This platform provides an immersive learning experience for securing industrial 
 - Security overhead analysis
 - Real-time vs safety-critical timing
 
-### ⚠️ Safety Systems
+### Safety Systems
 
 **SIS Protection Panel**
 - Safety Instrumented System configuration
@@ -105,7 +105,7 @@ This platform provides an immersive learning experience for securing industrial 
 - Graceful degradation strategies
 - Emergency shutdown procedures
 
-### 📊 Compliance & Assessment
+### Compliance & Assessment
 
 **IEC 62443 Assessment**
 - Security level maturity evaluation
@@ -131,7 +131,7 @@ This platform provides an immersive learning experience for securing industrial 
 - Implementation guidance
 - Best practice suggestions
 
-### 🎮 Live Attraction HMI
+### Live Attraction HMI
 
 **Real-Time Control Interface**
 - Monitor 3-PLC distributed system (Main, Safety, Effects)
@@ -350,50 +350,50 @@ When using Supabase, the platform provides persistent storage:
 
 The application uses a sidebar navigation system with the following sections:
 
-**📊 Dashboard** - Overview and quick access to all features
+**Dashboard** - Overview and quick access to all features
 
-**🎯 Training**
+**Training**
 - Security Training Lab - Hands-on security configuration
 - Defense Validator - Test your security setup
 - Architecture Training - Network design and segmentation
 
-**🏗️ Architecture**
+**Architecture**
 - Purdue Model - Industrial control system reference architecture
 - IDMZ Designer - Industrial DMZ configuration
 - Network Topology - Visual network designer
 - Zone Editor - Segmentation configuration
 
-**🛡️ Security**
+**Security**
 - Firewall Manager - Zone-based firewall rules
 - Protocol Security - Modbus protocol policies
 - Access Control - Role-based access control
 - Authentication - Identity and access management
 
-**⚠️ Safety**
+**Safety**
 - SIS Protection - Safety Instrumented System configuration
 - Fail-Safe Simulator - Fault tolerance testing
 - TRITON Defense - Attack-specific defenses
 - Redundancy Config - High availability design
 
-**🧪 Testing**
+**Testing**
 - Scenario Simulator - Attack simulation environment
 - Lateral Movement - Network traversal testing
 - Protocol Attacks - Modbus-specific attack vectors
 - Latency Analysis - Performance impact measurement
 
-**📋 Compliance**
+**Compliance**
 - IEC 62443 Assessment - Industry standard evaluation
 - NIST CSF Mapping - Framework alignment
 - Gap Analysis - Security posture evaluation
 - Recommendations - Improvement suggestions
 
-**📚 Education**
+**Education**
 - SAIC vs CIA - IT vs OT security priorities
 - Protocol Reference - Modbus protocol guide
 - Glossary - ICS/OT terminology
 - Interview Mode - Job interview preparation
 
-**🎮 Live System**
+**Live System**
 - Attraction HMI - Real-time control interface
 
 ## Learning Path
