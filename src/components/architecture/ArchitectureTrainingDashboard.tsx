@@ -1,32 +1,5 @@
 import { useState, useEffect } from 'react';
-import {
-  Layers,
-  Shield,
-  Network,
-  Grid3X3,
-  BookOpen,
-  Target,
-  CheckCircle,
-  Circle,
-  ChevronRight,
-  ChevronDown,
-  AlertTriangle,
-  Lightbulb,
-  Server,
-  Database,
-  Monitor,
-  Cpu,
-  Router,
-  Lock,
-  ArrowRight,
-  ArrowDown,
-  Plus,
-  Trash2,
-  Save,
-  RefreshCw,
-  Award,
-  Zap,
-} from 'lucide-react';
+import { Layers, Shield, Network, Grid3x3 as Grid3X3, BookOpen, Target, CheckCircle, Circle, ChevronRight, ChevronDown, AlertTriangle, Lightbulb, Server, Database, Monitor, Cpu, Router, Lock, ArrowRight, ArrowDown, Plus, Trash2, Save, RefreshCw, Award, Zap } from 'lucide-react';
 
 interface PurdueLevel {
   level: string;
@@ -97,7 +70,7 @@ const PURDUE_LEVELS: PurdueLevel[] = [
     level: '0',
     name: 'Physical Process',
     description: 'The actual physical equipment and process being controlled. This is what we are protecting - in our case, the attraction vehicles, motors, and safety systems.',
-    examples: ['Ride vehicles', 'Motors', 'Conveyors', 'Pumps', 'Physical sensors'],
+    examples: ['Attraction vehicles', 'Motors', 'Conveyors', 'Pumps', 'Physical sensors'],
     color: '#f59e0b',
     ipRange: 'N/A',
     securityRequirements: ['Physical interlocks', 'Hardwired E-stops', 'Fail-safe design'],

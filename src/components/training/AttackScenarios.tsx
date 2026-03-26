@@ -54,7 +54,7 @@ const ATTACK_SCENARIOS: AttackScenario[] = [
     severity: 'critical',
     realWorldExample: 'TRITON/TRISIS (2017) - Attack on Schneider Triconex SIS at Saudi petrochemical plant',
     description: `This attack targets the Safety Instrumented System (SIS) to disable safety protections.
-    In our attraction scenario, the attacker disables the safety override coil, allowing the ride to
+    In our attraction scenario, the attacker disables the safety override coil, allowing the attraction to
     operate without proper safety checks. This could result in restraint failures, door openings during
     operation, or E-stop disabling.`,
     attackPhases: [

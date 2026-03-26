@@ -76,7 +76,7 @@ export function AttractionHMI() {
     error,
     getStateName,
     writeCoil,
-    resetRide,
+    resetAttraction,
   } = usePlcConnection();
 
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -141,7 +141,7 @@ export function AttractionHMI() {
         onStop={() => writeCoil('main', 2, true)}
         onEmergencyStop={() => writeCoil('main', 3, !emergencyStop)}
         onSafetyGateToggle={() => writeCoil('main', 4, !safetyGate)}
-        onReset={resetRide}
+        onReset={resetAttraction}
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
@@ -221,7 +221,7 @@ export function AttractionHMI() {
             <h3 className="text-sm font-semibold text-white">PLC Status</h3>
           </div>
           <div className="space-y-2">
-            <PlcStatusRow name="Ride Control" connected={mainPlc.connected} port={502} />
+            <PlcStatusRow name="Attraction Control" connected={mainPlc.connected} port={502} />
             <PlcStatusRow name="Safety PLC" connected={safetyPlc.connected} port={503} />
             <PlcStatusRow name="Show Control" connected={effectsPlc.connected} port={504} />
           </div>

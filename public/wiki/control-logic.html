@@ -70,13 +70,13 @@
             <div class="page-meta">Last updated: November 5, 2025 | Owner: Michael Torres | Version: 3.1</div>
 
             <h2>State Machine Overview</h2>
-            <p>The ride control system uses a finite state machine (FSM) with four primary states:</p>
+            <p>The attraction control system uses a finite state machine (FSM) with four primary states:</p>
 
             <table>
                 <tr><th>State</th><th>Code</th><th>Description</th><th>Exit Conditions</th></tr>
                 <tr><td>IDLE</td><td>0</td><td>System powered, ready to start</td><td>Start command received and safety PLC ready</td></tr>
                 <tr><td>STARTING</td><td>1</td><td>Pre-start safety checks and brake release</td><td>Start timer exceeds 50 scans</td></tr>
-                <tr><td>RUNNING</td><td>2</td><td>Normal ride operation</td><td>Returns to starting position, stop command, or safety fault</td></tr>
+                <tr><td>RUNNING</td><td>2</td><td>Normal attraction operation</td><td>Returns to starting position, stop command, or safety fault</td></tr>
                 <tr><td>STOPPING</td><td>3</td><td>Immediate stop and brake engagement</td><td>Returns to IDLE immediately</td></tr>
             </table>
 
@@ -102,7 +102,7 @@
             </ul>
 
             <h2>Event Sequence</h2>
-            <p>Nine ride events trigger based on proximity sensor detection:</p>
+            <p>Nine show events trigger based on proximity sensor detection:</p>
 
             <table>
                 <tr><th>Event</th><th>Sensor</th><th>Position Range</th><th>Description</th></tr>

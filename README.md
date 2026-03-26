@@ -2,11 +2,11 @@
 
 ![Attraction Technology Lab Interface](public/image%20copy.png)
 
-A comprehensive web-based virtual lab for testing attraction control systems, Modbus/PLC communication, and ICS/SCADA cybersecurity scenarios with **10 CTF challenges**.
+A comprehensive web-based virtual lab for testing attraction control systems, Modbus/PLC communication, and ICS/Show Control cybersecurity scenarios with **10 CTF challenges**.
 
 ## Overview
 
-This project simulates a realistic industrial attraction ride control system with:
+This project simulates a realistic industrial attraction control system with:
 - **Three-PLC distributed architecture** (Main, Safety, Effects)
 - 26-position track with 9 proximity sensors
 - Advanced state machine (Idle, Starting, Running, Stopping, Emergency)
@@ -43,11 +43,11 @@ This project simulates a realistic industrial attraction ride control system wit
 **See `MULTI_PLC_ARCHITECTURE.md` for detailed architecture documentation.**
 
 ### Web Interface (React + TypeScript)
-- **AttractionVisualizer**: Visual representation of the ride with car and lights
-- **ControlPanel**: Ride control interface
+- **AttractionVisualizer**: Visual representation of the attraction with vehicle and lights
+- **ControlPanel**: Attraction control interface
 - **MultiPLCStatus**: Connection status for all three PLCs
 - **SystemHealthDashboard**: Real-time diagnostics and process variables
-- **RideEventsMonitor**: 9 proximity sensor event tracking
+- **ShowEventsMonitor**: 9 proximity sensor event tracking
 - **TrendChart**: Live charts for position, speed, temperature, current
 - **AlarmPanel**: Active alarms and alarm history
 - **NetworkMonitor**: Modbus traffic analysis

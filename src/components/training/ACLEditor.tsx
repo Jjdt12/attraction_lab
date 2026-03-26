@@ -53,7 +53,7 @@ interface ACLEditorProps {
 
 const SUBJECTS = {
   roles: [
-    { id: 'operator', name: 'Operator', description: 'Day-to-day ride operations' },
+    { id: 'operator', name: 'Operator', description: 'Day-to-day attraction operations' },
     { id: 'maintenance', name: 'Maintenance Tech', description: 'Scheduled maintenance tasks' },
     { id: 'engineer', name: 'Control Engineer', description: 'PLC programming and tuning' },
     { id: 'supervisor', name: 'Supervisor', description: 'Override and emergency access' },
@@ -64,7 +64,7 @@ const SUBJECTS = {
     { id: 'hmi_backup', name: 'Backup HMI', ip: '10.3.0.11' },
     { id: 'eng_ws_1', name: 'Engineering Workstation 1', ip: '10.2.0.20' },
     { id: 'eng_ws_2', name: 'Engineering Workstation 2', ip: '10.2.0.21' },
-    { id: 'scada', name: 'SCADA Server', ip: '10.2.0.5' },
+    { id: 'show_control', name: 'Show Control Server', ip: '10.2.0.5' },
   ],
   zones: [
     { id: 'enterprise', name: 'Enterprise Zone' },
@@ -77,7 +77,7 @@ const SUBJECTS = {
 
 const RESOURCES = {
   plcs: [
-    { id: 'main_plc', name: 'Main PLC', port: 502, description: 'Ride control logic' },
+    { id: 'main_plc', name: 'Main PLC', port: 502, description: 'Attraction control logic' },
     { id: 'safety_plc', name: 'Safety PLC', port: 503, description: 'E-stops and interlocks' },
     { id: 'effects_plc', name: 'Effects PLC', port: 504, description: 'Lighting and audio' },
   ],

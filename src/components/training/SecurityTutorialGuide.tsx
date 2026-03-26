@@ -95,7 +95,7 @@ const TUTORIAL_CHAPTERS: TutorialChapter[] = [
                     <p className="text-sm text-slate-300">
                       In a theme park attraction, if you prioritize confidentiality over safety, you might
                       encrypt communications so thoroughly that safety systems can't respond in time to an
-                      emergency. A 100ms delay in IT is acceptable; in OT controlling a ride vehicle traveling
+                      emergency. A 100ms delay in IT is acceptable; in OT controlling an attraction vehicle traveling
                       at high speed, it could mean the difference between a safe stop and a collision.
                     </p>
                   </div>
@@ -106,7 +106,7 @@ const TUTORIAL_CHAPTERS: TutorialChapter[] = [
             <section>
               <h4 className="text-lg font-semibold text-white mb-3">The Attraction Control System</h4>
               <p className="text-slate-300 mb-4">
-                In this lab, you're securing a dark ride attraction control system. The system consists of:
+                In this lab, you're securing an attraction control system. The system consists of:
               </p>
 
               <div className="space-y-3">
@@ -115,8 +115,8 @@ const TUTORIAL_CHAPTERS: TutorialChapter[] = [
                   <div>
                     <h5 className="font-medium text-white">Main PLC (Port 502)</h5>
                     <p className="text-sm text-slate-400">
-                      Controls ride vehicles, motor speeds, zone occupancy, and dispatch sequences.
-                      Handles the core ride experience and vehicle movement.
+                      Controls attraction vehicles, motor speeds, zone occupancy, and dispatch sequences.
+                      Handles the core attraction experience and vehicle movement.
                     </p>
                   </div>
                 </div>

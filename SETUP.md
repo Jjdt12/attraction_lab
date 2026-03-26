@@ -1,6 +1,6 @@
 # Attraction Technology Lab - Quick Setup Guide
 
-A self-contained ICS/SCADA security testing environment with realistic Modbus protocol implementation.
+A self-contained ICS/Show Control security testing environment with realistic Modbus protocol implementation.
 
 ## Prerequisites
 

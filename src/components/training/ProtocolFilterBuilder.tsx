@@ -70,7 +70,7 @@ const ZONES = [
 const ATTRACTION_REGISTERS = {
   main_plc: [
     { name: 'System Mode', start: 0, end: 0, type: 'holding_registers' as const },
-    { name: 'Ride State', start: 1, end: 1, type: 'holding_registers' as const },
+    { name: 'Attraction State', start: 1, end: 1, type: 'holding_registers' as const },
     { name: 'Vehicle Position', start: 2, end: 5, type: 'holding_registers' as const },
     { name: 'Motor Speeds', start: 10, end: 19, type: 'holding_registers' as const },
     { name: 'Zone Occupancy', start: 20, end: 29, type: 'holding_registers' as const },
