@@ -10,6 +10,23 @@ This platform provides an immersive learning experience for securing industrial 
 - **Standalone Mode** - Runs completely locally with Python backend (no cloud dependencies)
 - **Cloud-Enhanced Mode** - Optional Supabase integration for persistence and multi-user features
 
+## Screenshots
+
+![Live Attraction HMI](public/screenshot-hmi.png)
+*Real-time attraction control interface with multi-PLC monitoring*
+
+![Security Training Dashboard](public/screenshot-training.png)
+*Hands-on security configuration and defense building*
+
+![Architecture Design Tools](public/screenshot-architecture.png)
+*Network topology and Purdue Model visualization*
+
+![Attack Simulation](public/screenshot-attack.png)
+*Test defenses against realistic attack scenarios*
+
+![Compliance Assessment](public/screenshot-compliance.png)
+*IEC 62443 and NIST CSF compliance tracking*
+
 **Key Learning Areas:**
 - ICS/OT Security Architecture & Design
 - Network Segmentation & Defense-in-Depth
